@@ -133,7 +133,7 @@ var listenCallback = function(err, event, stopListening) {
 	}
 };
 
-login({email: "spamme@makereti.co.nz", password: "norbury"}, function callback (err, apil) {	
+login({email: "spamme@facebook.com", password: "areallysecurepasswordhere"}, function callback (err, apil) {	
     if(err) return console.error(err);
 	api = apil;
     apil.setOptions({listenEvents: true});
