@@ -1,0 +1,113 @@
+/*
+    
+    
+*/
+
+var moment = require('moment');
+
+var Parser = require('../parser').Parser;
+var ParsedResult = require('../../result').ParsedResult;
+
+var util  = require('../../utils/EN');
+
+var DAYS_OFFSET = { 'sunday': 0, 'sun': 0, 'monday': 1, 'mon': 1,'tuesday': 2, 'tue':2, 'wednesday': 3, 'wed': 3,
+        'thursday': 4, 'thur': 4, 'thu': 4,'friday': 5, 'fri': 5,'saturday': 6, 'sat': 6,}
+    
+var PATTERN = new RegExp('(\\W|^)' +
+        '(?:(Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sun|Mon|Tue|Wed|Thu|Fri|Sat)\\s*,?\\s*)?' + 
+        '([0-9]{1,2})(?:st|nd|rd|th)?' + 
+        '(?:\\s*(?:to|\\-|\\s)\\s*([0-9]{1,2})(?:st|nd|rd|th)?)?\\s*(?:of)?\\s*' + 
+        '(Jan(?:uary|\\.)?|Feb(?:ruary|\\.)?|Mar(?:ch|\\.)?|Apr(?:il|\\.)?|May|Jun(?:e|\\.)?|Jul(?:y|\\.)?|Aug(?:ust|\\.)?|Sep(?:tember|\\.)?|Oct(?:ober|\\.)?|Nov(?:ember|\\.)?|Dec(?:ember|\\.)?)' +
+        '(?:(\\s*[0-9]{2,4}(?![^\\s]\\d))(\\s*BE)?)?' + 
+        '(?=\\W|$)', 'i'
+    );
+
+var WEEKDAY_GROUP = 2;
+var DATE_GROUP = 3;
+var DATE_TO_GROUP = 4;
+var MONTH_NAME_GROUP = 5;
+var YEAR_GROUP = 6;
+var YEAR_BE_GROUP = 7;
+
+exports.Parser = function ENMonthNameLittleEndianParser(){
+    Parser.call(this);
+    
+    this.pattern = function() { return PATTERN; }
+    
+    this.extract = function(text, ref, match, opt){ 
+
+        var result = new ParsedResult({
+            text: match[0].substr(match[1].length, match[0].length - match[1].length),
+            index: match.index + match[1].length,
+            ref: ref,
+        });
+
+        var startMoment = moment(ref);
+
+        var month = match[MONTH_NAME_GROUP];
+        month = util.MONTH_OFFSET[month.toLowerCase()];
+
+        var day = match[DATE_GROUP];
+        day = parseInt(day);
+
+        var year = null;
+        if (match[YEAR_GROUP]) {
+            year = match[YEAR_GROUP];
+            year = parseInt(year);
+
+            if(match[YEAR_BE_GROUP]){ 
+                //BC
+                year = year - 543;
+
+            } else if (year < 100){ 
+
+                year = year + 2000;
+            }
+        }
+        
+        startMoment.month(month - 1);
+        startMoment.date(day);
+
+        if(year){
+            startMoment.year(year);
+
+            result.start.assign('day', startMoment.date());
+            result.start.assign('month', startMoment.month() + 1);
+            result.start.assign('year', startMoment.year());
+        } else {
+            
+            //Find the most appropriated year
+            startMoment.year(moment(ref).year());
+            var nextYear = startMoment.clone().add(1, 'y');
+            var lastYear = startMoment.clone().add(-1, 'y');
+            if( Math.abs(nextYear.diff(moment(ref))) < Math.abs(startMoment.diff(moment(ref))) ){  
+                startMoment = nextYear;
+            }
+            else if( Math.abs(lastYear.diff(moment(ref))) < Math.abs(startMoment.diff(moment(ref))) ){ 
+                startMoment = lastYear;
+            }
+
+            result.start.assign('day', startMoment.date());
+            result.start.assign('month', startMoment.month() + 1);
+            result.start.imply('year', startMoment.year());
+        }
+        
+        // Weekday component
+        if (match[WEEKDAY_GROUP]) {
+            var weekday = match[WEEKDAY_GROUP];
+            weekday = util.WEEKDAY_OFFSET[weekday.toLowerCase()]
+            result.start.assign('weekday', weekday);
+        }
+
+        // Text can be 'range' value. Such as '12 - 13 January 2012'
+        if (match[DATE_TO_GROUP]) {
+            result.end = result.start.clone();
+            result.end.assign('day', parseInt(match[DATE_TO_GROUP]));
+        }
+
+        result.tags['ENMonthNameLittleEndianParser'] = true;
+        return result;
+    };
+
+}
+

@@ -1,0 +1,1 @@
+Note that this directory is used to make socket handles. Some tests (like RPC) need two `Stream` instances to work, so we need a way to create those without using real ports. Socket files may be left behind here after tests are finished, feel free to delete them.
