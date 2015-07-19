@@ -47,6 +47,13 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 		karmaMap[thread] = {};
 	}
 	
+	if (karmaChange.name.trim() === '') {
+		var responses = ['I eat blank karma for breakfast.', 'A karma with every meal is good apparently.',
+		'Thank-you for appriciating my efforts.', 'Karma comes only to those you give it too.', 'You are tosser.'];
+        var index = Math.floor(Math.random() * responses.length);
+		return responses[index] + ' Try again.';
+	}
+	
 	person = person.toProperCase();
 	if (!karmaMap[thread][person]) {
 		karmaMap[thread][person] = 0;
