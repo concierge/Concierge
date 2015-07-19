@@ -1,0 +1,27 @@
+{
+  "name": "kassy",
+  "version": "1.0.0",
+  "description": "Things and stuff",
+  "main": "server.js",
+  "dependencies": {
+    "facebook-chat-api": "^0.2.10",
+    "quarantine": "^0.1.4",
+    "request": "^2.58.0",
+    "streamin": "^0.2.2"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrkno/Kassy.git"
+  },
+  "author": "Matthew Knox",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/mrkno/Kassy/issues"
+  },
+  "homepage": "https://github.com/mrkno/Kassy#readme"
+}

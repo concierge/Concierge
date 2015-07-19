@@ -1,4 +1,5 @@
 var request = require('request'),
+	streamin = require('streamin'),
 	animCache = {}; // yes...
 
 if (typeof String.prototype.startsWith != 'function') {
@@ -72,8 +73,8 @@ exports.ensureExt = function (url) {
 exports.run = function(api, event) {
 	var query = event.body.substr(6);
 	exports.search(query, function(image) {
-		var msg = exports.ensureExt(image.unescapedUrl);
-		api.sendMessage(msg, event.thread_id);
+		var img = exports.ensureExt(image.unescapedUrl);
+		api.sendMessage(image.unescapedUrl, event.thread_id);
 	});
 };
 
