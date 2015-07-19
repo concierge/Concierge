@@ -15,6 +15,8 @@ Modules should be created as their own javascript files. They must expose the fo
 * `exports.load()`. This method is called once when the program is first starting up. Facebook is not gaurenteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
 * `exports.run(api,event)`. This method is called whenever the module should be run. api is an object that allows you to perform all the api methods outlined here: https://github.com/Schmavery/facebook-chat-api . event is an object that contains information about the message received. Of particular note is `event.body` which contains text typed.
 
+Modules can be loaded into Kassy by first adding a require at the top of server.js, then adding the module to the array of modules within that file.
+
 ## Disclaimer
 HERE BE DRAGONS!
 Written to see if it could be done, not written to be readable. Enter at your own peril.
