@@ -11,7 +11,8 @@ for (var i = 0; i < modules.length; i++) {
 
 facebook.start('spamme@facebook.com', 'averysecurepassword', function(api, event) {
 	if (event.body === '/kassy') {
-		var help = 'KASSY COMMANDS\n--------------------\n';
+		var help = 'KASSY\n--------------------\n' + 
+			'https://github.com/mrkno/Kassy\n\n';
 		for (var i = 0; i < modules.length; i++) {
 			help += modules[i].help() + '\n';
 		}
