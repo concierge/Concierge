@@ -2,7 +2,7 @@ var facebook = require('./facebook.js'),
 	karma = require('./karma.js'),
 	runbot = require('./runbot.js'),
 	anim = require('./anim.js'),
-	magic8Ball = require('./8ball.js'),
+	magic8Ball = require('./8Ball.js'),
 	modules = [karma,runbot,anim,magic8Ball];
 	
 // Startup
