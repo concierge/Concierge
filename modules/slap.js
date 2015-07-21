@@ -11,7 +11,7 @@ exports.match = function(text) {
 
 // Give users help if they can't slaps
 exports.help = function() {
-    return '/slap : Slaps an annoying user - descriptively!';
+    return '/slap <infidel>: Slaps an annoying infidel - descriptively!';
 };
 
 
