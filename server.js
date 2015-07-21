@@ -6,7 +6,8 @@ var facebook = require('./facebook.js'),
 	disable = require('./disable.js'),
 	associate = require('./associate.js'),
 	fawlty = require('./fawlty.js'),
-	modules = [disable,karma,runbot,anim,magic8Ball,fawlty,associate];
+	profound = require('./profound.js'),
+	modules = [disable,karma,runbot,anim,magic8Ball,fawlty,profound,associate];
 	
 // Add useful prototypes
 if (typeof String.prototype.startsWith != 'function') {
