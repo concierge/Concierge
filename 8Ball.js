@@ -14,7 +14,7 @@ exports.help = function() {
     return '/8ball <query> : Answers your questions to life.';
 };
 
-insults = ['Your asking the impossible',
+insults = ['You\'re asking the impossible',
     'It would help if you ask me something',
     'I don\'t have an answer for this',
     'The answer is 42',
