@@ -7,6 +7,7 @@
     "facebook-chat-api": "^0.2.10",
     "git-pull": "^0.1.0",
     "quarantine": "^0.1.4",
+    "redwrap": "0.0.4",
     "request": "^2.58.0",
     "require-install": "^0.1.0"
   },
