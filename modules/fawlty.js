@@ -1,10 +1,5 @@
-var request = require('request');
-
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
+var require_install = require('require-install'),
+  request = require_install('request');
 
 exports.match = function(text) {
     return text.startsWith('/fawlty');
@@ -37,5 +32,3 @@ exports.run = function(api, event) {
 
     api.sendMessage(result, event.thread_id);
 };
-
-exports.load = function() {};
