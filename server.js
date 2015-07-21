@@ -1,14 +1,47 @@
-var facebook = require('./facebook.js'),
-	karma = require('./modules/karma.js'),
-	runbot = require('./modules/runbot.js'),
-	anim = require('./modules/anim.js'),
-	magic8Ball = require('./modules/8Ball.js'),
-	disable = require('./modules/disable.js'),
-	associate = require('./modules/associate.js'),
-	fawlty = require('./modules/fawlty.js'),
-	profound = require('./modules/profound.js'),
-	modules = [disable,karma,runbot,anim,magic8Ball,fawlty,profound,associate];
-	
+/** Node.js server configuration for Kassy
+ *
+ * Herein lies the Node.js serverside script to tell node what to do to ensure
+ * we get all the magical goodness that is:
+ * 		(Karma + Sassy) * Facebook - Hipchat = Kassy
+ *
+ * Written By:
+ * 		Matthew Knox
+ *
+ * Contributors:
+ * 		Dion Woolley
+ * 		Jay Harris
+ * 		Matt Hartstonge
+ * 		(Mainly strange people)
+ *
+ */
+
+// Facebook API
+var facebook = require('./facebook.js');
+
+// Optional module scripts
+var anim = require('./modules/anim.js');
+var associate = require('./modules/associate.js');
+var disable = require('./modules/disable.js');
+var fawlty = require('./modules/fawlty.js');
+var karma = require('./modules/karma.js');
+var magic8Ball = require('./modules/8Ball.js');
+var runbot = require('./modules/runbot.js');
+var profound = require('./modules/profound.js');
+var slap = require('./modules/slap.js');
+
+// Optional Modules to be included
+var modules = [
+	anim,
+	associate,
+	disable,
+	fawlty,
+	karma,
+	magic8Ball,
+	runbot,
+	profound,
+	slap
+];
+
 // Add useful prototypes
 if (typeof String.prototype.startsWith != 'function') {
 	String.prototype.startsWith = function (str){
@@ -25,12 +58,13 @@ if (typeof String.prototype.endsWith != 'function') {
 		return this.indexOf(suffix, this.length - suffix.length) !== -1;
 	};
 }
-	
-// Startup
+
+// Load Optional Modules
 for (var i = 0; i < modules.length; i++) {
 	modules[i].load();
 }
 
+// Start the all knowing, all extensible kassy bot..
 facebook.start('spamme@facebook.com', 'averysecurepassword', function(api, event) {
 	if (event.body === '/kassy') {
 		var help = 'KASSY 1.1\n--------------------\n' +
