@@ -32,8 +32,6 @@ var quotes = [
     ];
 
 exports.run = function(api, event) {
-    var query = event.body.substr(6);
-
     var index = Math.floor(Math.random() * quotes.length),
     result = quotes[index];
 
