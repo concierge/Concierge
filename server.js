@@ -1,16 +1,17 @@
-/** A docstring that tells us 'informative' information about server.js
+/** Node.js server configuration for Kassy
  *
- * The Node.js serverside script to tell it what ot do to ensure we get all the
- * magical goodness that is (Karma + Sassy) * Facebook - Hipchat = Kassy
+ * Herein lies the Node.js serverside script to tell node what to do to ensure
+ * we get all the magical goodness that is:
+ * 		(Karma + Sassy) * Facebook - Hipchat = Kassy
  *
  * Written By:
- * 		Matt Knox,
+ * 		Matthew Knox
+ *
+ * Contributors:
  * 		Dion Woolley
  * 		Jay Harris
  * 		Matt Hartstonge
  * 		(Mainly strange people)
- *
- * Date written: 21/07/2015
  *
  */
 
