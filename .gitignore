@@ -1,3 +1,4 @@
-karmaBackup.json
-/node_modules*
+*karmaBackup.json
+*associateBackup.json
+*node_modules*
 .idea/

@@ -1,4 +1,5 @@
-var associateMap = {};
+var associateMap = {},
+	fs = require('fs');
 
 exports.help = function() {
 	return '/associate "<hook>" "<text>" : Associate and disassociate a phrase with another.';
@@ -22,6 +23,7 @@ exports.match = function(text, thread, api) {
 };
 
 exports.toggleAssociation = function(thread, hook, text) {
+	hook = hook.toLowerCase();
 	if (associateMap[thread] && associateMap[thread][hook] && !text) {
 		delete associateMap[thread][hook];
 		return false;
@@ -34,7 +36,15 @@ exports.toggleAssociation = function(thread, hook, text) {
 	return true;
 };
 
-exports.load = function(){};
+exports.load = function(){
+	fs.readFile('associateBackup.json', 'utf8', function (err, data) {
+		if (err) {
+			return console.log(err);
+		}
+		var associations = JSON.parse(data);
+		associateMap = associations;
+	});
+};
 
 exports.run = function(api, event) {
 	if (!event.body.startsWith('/associate')) {
@@ -49,5 +59,6 @@ exports.run = function(api, event) {
 	}
 	
 	exports.toggleAssociation(event.thread_id, spl[1], spl[3]);
+	fs.writeFile('associateBackup.json', JSON.stringify(associateMap), 'utf8');
 	api.sendMessage('Association changed.', event.thread_id);
 };
