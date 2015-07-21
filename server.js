@@ -4,7 +4,8 @@ var facebook = require('./facebook.js'),
 	anim = require('./anim.js'),
 	magic8Ball = require('./8Ball.js'),
 	disable = require('./disable.js'),
-	modules = [disable,karma,runbot,anim,magic8Ball];
+	associate = require('./associate.js'),
+	modules = [disable,karma,runbot,anim,magic8Ball,associate];
 	
 // Startup
 for (var i = 0; i < modules.length; i++) {
@@ -23,7 +24,7 @@ facebook.start('spamme@facebook.com', 'averysecurepassword', function(api, event
 	}
 	
 	for (var i = 0; i < modules.length; i++) {
-		if (modules[i].match(event.body)) {
+		if (modules[i].match(event.body, event.thread_id)) {
 			modules[i].run(api, event);
 			return;
 		}
