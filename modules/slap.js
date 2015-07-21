@@ -2,17 +2,7 @@
  *
  * Written By: Matt Hartstonge
  * Date Written: 21/07/2015
- *
- *
  */
-
-var request = require('request');
-
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
 
 // Define the 'regex' command matching criteria boolean
 exports.match = function(text) {

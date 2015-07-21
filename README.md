@@ -33,6 +33,7 @@ There are a number of special commands that will not be listed by help and canno
 - `/restart`. Restarts the program, reloading and searching for new modules. Useful if you have made changes to an existing module or have created a new module.
 - `/disable`. Toggles ignoring of commands - will not ignore special commands.
 - `/update`. Performs a git-pull on the repository this is contained within.
+- `/ping`. Responds with version and hostname of machine running the program.
 
 ## Contributions
 Contributions welcome.

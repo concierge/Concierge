@@ -1,4 +1,5 @@
-var request = require('request'),
+var require_install = require('require-install'),
+  request = require_install('request'),
 	animCache = {}; // yes...
 
 exports.match = function(text) {

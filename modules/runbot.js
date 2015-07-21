@@ -1,4 +1,5 @@
-var quarantine = require("quarantine")(500),
+var require_install = require('require-install'),
+  quarantine = require_install("quarantine")(500),
 	logCodeBeginning = "(function(){\
 	var console = {result:'',log:function(str){this.result += str + '\\r\\n';}};\
 	var usrCode = function(){\

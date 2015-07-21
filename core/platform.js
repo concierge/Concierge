@@ -1,5 +1,6 @@
 var config = require('./config.js'),
   gitpull = require('git-pull'),
+  os = require("os"),
   packageInfo = require('../package.json'),
   path = require('path'),
   fs = require('fs'),
@@ -111,6 +112,9 @@ exports.messageRxd = function(api, event) {
           api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
         }
       });
+      return;
+    case '/ping':
+      api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
       return;
     default: break;
   }
