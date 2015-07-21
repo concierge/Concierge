@@ -96,11 +96,16 @@ exports.start = function() {
   config.loadConfig(configFile, function() {
     exports.listModules(function(modules) {
       for (var i = 0; i < modules.length; i++) {
-        var index = Object.keys(require.cache).indexOf(modules[i]);
+        var fp = path.resolve(__dirname, '../modules/' + modules[i]),
+          index = Object.keys(require.cache).indexOf(fp);
         if (index !== -1) {
           delete require.cache[modules[i]];
+          console.log("Reloading module: " + modules[i]);
         }
-        var m = require('../modules/' + modules[i]);
+        else {
+          console.log("New module found: " + modules[i]);
+        }
+        var m = require(fp);
         m.platform = this;
         m.config = config.getConfig(modules[i]);
         m.load();
