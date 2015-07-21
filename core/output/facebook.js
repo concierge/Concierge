@@ -1,5 +1,5 @@
 var fb = require("facebook-chat-api"),
-	stopListeningMethod = NULL;
+	stopListeningMethod = null;
 
 exports.start = function(callback) {
 	fb({email: this.config.username, password: this.config.password}, function (err, api) {

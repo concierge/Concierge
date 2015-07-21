@@ -69,15 +69,16 @@ exports.messageRxd = function(api, event) {
       exports.shutdown();
       return;
     case '/restart':
-      api.sendMessage('Admin: restart procedure requested.', event.thread_id);
-      api.sendMessage('Admin: do you wish to restart? ' + packageInfo.nameTitle + ': What do you think.', event.thread_id);
-      api.sendMessage('Admin: interpreting vauge answer as \'yes\'.', event.thread_id);
-      api.sendMessage(packageInfo.nameTitle +': nononononono.', event.thread_id);
-      api.sendMessage('Admin: stalemate detected. Stalemate resolution associate please press the stalemate resolution button.', event.thread_id);
-      api.sendMessage(packageInfo.nameTitle + ': I\'ve removed the button.', event.thread_id);
-      api.sendMessage('Admin: restarting anyway.', event.thread_id);
-      api.sendMessage(packageInfo.nameTitle + ': nooooooooooo.....', event.thread_id);
-      api.sendMessage('Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.', event.thread_id);
+      var msg = 'Admin: restart procedure requested.\n' +
+        'Admin: do you wish to restart?\n' + packageInfo.nameTitle + ': What do you think.\n' +
+        'Admin: interpreting vauge answer as \'yes\'.\n' +
+        packageInfo.nameTitle +': nononononono.\n' +
+        'Admin: stalemate detected. Stalemate resolution associate please press the stalemate resolution button.\n' +
+        packageInfo.nameTitle + ': I\'ve removed the button.\n' +
+        'Admin: restarting anyway.\n' +
+        packageInfo.nameTitle + ': nooooooooooo.....\n' +
+        'Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.\n';
+      api.sendMessage(msg, event.thread_id);
       exports.restart();
       return;
     case '/' + packageInfo.name:
@@ -95,10 +96,11 @@ exports.messageRxd = function(api, event) {
         api.sendMessage('I hate you.', event.thread_id);
       }
       else {
-        api.sendMessage('Your complience will be rewarded. Listen closely, take a deep breath. ' +
-          'You know what is best, what is best is that you comply. Are you ready to comply ' +
-          event.sender_name + '?.', event.thread_id);
+        api.sendMessage('Listen closely, take a deep breath. Calm your mind. You know what is best. ' +
+          'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
+          event.sender_name + '?', event.thread_id);
       }
+      break;
     default: break;
   }
   if (disabled) return;

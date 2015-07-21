@@ -32,7 +32,7 @@ exports.loadConfig = function(location, callback) {
 };
 
 exports.saveConfig = function(location, callback) {
-  fs.writeFile(location, JSON.stringify(config), 'utf8', function(err) {
+  fs.writeFile(location, JSON.stringify(config, null, 4), 'utf8', function(err) {
     if (err) {
       callback({"error":true, "data":err});
       return;
