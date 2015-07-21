@@ -104,10 +104,9 @@ exports.messageRxd = function(api, event) {
       break;
     case '/update':
       var fp = path.resolve(__dirname, '../');
-      gitpull('fp', function (err, consoleOutput) {
+      gitpull(fp, function (err, consoleOutput) {
         if (err) {
           api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
-          console.error(err);
         } else {
           api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
         }
