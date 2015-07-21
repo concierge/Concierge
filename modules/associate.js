@@ -33,8 +33,6 @@ exports.toggleAssociation = function(thread, hook, text) {
 	return true;
 };
 
-exports.load = function(){};
-
 exports.run = function(api, event) {
 	if (!event.body.startsWith('/associate')) {
 		exports.match(event.body, event.thread_id, api);

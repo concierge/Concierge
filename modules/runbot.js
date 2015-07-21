@@ -32,5 +32,3 @@ exports.run = function(api, event) {
 		}
 	});
 };
-
-exports.load = function() {};

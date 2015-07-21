@@ -87,5 +87,3 @@ exports.run = function(api, event) {
 	var result = exports.modifyKarma(karmaChange, event.sender_name.trim(), event.thread_id);
 	api.sendMessage(result, event.thread_id);
 };
-
-exports.load = function() {};

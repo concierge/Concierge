@@ -1,4 +1,5 @@
 var config = require('./config.js'),
+  packageInfo = require('../package.json'),
   path = require('path'),
   fs = require('fs'),
   configFile = 'config.json',
@@ -6,6 +7,37 @@ var config = require('./config.js'),
   loadedModules = [],
   mode = null,
   disabled = false;
+
+packageInfo.nameTitle = packageInfo.name.toProperCase();
+
+require.searchCache = function (moduleName, callback) {
+    var mod = require.resolve(moduleName);
+        if (mod && ((mod = require.cache[mod]) !== undefined)) {
+        (function run(mod) {
+            mod.children.forEach(function (child) {
+                run(child);
+            });
+            callback(mod);
+        })(mod);
+    }
+};
+
+require.uncache = function (moduleName) {
+    require.searchCache(moduleName, function (mod) {
+        delete require.cache[mod.id];
+    });
+
+    Object.keys(module.constructor._pathCache).forEach(function(cacheKey) {
+        if (cacheKey.indexOf(moduleName) > 0) {
+            delete module.constructor._pathCache[cacheKey];
+        }
+    });
+};
+
+require.reload = function(moduleName) {
+    require.uncache(moduleName);
+    return require(moduleName);
+};
 
 exports.filesInDirectory = function(directory, callback) {
   fs.readdir(directory, function(err, files) {
@@ -38,20 +70,20 @@ exports.messageRxd = function(api, event) {
       return;
     case '/restart':
       api.sendMessage('Admin: restart procedure requested.', event.thread_id);
-      api.sendMessage('Admin: do you wish to restart? Kassy: What do you think.', event.thread_id);
+      api.sendMessage('Admin: do you wish to restart? ' + packageInfo.nameTitle + ': What do you think.', event.thread_id);
       api.sendMessage('Admin: interpreting vauge answer as \'yes\'.', event.thread_id);
-      api.sendMessage('Kassy: nononononono.', event.thread_id);
+      api.sendMessage(packageInfo.nameTitle +': nononononono.', event.thread_id);
       api.sendMessage('Admin: stalemate detected. Stalemate resolution associate please press the stalemate resolution button.', event.thread_id);
-      api.sendMessage('Kassy: I\'ve removed the button.', event.thread_id);
+      api.sendMessage(packageInfo.nameTitle + ': I\'ve removed the button.', event.thread_id);
       api.sendMessage('Admin: restarting anyway.', event.thread_id);
-      api.sendMessage('Kassy: nooooooooooo.....', event.thread_id);
-      api.sendMessage('Admin: Kassy Rebooting. Please wait for restart to complete.', event.thread_id);
+      api.sendMessage(packageInfo.nameTitle + ': nooooooooooo.....', event.thread_id);
+      api.sendMessage('Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.', event.thread_id);
       exports.restart();
       return;
-    case '/kassy':
+    case '/' + packageInfo.name:
     case '/help':
-      var help = 'KASSY 1.1\n--------------------\n' +
-  			'https://github.com/mrkno/Kassy\n\n';
+      var help = packageInfo.nameTitle + ' ' + packageInfo.version +
+        '\n--------------------\n' + packageInfo.homepage +  '\n\n';
   		for (var i = 0; i < loadedModules.length; i++) {
   			help += loadedModules[i].help() + '\n';
   		}
@@ -64,8 +96,8 @@ exports.messageRxd = function(api, event) {
       }
       else {
         api.sendMessage('Your complience will be rewarded. Listen closely, take a deep breath. ' +
-        'You know what is best, what is best is that you comply. Are you ready to comply ' +
-        event.sender_name + '?.', event.thread_id);
+          'You know what is best, what is best is that you comply. Are you ready to comply ' +
+          event.sender_name + '?.', event.thread_id);
       }
     default: break;
   }
@@ -93,28 +125,35 @@ exports.start = function() {
   if (!mode) {
     throw 'Mode must be set before starting';
   }
+  console.log(packageInfo.nameTitle + ' ' + packageInfo.version +
+    '\n------------------------------------\nStarting system...');
   config.loadConfig(configFile, function() {
     exports.listModules(function(modules) {
       for (var i = 0; i < modules.length; i++) {
         var fp = path.resolve(__dirname, '../modules/' + modules[i]),
-          index = Object.keys(require.cache).indexOf(fp);
+          index = Object.keys(require.cache).indexOf(fp),
+          m = null;
         if (index !== -1) {
-          delete require.cache[modules[i]];
+          //delete require.cache[modules[i]];
           console.log("Reloading module: " + modules[i]);
+          m = require.reload(fp);
         }
         else {
           console.log("New module found: " + modules[i]);
+          m = require(fp);
         }
-        var m = require(fp);
         m.platform = this;
         m.config = config.getConfig(modules[i]);
-        m.load();
+        if (m.load) {
+          m.load();
+        }
         loadedModules.push(m);
       }
       mode.platform = this;
       mode.config = config.getConfig("output");
       mode.start(exports.messageRxd);
       started = true;
+      console.log('System has started. Hello World!');
     });
   });
 };
@@ -123,12 +162,20 @@ exports.shutdown = function(callback) {
   if (!started) {
     throw 'Cannot shutdown platform when it is not started.';
   }
+  for (var i = 0; i < loadedModules.length; i++) {
+    if (loadedModules[i].unload) {
+      loadedModules[i].unload();
+    }
+    loadedModules[i] = null;
+  }
+  loadedModules = [];
   mode.stop();
   config.saveConfig(configFile, function(error) {
     if (error.error) {
       console.error(error);
     }
     started = false;
+    console.log(packageInfo.nameTitle + " has shutdown.");
     if (callback) {
       callback();
     }

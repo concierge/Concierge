@@ -16,7 +16,7 @@ exports.fetch = function(callback) {
         }
 
         callback(response.body);
-    }); 
+    });
 };
 
 exports.run = function(api, event) {
@@ -24,5 +24,3 @@ exports.run = function(api, event) {
         api.sendMessage(sentence, event.thread_id);
     });
 };
-
-exports.load = function() {};

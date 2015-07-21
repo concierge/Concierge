@@ -1,11 +1,5 @@
 var request = require('request');
 
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
-
 exports.match = function(text) {
     return text.startsWith('/8ball');
 };
@@ -57,5 +51,3 @@ exports.run = function(api, event) {
         api.sendMessage(result, event.thread_id);
     });
 };
-
-exports.load = function() {};
