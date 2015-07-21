@@ -12,7 +12,6 @@
  * 		Jay Harris
  * 		Matt Hartstonge
  * 		(Mainly strange people)
- *
  */
 
 // Facebook API
