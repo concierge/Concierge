@@ -14,7 +14,7 @@ exports.help = function() {
     return '/fawlty : Fixes fawlty code. Probably.';
 };
 
-quotes = [
+var quotes = [
     'Sybil Fawlty: [on the phone] I know... I know... I know... Oh, I know!\nBasil Fawlty: Then why is she telling you?',
     'Basil Fawlty: [about Sybil\'s laugh] Sounds like somebody machine-gunning a seal.',
     'Basil Fawlty: Next contestant, Mrs. Sybil Fawlty from Torquay. Specialist subject - the bleeding obvious.',
@@ -31,42 +31,13 @@ quotes = [
     'Basil Fawlty: Oh look at that, a satisfied customer. We should have him stuffed.'
     ];
 
-
-exports.yesOrNo = function (callback) {
-   request.get('http://yesno.wtf/api', function(error, response, body) {
-       if (response.statusCode === 200 && response.body) {
-           var result = JSON.parse(response.body);
-           if (result.image) {
-               callback(result.image);
-           }
-           else {
-               callback({error:'Well that was unexpected, api did not return an image.'});
-           }
-       }
-       else {
-           callback({error:'Whomever the system admin is around here, I demand that they should be fired.'});
-       }
-   });
-};
-
-exports.search = function (query, callback) {
-    var result;
-
-    //TODO waiting for update to anim to use same api to embed images in fb chat.
-    if (query === undefined || query === '') {
-        var index = Math.floor(Math.random() * quotes.length);
-        result = callback(quotes[index] + ', try again');
-    }
-    else {
-        result = exports.yesOrNo(callback);
-    }
-};
-
 exports.run = function(api, event) {
     var query = event.body.substr(6);
-    exports.search(query, function(result) {
-        api.sendMessage(result, event.thread_id);
-    });
+
+    var index = Math.floor(Math.random() * quotes.length),
+    result = quotes[index];
+
+    api.sendMessage(result, event.thread_id);
 };
 
 exports.load = function() {};
