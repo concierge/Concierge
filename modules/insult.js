@@ -48,5 +48,3 @@ exports.run = function(api, event) {
         api.sendMessage(result, event.thread_id);
     });
 };
-
-exports.load = function() {};

@@ -127,7 +127,13 @@ exports.messageRxd = function(api, event) {
 
   for (var i = 0; i < loadedModules.length; i++) {
 		if (loadedModules[i].match(event.body, event.thread_id)) {
-			loadedModules[i].run(api, event);
+      try {
+        loadedModules[i].run(api, event);
+      }
+      catch(e) {
+        api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
+        console.trace(e);
+      }
 			return;
 		}
 	}

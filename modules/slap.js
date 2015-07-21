@@ -44,7 +44,6 @@ exports.slap = function(sender_name, infidel){
 
 // Make the slapper work for it's money
 exports.run = function(api, event) {
-
     // Strip the command and obtain the query
     var query = event.body.substr(6);
 
@@ -54,5 +53,3 @@ exports.run = function(api, event) {
     // Send to facebook
     api.sendMessage(result, event.thread_id);
 };
-
-exports.load = function() {};
