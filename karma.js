@@ -1,16 +1,6 @@
 var fs = require('fs'),
 	karmaMap = {}; // Yes, I know. JS doesn't have a real map object...
 
-String.prototype.toProperCase = function () {
-    return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-};
-
-if (typeof String.prototype.endsWith != 'function') {
-	String.prototype.endsWith = function(suffix) {
-		return this.indexOf(suffix, this.length - suffix.length) !== -1;
-	};
-}
-
 exports.match = function(text) {
 	return text.endsWith('++') || text.endsWith('--') || text === '/karma';
 };
