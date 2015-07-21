@@ -1,11 +1,7 @@
-var reddit = require('redwrap'),
-    request = require('request');
-
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
+var reddit = require('./common/reddit.js'),
+    require_install = require('require-install'),
+    request = require_install('request'),
+    results = [];
 
 exports.match = function(text) {
     return text.startsWith('/insult');
@@ -16,20 +12,35 @@ exports.help = function() {
 };
 
 exports.insult = function(callback) {
-    reddit.r('insults').limit(100, function(err, req, res){
-        if (err || req !== null || req !== undefined) {
-            var index = Math.floor(Math.random() * req.data.children.length),
-                title,
-                text;
-            title = req.data.children[index].data.title;
-            text = req.data.children[index].data.selftext;
-            callback(title + '\n' + text);
-        }
-        else {
-            callback("Well shit insult fucked up");
-        }
-    });
+    // If we have no stored insults, get some
+    if (results === undefined || results === null || results.length === 0) {
 
+        reddit.reddit('insults', 200, function (err, data) {
+            if (!err) {
+                results = data;
+                exports.fuckNode(callback);
+            }
+            else {
+                callback(data);
+            }
+        });
+    }
+    else {
+        exports.fuckNode(callback);
+    }
+};
+
+exports.fuckNode = function(callback) {
+    // Get some random insult
+
+    var index = Math.floor(Math.random() * results.length),
+        title = results[index].data.title,
+        text = results[index].data.selftext;
+
+    // Delete the insult, so we don't get it again
+    results.splice(index, 1);
+
+    callback(title + '\n' + text);
 };
 
 exports.run = function(api, event) {

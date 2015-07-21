@@ -48,7 +48,12 @@ exports.filesInDirectory = function(directory, callback) {
 };
 
 exports.listModules = function(callback) {
-  exports.filesInDirectory('./modules', callback);
+  exports.filesInDirectory('./modules', function(data) {
+    data = data.filter(function(value) {
+      return value.endsWith(".js");
+    });
+    callback(data);
+  });
 };
 
 exports.listModes = function(callback) {
