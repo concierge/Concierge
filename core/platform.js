@@ -1,4 +1,5 @@
 var config = require('./config.js'),
+  gitpull = require('git-pull'),
   packageInfo = require('../package.json'),
   path = require('path'),
   fs = require('fs'),
@@ -101,6 +102,17 @@ exports.messageRxd = function(api, event) {
           event.sender_name + '?', event.thread_id);
       }
       break;
+    case '/update':
+      var fp = path.resolve(__dirname, '../');
+      gitpull('fp', function (err, consoleOutput) {
+        if (err) {
+          api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
+          console.error(err);
+        } else {
+          api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
+        }
+      });
+      return;
     default: break;
   }
   if (disabled) return;

@@ -5,6 +5,7 @@
   "main": "server.js",
   "dependencies": {
     "facebook-chat-api": "^0.2.10",
+    "git-pull": "^0.1.0",
     "quarantine": "^0.1.4",
     "repl": "^0.1.3",
     "request": "^2.58.0"

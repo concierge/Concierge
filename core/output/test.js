@@ -18,11 +18,11 @@ exports.start = function(callback) {
 		output: process.stdout
 	});
 
+	if (this.config.sender_name) {
+		event.sender_name = this.config.sender_name;
+	}
 	rl.on('line', function (cmd) {
 		event.body = cmd;
-		if (this.config.sender_name) {
-			event.sender_name = this.config.sender_name;
-		}
 		callback(api, event);
 	});
 };

@@ -32,6 +32,7 @@ There are a number of special commands that will not be listed by help and canno
 - `/shutdown`. Terminates the program gracefully.
 - `/restart`. Restarts the program, reloading and searching for new modules. Useful if you have made changes to an existing module or have created a new module.
 - `/disable`. Toggles ignoring of commands - will not ignore special commands.
+- `/update`. Performs a git-pull on the repository this is contained within.
 
 ## Contributions
 Contributions welcome.
