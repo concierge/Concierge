@@ -1,11 +1,5 @@
 var request = require('request');
 
-if (typeof String.prototype.startsWith != 'function') {
-    String.prototype.startsWith = function (str){
-        return this.indexOf(str) === 0;
-    };
-}
-
 exports.match = function(text) {
     return text.startsWith('/profound');
 };
