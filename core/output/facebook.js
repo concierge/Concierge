@@ -1,7 +1,7 @@
 var fb = require("facebook-chat-api");
 
 exports.start = function(username, password, messageCallback) {
-	fb({email: username, password: password}, function callback (err, api) {	
+	fb({email: username, password: password}, function callback (err, api) {
 		if(err) {
 			console.error(err);
 			process.exit(-1);
