@@ -6,6 +6,7 @@
   "dependencies": {
     "facebook-chat-api": "^0.2.10",
     "quarantine": "^0.1.4",
+    "redwrap": "0.0.4",
     "request": "^2.58.0",
     "streamin": "^0.2.2"
   },
