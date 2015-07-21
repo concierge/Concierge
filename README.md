@@ -1,25 +1,54 @@
 # Kassy
 (Karma + Sassy) * Facebook - Hipchat = Kassy
 
+<i>It does way more than this now...</i>
+
 ## Usage
-Set the username and password inside the `server.js` file for a facebook account and start using `node server.js`.
-Inside a facebook chat involving the person who was logged in type `/kassy` for avalible commands.
+Create a new file, `config.json` that has the following:
+```
+{
+    "output": {
+        "username": "<facebookEmail>",
+        "password": "<facebookPassword>",
+        "testingName": "<testingName>"
+    }
+}
+```
+Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets.
+
+Before running the program, first perform an `npm install` inside the directory containing `package.json`.
+
+To start in testing mode, run the program using:<br>
+`node main.js testing` or just `node main.js`.
+
+Live Facebook chat mode can be started using:<br>
+`node main.js facebook`.
+
+Once the bot is running, type `/help` for a list of commands.
+
+#### Special Commands
+There are a number of special commands that will not be listed by help and cannot be overridden by custom modules.
+- `/help` and `/kassy`. Shows the avalible module commands.
+- `/shutdown`. Terminates the program gracefully.
+- `/restart`. Restarts the program, reloading and searching for new modules. Useful if you have made changes to an existing module or have created a new module.
+- `/disable`. Toggles ignoring of commands - will not ignore special commands.
 
 ## Contributions
 Contributions welcome.
 
 ### Creating New Modules
-Modules should be created as their own javascript files. They must expose the following methods:
-* `exports.match(text)` where text is the body of a facebook message. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
+Modules should be created as their own javascript files within the `modules` subdirectory. They must expose the following methods:
+* `exports.match(text,thread)` where `text` is the body of a Facebook message and `thread` is the message thread it occurred on. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text,thread)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
 * `exports.help()`. This method should return a <b>non-newline terminated</b> string to be used with the `/kassy` command.
-* `exports.load()`. This method is called once when the program is first starting up. Facebook is not gaurenteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
+* `exports.load()`. <i>Optional</i>. This method is called once when the program is first starting up. Facebook is not gaurenteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
+* `exports.unload()`. <i>Optional</i>. This method is called once when the program is shutting down. Facebook is not gaurenteed to be avalible at this point. Should be used to unload files and cancel any timers. Failure to use this method correctly can prevent a successful restart.
 * `exports.run(api,event)`. This method is called whenever the module should be run. `api` is an object that allows you to perform all the api methods outlined [here](https://github.com/Schmavery/facebook-chat-api). `event` is an object that contains information about the message received. Of particular note is `event.body` which contains text typed.
 
-Modules can be loaded into Kassy by first adding a require at the top of `server.js`, then adding the module to the array of modules within that file.
+New modules will be automatically detected after a restart of the application.
 
 ## Disclaimer
 HERE BE DRAGONS!
-Written to see if it could be done, not written to be readable. Enter at your own peril.
+Written to see if it could be done, not written to be readable.<br><b>Enter at your own peril.</b>
 
 ## Copyright and License
 All code unless otherwise specified is Copyright Matthew Knox (c) 2015.

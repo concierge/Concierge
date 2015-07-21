@@ -20,6 +20,9 @@ exports.start = function(callback) {
 
 	rl.on('line', function (cmd) {
 		event.body = cmd;
+		if (this.config.sender_name) {
+			event.sender_name = this.config.sender_name;
+		}
 		callback(api, event);
 	});
 };
