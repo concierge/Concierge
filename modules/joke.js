@@ -8,16 +8,17 @@ if (typeof String.prototype.startsWith != 'function') {
 }
 
 exports.match = function(text) {
-    return text.startsWith('/insult');
+    return text.startsWith('/joke');
 };
 
 exports.help = function() {
-    return '/insult : Will almost certainly return profanity.';
+    return '/joke : A mixed bag of fun.';
 };
 
-exports.insult = function(callback) {
-    reddit.r('insults').limit(100, function(err, req, res){
+exports.joke = function(callback) {
+    reddit.r('jokes').limit(100, function(err, req, res){
         if (err || req !== null || req !== undefined) {
+
             var index = Math.floor(Math.random() * req.data.children.length),
                 title,
                 text;
@@ -26,14 +27,14 @@ exports.insult = function(callback) {
             callback(title + '\n' + text);
         }
         else {
-            callback("Well shit insult fucked up");
+            callback("Well shit jokes fucked up");
         }
     });
 
 };
 
 exports.run = function(api, event) {
-    exports.insult(function(result) {
+    exports.joke(function(result) {
         api.sendMessage(result, event.thread_id);
     });
 };
