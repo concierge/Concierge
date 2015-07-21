@@ -5,7 +5,8 @@ var facebook = require('./facebook.js'),
 	magic8Ball = require('./8Ball.js'),
 	disable = require('./disable.js'),
 	fawlty = require('./fawlty.js'),
-	modules = [disable,karma,runbot,anim,magic8Ball,fawlty];
+	profound = require('./profound.js'),
+	modules = [disable,karma,runbot,anim,magic8Ball,fawlty,profound];
 	
 // Startup
 for (var i = 0; i < modules.length; i++) {
