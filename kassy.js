@@ -1,5 +1,4 @@
-var platform = require('./core/platform.js'),
-  modes = platform.listModes();
+var platform = require('./core/platform.js');
 
 // Add useful prototypes
 if (typeof String.prototype.startsWith != 'function') {
@@ -18,10 +17,12 @@ if (typeof String.prototype.endsWith != 'function') {
 	};
 }
 
-process.argv[2] = process.argv[2].toLowerCase();
 if (!process.argv[2]) {
   process.argv.push('test');
 }
+process.argv[2] = process.argv[2].toLowerCase();
 
-platform.setMode(modes[process.argv[2]]);
-platform.start();
+platform.listModes(function(modes) {
+  platform.setMode(modes[process.argv[2]]);
+  platform.start();
+});

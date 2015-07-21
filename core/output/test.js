@@ -1,5 +1,5 @@
 var readline = require('readline'),
-	rl = NULL,
+	rl = null,
 	api = {
 		sendMessage: function(text, thread) {
 			console.log(text);
@@ -8,7 +8,8 @@ var readline = require('readline'),
 	event = {
 		type: "message",
 		thread_id: 1,
-		body: ""
+		body: "",
+		sender_name: "TESTING"
 	};
 
 exports.start = function(callback) {
@@ -25,5 +26,5 @@ exports.start = function(callback) {
 
 exports.stop = function() {
 	rl.close();
-	rl = NULL;
+	rl = null;
 };

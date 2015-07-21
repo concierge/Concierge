@@ -1,18 +1,32 @@
 var fs = require('fs'),
-  config = NULL;
+  config = null,
+  loading = false;
 
 exports.getConfig = function(m) {
+  if (loading) {
+    throw 'Cannot get config while loading.';
+  }
+
+  if (!config) {
+    config = {};
+  }
+  if (!config[m]) {
+    config[m] = {};
+  }
   return config[m];
 };
 
 exports.loadConfig = function(location, callback) {
+  loading = true;
   fs.readFile(location, 'utf8', function (err, data) {
     if (err) {
       config = {};
+      loading = false;
       callback({"error":true, "data":err});
       return;
     }
     config = JSON.parse(data);
+    loading = false;
     callback({"error":false});
   });
 };

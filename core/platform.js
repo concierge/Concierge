@@ -1,12 +1,32 @@
 var config = require('./config.js'),
+  path = require('path'),
+  fs = require('fs'),
   configFile = 'config.json',
   started = false,
   loadedModules = [],
-  mode = NULL,
+  mode = null,
   disabled = false;
 
-exports.listModules();
-exports.listModes();
+exports.filesInDirectory = function(directory, callback) {
+  fs.readdir(directory, function(err, files) {
+    callback(err ? [] : files);
+ });
+};
+
+exports.listModules = function(callback) {
+  exports.filesInDirectory('./modules', callback);
+};
+
+exports.listModes = function(callback) {
+  exports.filesInDirectory('./core/output', function(files) {
+    var obj = {};
+    for (var i = 0; i < files.length; i++) {
+      var name = path.basename(files[i], '.js').toLowerCase();
+      obj[name] = files[i];
+    }
+    callback(obj);
+  });
+};
 
 exports.messageRxd = function(api, event) {
   switch (event.body) {
@@ -17,7 +37,7 @@ exports.messageRxd = function(api, event) {
       exports.shutdown();
       return;
     case '/restart':
-      api.sendMessage('New version avalible.', event.thread_id);
+      api.sendMessage('Admin: restart procedure requested.', event.thread_id);
       api.sendMessage('Admin: do you wish to restart? Kassy: What do you think.', event.thread_id);
       api.sendMessage('Admin: interpreting vauge answer as \'yes\'.', event.thread_id);
       api.sendMessage('Kassy: nononononono.', event.thread_id);
@@ -28,6 +48,7 @@ exports.messageRxd = function(api, event) {
       api.sendMessage('Admin: Kassy Rebooting. Please wait for restart to complete.', event.thread_id);
       exports.restart();
       return;
+    case '/kassy':
     case '/help':
       var help = 'KASSY 1.1\n--------------------\n' +
   			'https://github.com/mrkno/Kassy\n\n';
@@ -42,7 +63,9 @@ exports.messageRxd = function(api, event) {
         api.sendMessage('I hate you.', event.thread_id);
       }
       else {
-        api.sendMessage('Your complience will be rewarded. Listen closely, take a deep breath. You know what is best, what is best is that you comply. Are you ready to comply?.', event.thread_id);
+        api.sendMessage('Your complience will be rewarded. Listen closely, take a deep breath. ' +
+        'You know what is best, what is best is that you comply. Are you ready to comply ' +
+        event.sender_name + '?.', event.thread_id);
       }
     default: break;
   }
@@ -60,7 +83,7 @@ exports.setMode = function(newMode) {
   if (started) {
     throw 'Cannot change mode when it is already started.';
   }
-  mode = newMode;
+  mode = require('./output/' + newMode);
 }
 
 exports.start = function() {
@@ -70,36 +93,45 @@ exports.start = function() {
   if (!mode) {
     throw 'Mode must be set before starting';
   }
-  config.loadConfig(configFile);
-
-  var modules = listModules();
-  for (var i = 0; i < modules.length; i++) {
-    var index = Object.keys(require.cache).indexOf(modules[i]);
-    if (index !== -1) {
-      delete require.cache[modules[i]];
-    }
-    var m = require(modules[i]);
-    m.platform = this;
-    m.config = config.getConfig(modules[m]);
-    m.load();
-    loadedModules.push(m);
-  }
-  mode.platform = this;
-  mode.config = config.getConfig("output");
-  mode.start(exports.messageRxd);
-  started = true;
+  config.loadConfig(configFile, function() {
+    exports.listModules(function(modules) {
+      for (var i = 0; i < modules.length; i++) {
+        var index = Object.keys(require.cache).indexOf(modules[i]);
+        if (index !== -1) {
+          delete require.cache[modules[i]];
+        }
+        var m = require('../modules/' + modules[i]);
+        m.platform = this;
+        m.config = config.getConfig(modules[i]);
+        m.load();
+        loadedModules.push(m);
+      }
+      mode.platform = this;
+      mode.config = config.getConfig("output");
+      mode.start(exports.messageRxd);
+      started = true;
+    });
+  });
 };
 
-exports.shutdown = function() {
+exports.shutdown = function(callback) {
   if (!started) {
     throw 'Cannot shutdown platform when it is not started.';
   }
   mode.stop();
-  config.saveConfig(configFile);
-  started = false;
+  config.saveConfig(configFile, function(error) {
+    if (error.error) {
+      console.error(error);
+    }
+    started = false;
+    if (callback) {
+      callback();
+    }
+  });
 };
 
 exports.restart = function() {
-  exports.shutdown();
-  exports.start();
+  exports.shutdown(function() {
+    exports.start();
+  });
 };
