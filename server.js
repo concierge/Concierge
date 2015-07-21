@@ -15,7 +15,6 @@
  *
  */
 
-
 // Facebook API
 var facebook = require('./facebook.js');
 
@@ -28,6 +27,7 @@ var karma = require('./modules/karma.js');
 var magic8Ball = require('./modules/8Ball.js');
 var runbot = require('./modules/runbot.js');
 var profound = require('./modules/profound.js');
+var slap = require('./modules/slap.js');
 
 // Optional Modules to be included
 var modules = [
@@ -38,9 +38,9 @@ var modules = [
 	karma,
 	magic8Ball,
 	runbot,
-	profound
+	profound,
+	slap
 ];
-
 
 // Add useful prototypes
 if (typeof String.prototype.startsWith != 'function') {
@@ -59,12 +59,10 @@ if (typeof String.prototype.endsWith != 'function') {
 	};
 }
 
-
 // Load Optional Modules
 for (var i = 0; i < modules.length; i++) {
 	modules[i].load();
 }
-
 
 // Start the all knowing, all extensible kassy bot..
 facebook.start('spamme@facebook.com', 'averysecurepassword', function(api, event) {
