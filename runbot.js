@@ -8,12 +8,6 @@ var quarantine = require("quarantine")(500),
 	return console.result;\
 })()";
 
-if (typeof String.prototype.startsWith != 'function') {
-	String.prototype.startsWith = function (str){
-		return this.indexOf(str) === 0;
-	};
-}
-
 exports.match = function(text) {
 	return text.startsWith('/runbot');
 };
