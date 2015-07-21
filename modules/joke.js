@@ -12,7 +12,7 @@ exports.help = function() {
 };
 
 exports.joke = function(callback) {
-    // If we have no stored insults, get some
+    // If we have no stored joke, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
 
         reddit.reddit('jokes', 200, function (err, data) {
@@ -31,13 +31,13 @@ exports.joke = function(callback) {
 };
 
 exports.fuckNode = function(callback) {
-    // Get some random insult
+    // Get some random joke
 
     var index = Math.floor(Math.random() * results.length),
         title = results[index].data.title,
         text = results[index].data.selftext;
 
-    // Delete the insult, so we don't get it again
+    // Delete the joke, so we don't get it again
     results.splice(index, 1);
 
     callback(title + '\n' + text);
