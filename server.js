@@ -1,12 +1,12 @@
 var facebook = require('./facebook.js'),
-	karma = require('./karma.js'),
-	runbot = require('./runbot.js'),
-	anim = require('./anim.js'),
-	magic8Ball = require('./8Ball.js'),
-	disable = require('./disable.js'),
-	associate = require('./associate.js'),
-	fawlty = require('./fawlty.js'),
-	profound = require('./profound.js'),
+	karma = require('./modules/karma.js'),
+	runbot = require('./modules/runbot.js'),
+	anim = require('./modules/anim.js'),
+	magic8Ball = require('./modules/8Ball.js'),
+	disable = require('./modules/disable.js'),
+	associate = require('./modules/associate.js'),
+	fawlty = require('./modules/fawlty.js'),
+	profound = require('./modules/profound.js'),
 	modules = [disable,karma,runbot,anim,magic8Ball,fawlty,profound,associate];
 	
 // Add useful prototypes
