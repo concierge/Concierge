@@ -1,3 +1,4 @@
 *.json
+!*package.json
 *node_modules*
 .idea/

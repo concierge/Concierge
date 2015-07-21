@@ -39,14 +39,19 @@ There are a number of special commands that will not be listed by help and canno
 Contributions welcome.
 
 ### Creating New Modules
+#### Interface Contract
 Modules should be created as their own javascript files within the `modules` subdirectory. They must expose the following methods:
 * `exports.match(text,thread)` where `text` is the body of a Facebook message and `thread` is the message thread it occurred on. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text,thread)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
 * `exports.help()`. This method should return a <b>non-newline terminated</b> string to be used with the `/kassy` command.
-* `exports.load()`. <i>Optional</i>. This method is called once when the program is first starting up. Facebook is not gaurenteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
-* `exports.unload()`. <i>Optional</i>. This method is called once when the program is shutting down. Facebook is not gaurenteed to be avalible at this point. Should be used to unload files and cancel any timers. Failure to use this method correctly can prevent a successful restart.
+* `exports.load()`. <i>Optional</i>. This method is called once when the program is first starting up. Facebook is not guaranteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
+* `exports.unload()`. <i>Optional</i>. This method is called once when the program is shutting down. Facebook is not guaranteed to be available at this point. Should be used to unload files and cancel any timers. Failure to use this method correctly can prevent a successful restart.
 * `exports.run(api,event)`. This method is called whenever the module should be run. `api` is an object that allows you to perform all the api methods outlined [here](https://github.com/Schmavery/facebook-chat-api). `event` is an object that contains information about the message received. Of particular note is `event.body` which contains text typed.
 
-New modules will be automatically detected after a restart of the application.
+#### Persistence
+Any data stored in `this.config` within the scope of a module will automatically be persistent between restarts of the program, provided a safe shutdown and an error free startup.
+
+#### Loading Modules
+New modules will be automatically detected and loaded after a restart of the application.
 
 ## Disclaimer
 HERE BE DRAGONS!
