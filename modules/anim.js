@@ -1,5 +1,5 @@
-var request = require('request'),
-	streamin = require('streamin'),
+var require_install = require('require-install'),
+  request = require_install('request'),
 	animCache = {}; // yes...
 
 exports.match = function(text) {
@@ -23,9 +23,9 @@ exports.search = function (query, callback) {
 			index = animCache[cacheq].index;
 		}
 	}
-	
+
 	var q = {v: '1.0', rsz: '8', q: query, safe: 'active', imgtype: 'animated'};
-	
+
 	request.get({url: 'http://ajax.googleapis.com/ajax/services/search/images', qs: q}, function(error, response, body) {
 		if (response.statusCode === 200 && response.body) {
 			var images = JSON.parse(response.body);
@@ -39,7 +39,7 @@ exports.search = function (query, callback) {
 							index: index,
 							length: images.length
 						};
-					}					
+					}
 					callback(image);
 				}
 				else {
@@ -71,5 +71,3 @@ exports.run = function(api, event) {
 		api.sendMessage(image.unescapedUrl, event.thread_id);
 	});
 };
-
-exports.load = function() {};

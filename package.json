@@ -1,18 +1,19 @@
 {
   "name": "kassy",
-  "version": "1.0.0",
-  "description": "Things and stuff",
-  "main": "server.js",
+  "version": "1.2.0",
+  "description": "Extensible facebook chat bot.",
+  "main": "main.js",
   "dependencies": {
     "facebook-chat-api": "^0.2.10",
+    "git-pull": "^0.1.0",
     "quarantine": "^0.1.4",
     "request": "^2.58.0",
-    "streamin": "^0.2.2"
+    "require-install": "^0.1.0"
   },
   "devDependencies": {},
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node main.js"
   },
   "repository": {
     "type": "git",

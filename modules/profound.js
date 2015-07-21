@@ -1,4 +1,5 @@
-var request = require('request');
+var require_install = require('require-install'),
+  request = require_install('request');
 
 exports.match = function(text) {
     return text.startsWith('/profound');
@@ -16,7 +17,7 @@ exports.fetch = function(callback) {
         }
 
         callback(response.body);
-    }); 
+    });
 };
 
 exports.run = function(api, event) {
@@ -24,5 +25,3 @@ exports.run = function(api, event) {
         api.sendMessage(sentence, event.thread_id);
     });
 };
-
-exports.load = function() {};
