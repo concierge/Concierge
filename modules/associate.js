@@ -1,5 +1,5 @@
 exports.help = function() {
-	return '/associate "<hook>" "<text>" : Associate and disassociate a phrase with another.';
+	return '/associate "<hook>" "<text>" or clear : Associate and disassociate a phrase with another.';
 };
 
 exports.match = function(text, thread, api) {
@@ -39,6 +39,7 @@ exports.printAssociations = function(api, event) {
 	for (var a in assoc) {
 		message += a + ' → ' + assoc[a] + '\n';
 	}
+	message.trim();
 	api.sendMessage(message, event.thread_id);
 };
 
