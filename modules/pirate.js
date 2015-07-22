@@ -1,6 +1,6 @@
 var require_install = require('require-install'),
     request = require_install('request'),
-    querystring = require("querystring");
+    querystring = require_install("querystring");
 
 
 exports.match = function(text) {
@@ -8,7 +8,7 @@ exports.match = function(text) {
 };
 
 exports.help = function() {
-    return '/pirate <message> : Translates your message in pirate speak.';
+    return '/pirate <message> : Translates your message into pirate speak.';
 };
 
 exports.pirate = function (query, callback) {
@@ -36,8 +36,7 @@ exports.pirate = function (query, callback) {
 };
 
 exports.search = function (query, callback) {
-    //TODO waiting for update to anim to use same api to embed images in fb chat.
-    if (query === undefined || query === '') {
+    if (!query || query === '') {
         exports.pirate("I can't do anything with this", callback);
     }
     else {
