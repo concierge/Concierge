@@ -35,15 +35,13 @@ exports.yesOrNo = function (callback) {
 };
 
 exports.search = function (query, callback) {
-    var result;
-
     //TODO waiting for update to anim to use same api to embed images in fb chat.
-    if (query === undefined || query === '') {
+    if (!query || query === '') {
         var index = Math.floor(Math.random() * insults.length);
-        result = callback(insults[index] + ', try again');
+        callback(insults[index] + ', try again');
     }
     else {
-        result = exports.yesOrNo(callback);
+        exports.yesOrNo(callback);
     }
 };
 
