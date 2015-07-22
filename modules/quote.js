@@ -12,7 +12,7 @@ exports.match = function(text) {
     return text.startsWith('/quote');
 };
 
-// Give users help if they can't slaps
+// Says surprisingly helpful things...
 exports.help = function() {
     return '/quote <person>: Attempts to get a quote by said person';
 };
