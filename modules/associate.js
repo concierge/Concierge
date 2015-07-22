@@ -33,10 +33,31 @@ exports.toggleAssociation = function(thread, hook, text) {
 	return true;
 };
 
+exports.printAssociations = function(api, event) {
+	var assoc = this.config[event.thread_id];
+	var message = '';
+	for (var a in assoc) {
+		message += a + ' → ' + assoc[a] + '\n';
+	}
+	api.sendMessage(message, event.thread_id);
+};
+
+exports.clear = function(api, event) {
+	this.config[event.thread_id] = {};
+	api.sendMessage('Associations cleared.', event.thread_id);
+};
+
 exports.run = function(api, event) {
 	if (!event.body.startsWith('/associate')) {
-		exports.match(event.body, event.thread_id, api);
-		return;
+		return exports.match(event.body, event.thread_id, api);
+	}
+
+	if (event.body === '/associate') {
+		return exports.printAssociations(api, event);
+	}
+
+	if (event.body === '/associate clear') {
+		return exports.clear(api, event);
 	}
 
 	var spl = event.body.split('"');
