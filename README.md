@@ -39,6 +39,19 @@ There are a number of special commands that will not be listed by help and canno
 Contributions welcome.
 
 ### Creating New Modules
+
+#### `require('moduleName')`
+Please <b>do not use `require('module')`</b> unless requiring another `.js` file you have created (Note: when restarting, other `.js` files you have created and loaded through `require` will not be reloaded like your module will. It is your responsability to ensure this occurs.).
+
+To require an `npm` module please use the following code:
+```
+var require_install = require('require-install'),
+    module = require_install('module');
+```
+and add the associated module to `package.json` using `npm install module --save`.
+
+To require a `.js` file you have created yourself, please place this file within a subdirectory within the `modules` directory. This is to prevent an attempt to load it as a module.
+
 #### Interface Contract
 Modules should be created as their own javascript files within the `modules` subdirectory. They must expose the following methods:
 * `exports.match(text,thread)` where `text` is the body of a Facebook message and `thread` is the message thread it occurred on. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text,thread)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
