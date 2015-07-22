@@ -146,16 +146,4 @@ var require_install = require('require-install'),
 
     exports.queryTitles(titles, getSections, errorFunction);
   };
-
-  /**
-   * Capitalize the first letter of each word
-   */
-  exports.capitalizeString = function(input) {
-    var inputArray = input.split(' ');
-    var output = [];
-    for(s in inputArray) {
-      output.push(inputArray[s].charAt(0).toUpperCase() + inputArray[s].slice(1));
-    }
-    return output.join(' ');
-  };
 }());
