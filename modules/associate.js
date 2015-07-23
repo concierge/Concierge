@@ -2,7 +2,7 @@ exports.help = function() {
 	return '/associate "<hook>" "<text>" or clear : Associate and disassociate a phrase with another.';
 };
 
-exports.match = function(text, thread, api) {
+exports.match = function(text, thread, senderName, api) {
 	if (text.startsWith('/associate')) {
 		return true;
 	}
@@ -50,7 +50,7 @@ exports.clear = function(api, event) {
 
 exports.run = function(api, event) {
 	if (!event.body.startsWith('/associate')) {
-		return exports.match(event.body, event.thread_id, api);
+		return exports.match(event.body, event.thread_id, null, api);
 	}
 
 	if (event.body === '/associate') {

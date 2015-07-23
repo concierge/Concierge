@@ -126,7 +126,7 @@ exports.messageRxd = function(api, event) {
   if (disabled) return;
 
   for (var i = 0; i < loadedModules.length; i++) {
-		if (loadedModules[i].match(event.body, event.thread_id)) {
+		if (loadedModules[i].match(event.body, event.thread_id, event.sender_name)) {
       try {
         loadedModules[i].run(api, event);
       }
