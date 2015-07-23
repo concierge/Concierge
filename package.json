@@ -4,6 +4,7 @@
   "description": "Extensible facebook chat bot.",
   "main": "main.js",
   "dependencies": {
+    "express": "^4.13.1",
     "facebook-chat-api": "^0.2.10",
     "git-pull": "^0.1.0",
     "quarantine": "^0.1.4",
