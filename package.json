@@ -10,7 +10,8 @@
     "quarantine": "^0.1.4",
     "redwrap": "0.0.4",
     "request": "^2.58.0",
-    "require-install": "^0.1.0"
+    "require-install": "^0.1.0",
+    "body-parser": "~1.13.2"
   },
   "devDependencies": {},
   "scripts": {

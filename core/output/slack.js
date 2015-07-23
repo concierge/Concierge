@@ -1,29 +1,40 @@
 var express = require('express'),
-		request = require('request'),
-		app = null,
-		server,
-		sendMessage = function(text, thread) {
+	bodyParser  = require("body-parser"),
+	request = require('request'),
+	app = null,
+	server,
+	sendMessage = function(text, thread) {
 			console.log("sending message");
 			// fixme may not have access to this.config here
 			var body = {
-				"token": this.config.slack_token,
+				"token": exports.config.slack_token,
 				"channel": thread,
-				"username": this.config.name,
-				"link_names": 1,
+				//"username": exports.config.name,
+				//"link_names": 1,
 				"text": text
 			};
+
+
+				
 			request({"uri":"https://slack.com/api/chat.postMessage",
-				"method":"POST",
-				"Content-Type": "application/json",
-				"body": body});
+				"method":"GET",
+				"qs": body}, function (error, response, body) {
+	      if(response.statusCode == 200){
+        console.log('success');
+      } 
+	else {
+        console.log('error: '+ response.statusCode);
+        console.log(body);
+      }
+    });
 
 		},
 		sendAttachment = function(attachment, thread) {
 			// fixme may not have acces to this.config here
 			var body = {
-				"token": this.config.slack_token,
+				"token": exports.config.slack_token,
 				"channel": thread,
-				"username": this.config.name,
+				"username": exports.config.name,
 				"link_names": 1,
 				"attachment": [
 					{
@@ -43,27 +54,26 @@ var express = require('express'),
 exports.start = function (callback) {
 	app = express();
 
-	console.log("startedExpress");
-
-
+	
+	 app.use(bodyParser.json());
+      	app.use(bodyParser.urlencoded({ extended: true }));
 	app.post('/', function (req, res) {
 		var data = req.body;
 		var event = [];
 		var api = [];
 
+		
 		event.body = data.text;
-		event.thread_id = data.channel_i;
+		event.thread_id = data.channel_id;
 		event.thread_name = data.channel_name;
 		event.timestamp = data.timestamp;
 		event.trigger = data.trigger_word;
+		event.sender_name = data.user_name;
 		api.sendMessage = sendMessage;
 		api.sendAttachment = sendAttachment;
-		api.getUserId = data.user_id;
-		api.getUserName = data.user_name;
-
-		callback(api, event)
-
-
+				
+		callback(api, event);
+		
 	});
 	server = app.listen(this.config.port, function () {
 		//server.close();
