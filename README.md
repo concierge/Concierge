@@ -10,7 +10,8 @@ Create a new file, `config.json` that has the following:
     "output": {
         "username": "<facebookEmail>",
         "password": "<facebookPassword>",
-        "testingName": "<testingName>"
+        "testingName": "<testingName>",
+        "commandPrefix": "/"
     }
 }
 ```
@@ -54,7 +55,7 @@ To require a `.js` file you have created yourself, please place this file within
 
 #### Interface Contract
 Modules should be created as their own javascript files within the `modules` subdirectory. They must expose the following methods:
-* `exports.match(text,thread)` where `text` is the body of a Facebook message and `thread` is the message thread it occurred on. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text,thread)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
+* `exports.match(text,thread,senderName)` where `text` is the body of a Facebook message, `thread` is the message thread it occurred on and `senderName` is the name of the sender. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text,thread)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
 * `exports.help()`. This method should return a <b>non-newline terminated</b> string to be used with the `/kassy` command.
 * `exports.load()`. <i>Optional</i>. This method is called once when the program is first starting up. Facebook is not guaranteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
 * `exports.unload()`. <i>Optional</i>. This method is called once when the program is shutting down. Facebook is not guaranteed to be available at this point. Should be used to unload files and cancel any timers. Failure to use this method correctly can prevent a successful restart.

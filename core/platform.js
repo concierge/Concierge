@@ -10,6 +10,8 @@ var config = require('./config.js'),
   mode = null,
   disabled = false;
 
+exports.commandPrefix = '/';
+
 packageInfo.nameTitle = packageInfo.name.toProperCase();
 
 require.searchCache = function (moduleName, callback) {
@@ -69,13 +71,13 @@ exports.listModes = function(callback) {
 
 exports.messageRxd = function(api, event) {
   switch (event.body) {
-    case '/shutdown':
+    case exports.commandPrefix + 'shutdown':
       var shutdownResponses = ['Good Night', 'I don\'t blame you.', 'There you are.', 'Please.... No, Noooo!'];
 			var index = Math.floor(Math.random() * shutdownResponses.length);
 			api.sendMessage(shutdownResponses[index], event.thread_id);
       exports.shutdown();
       return;
-    case '/restart':
+    case exports.commandPrefix + 'restart':
       var msg = 'Admin: restart procedure requested.\n' +
         'Admin: do you wish to restart?\n' + packageInfo.nameTitle + ': What do you think.\n' +
         'Admin: interpreting vauge answer as \'yes\'.\n' +
@@ -88,8 +90,8 @@ exports.messageRxd = function(api, event) {
       api.sendMessage(msg, event.thread_id);
       exports.restart();
       return;
-    case '/' + packageInfo.name:
-    case '/help':
+    case exports.commandPrefix + packageInfo.name:
+    case exports.commandPrefix + 'help':
       var help = packageInfo.nameTitle + ' ' + packageInfo.version +
         '\n--------------------\n' + packageInfo.homepage +  '\n\n';
   		for (var i = 0; i < loadedModules.length; i++) {
@@ -97,7 +99,7 @@ exports.messageRxd = function(api, event) {
   		}
   		api.sendMessage(help, event.thread_id);
   		return;
-    case '/disable':
+    case exports.commandPrefix + 'disable':
       disabled = !disabled;
       if (disabled) {
         api.sendMessage('I hate you.', event.thread_id);
@@ -108,7 +110,7 @@ exports.messageRxd = function(api, event) {
           event.sender_name + '?', event.thread_id);
       }
       break;
-    case '/update':
+    case exports.commandPrefix + 'update':
       var fp = path.resolve(__dirname, '../');
       gitpull(fp, function (err, consoleOutput) {
         if (err) {
@@ -118,15 +120,18 @@ exports.messageRxd = function(api, event) {
         }
       });
       return;
-    case '/ping':
+    case exports.commandPrefix + 'ping':
       api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
+      return;
+    case exports.commandPrefix + 'creator':
+      api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id);
       return;
     default: break;
   }
   if (disabled) return;
 
   for (var i = 0; i < loadedModules.length; i++) {
-		if (loadedModules[i].match(event.body, event.thread_id)) {
+		if (loadedModules[i].match(event.body, event.thread_id, event.sender_name)) {
       try {
         loadedModules[i].run(api, event);
       }
@@ -157,6 +162,14 @@ exports.start = function() {
     '\n------------------------------------\nStarting system...');
   config.loadConfig(configFile, function() {
     exports.listModules(function(modules) {
+      mode.platform = exports;
+      mode.config = config.getConfig("output");
+      if (mode.config.commandPrefix) {
+        exports.commandPrefix = mode.config.commandPrefix;
+      }
+      else {
+        mode.config.commandPrefix = exports.commandPrefix;
+      }
       for (var i = 0; i < modules.length; i++) {
         var fp = path.resolve(__dirname, '../modules/' + modules[i]),
           index = Object.keys(require.cache).indexOf(fp),
@@ -170,15 +183,13 @@ exports.start = function() {
           console.log("New module found: " + modules[i]);
           m = require(fp);
         }
-        m.platform = this;
+        m.platform = exports;
         m.config = config.getConfig(modules[i]);
         if (m.load) {
           m.load();
         }
         loadedModules.push(m);
       }
-      mode.platform = this;
-      mode.config = config.getConfig("output");
       mode.start(exports.messageRxd);
       started = true;
       console.log('System has started. Hello World!');
