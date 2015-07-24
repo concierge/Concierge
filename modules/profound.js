@@ -1,7 +1,7 @@
-/** 
+/**
  * Gets a random sentence.
  *
- * For all you meaningless stuff that 
+ * For all you meaningless stuff that
  * seems meaningful
  *
  * Written By: Jay Harris
@@ -11,11 +11,11 @@ var require_install = require('require-install'),
   request = require_install('request');
 
 exports.match = function(text) {
-    return text.startsWith('/profound');
+    return text.startsWith(this.platform.commandPrefix + 'profound');
 };
 
 exports.help = function() {
-    return '/profound : Calculates the meaning of life. You probably wouldn\'t understand';
+    return this.platform.commandPrefix + 'profound : Calculates the meaning of life. You probably wouldn\'t understand';
 };
 
 exports.fetch = function(callback) {

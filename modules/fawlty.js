@@ -1,4 +1,4 @@
-/** 
+/**
  * Gets a Fawlty Towers quote
  *
  * Written By: Jay Harris
@@ -8,11 +8,11 @@ var require_install = require('require-install'),
   request = require_install('request');
 
 exports.match = function(text) {
-    return text.startsWith('/fawlty');
+    return text.startsWith(this.platform.commandPrefix + 'fawlty');
 };
 
 exports.help = function() {
-    return '/fawlty : Fixes fawlty code. Probably.';
+    return this.platform.commandPrefix + 'fawlty : Fixes fawlty code. Probably.';
 };
 
 var quotes = [

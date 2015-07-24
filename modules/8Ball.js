@@ -3,11 +3,11 @@ var require_install = require('require-install'),
 
 
 exports.match = function(text) {
-    return text.startsWith('/8ball');
+    return text.startsWith(this.platform.commandPrefix + '8ball');
 };
 
 exports.help = function() {
-    return '/8ball <query> : Answers your questions to life.';
+    return this.platform.commandPrefix + '8ball <query> : Answers your questions to life.';
 };
 
 insults = ['You\'re asking the impossible',

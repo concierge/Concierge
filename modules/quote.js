@@ -1,4 +1,4 @@
-/** 
+/**
  * Gets a quote from https://theysaidso.com/api/
  *
  * Written By: Jay Harris
@@ -9,12 +9,12 @@
 
 // Define the 'regex' command matching criteria boolean
 exports.match = function(text) {
-    return text.startsWith('/quote');
+    return text.startsWith(this.platform.commandPrefix + 'quote');
 };
 
 // Says surprisingly helpful things...
 exports.help = function() {
-    return '/quote <person>: Attempts to get a quote by said person';
+    return this.platform.commandPrefix + 'quote <person>: Attempts to get a quote by said person';
 };
 
 //Gets a quote from the specified author and passes it into the callback
