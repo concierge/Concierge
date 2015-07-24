@@ -2,10 +2,11 @@ var express = require('express'),
 	bodyParser  = require("body-parser"),
 	request = require('request'),
 	app = null,
-    slackTeams = exports.config.slack_teams,
-	server,
+   	server,
 	sendMessage = function(text, thread, teamId) {
-        var slack_token = null;
+        var slackTeams = exports.config.slack_teams
+		slack_token = null;
+	console.log(teamId);
         for (var i = 0; i < slackTeams.length; i++) {
             if (slackTeams[i].slack_team_id == teamId) {
                 slack_token = slackTeams[i].slack_token;
@@ -55,8 +56,7 @@ exports.start = function (callback) {
 			event.timestamp = data.timestamp;
 			event.sender_name = data.user_name;
 			api.sendMessage = sendMessage;
-			api.sendAttachment = sendAttachment;
-            api.team_id = data.team_id;
+			api.team_id = data.team_id;
 				
 			callback(api, event);
 		}
