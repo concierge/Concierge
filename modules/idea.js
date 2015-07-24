@@ -30,6 +30,6 @@ exports.idea = function (callback) {
 
 exports.run = function(api, event) {
     exports.idea(function(result) {
-        api.sendMessage(result, event.thread_id, event.team_id);
+        api.sendMessage(result, event.thread_id);
     });
 };

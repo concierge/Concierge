@@ -39,6 +39,6 @@ exports.run = function(api, event) {
     // get the quote
     exports.quote(author, function (result) {
         //Send the quote to Facebook
-        api.sendMessage(result, event.thread_id, event.team_id);
+        api.sendMessage(result, event.thread_idd);
     });
 };

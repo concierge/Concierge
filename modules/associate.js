@@ -11,7 +11,7 @@ exports.match = function(text, thread, senderName, api) {
 	for (var assoc in this.config[thread]) {
 		if (s.indexOf(assoc.toLowerCase()) !== -1) {
 			if (api) {
-				api.sendMessage(this.config[thread][assoc], thread, api.team_id);
+				api.sendMessage(this.config[thread][assoc], thread);
 			}
 			return true;
 		}
@@ -45,7 +45,7 @@ exports.printAssociations = function(api, event) {
 
 exports.clear = function(api, event) {
 	this.config[event.thread_id] = {};
-	api.sendMessage('Associations cleared.', event.thread_id, event.team_id);
+	api.sendMessage('Associations cleared.', event.thread_id);
 };
 
 exports.run = function(api, event) {
@@ -63,10 +63,10 @@ exports.run = function(api, event) {
 
 	var spl = event.body.split('"');
 	if (spl.length !== 3 && spl.length !== 5)  {
-		api.sendMessage('WTF are you doing????!', event.thread_id, event.team_id);
+		api.sendMessage('WTF are you doing????!', event.thread_id);
 		return;
 	}
 
 	exports.toggleAssociation(event.thread_id, spl[1], spl[3]);
-	api.sendMessage('Association changed.', event.thread_id, event.team_id);
+	api.sendMessage('Association changed.', event.thread_id);
 };

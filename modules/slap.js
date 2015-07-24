@@ -23,7 +23,7 @@ exports.slap = function(sender_name, infidel){
         'passionately',
         'harshly',
         'in a rebuke-like fashion',
-        'harder than how he slapped ' + infidel + '\'s mother last night',
+        'harder than how they slapped ' + infidel + '\'s mother last night',
         'bluntly',
         'with a spoon',
         'with a salmon',
@@ -51,5 +51,5 @@ exports.run = function(api, event) {
     var result = exports.slap(event.sender_name.trim(), query);
 
     // Send to facebook
-    api.sendMessage(result, event.thread_id, event.team_id);
+    api.sendMessage(result, event.thread_id);
 };

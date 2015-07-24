@@ -74,7 +74,7 @@ exports.printKarma = function(api, event) {
 	for (var k in karmas) {
 		message += k + ': ' + karmas[k] + '\n';
 	}
-	api.sendMessage(message, event.thread_id, event.team_id);
+	api.sendMessage(message, event.thread_id);
 };
 
 exports.run = function(api, event) {
@@ -85,5 +85,5 @@ exports.run = function(api, event) {
 
 	var karmaChange = exports.parseKarmaChange(event.body);
 	var result = exports.modifyKarma(karmaChange, event.sender_name.trim(), event.thread_id);
-	api.sendMessage(result, event.thread_id, event.team_id);
+	api.sendMessage(result, event.thread_id);
 };

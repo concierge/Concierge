@@ -68,6 +68,6 @@ exports.run = function(api, event) {
 	var query = event.body.substr(6);
 	exports.search(query, function(image) {
 		var img = exports.ensureExt(image.unescapedUrl);
-		api.sendMessage(image.unescapedUrl, event.thread_id, event.team_id);
+		api.sendMessage(image.unescapedUrl, event.thread_id);
 	});
 };

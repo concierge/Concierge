@@ -3,19 +3,22 @@ var express = require('express'),
 	request = require('request'),
 	app = null,
    	server,
-	sendMessage = function(text, thread, teamId) {
-        var slackTeams = exports.config.slack_teams
-		slack_token = null;
-	console.log(teamId);
+	sendMessage = function(text, thread) {
+        var slackTeams = exports.config.slack_teams,
+		    slack_token = null,
+            thread_components = thread.split('~', 2),
+            thread_id = thread_components[0],
+            thread_team_id = thread_components[1];
+
         for (var i = 0; i < slackTeams.length; i++) {
-            if (slackTeams[i].slack_team_id == teamId) {
+            if (slackTeams[i].slack_team_id == thread_team_id) {
                 slack_token = slackTeams[i].slack_token;
             }
         }
         if (slack_token != null) {
             var body = {
                 "token": slack_token,
-                "channel": thread,
+                "channel": thread_id,
                 "username": exports.config.name,
                 "link_names": 1,
                 "text": text
@@ -50,8 +53,7 @@ exports.start = function (callback) {
         console.log(data);
 		if (data.user_name != 'slackbot') {
 			event.body = data.text.trim();
-			event.thread_id = data.channel_id;
-            event.team_id = data.team_id;
+			event.thread_id = data.channel_id + '~' + data.team_id;
 			event.thread_name = data.channel_name;
 			event.timestamp = data.timestamp;
 			event.sender_name = data.user_name;
@@ -67,7 +69,10 @@ exports.start = function (callback) {
 };
 
 exports.stop = function() {
-    server.close();
-    server = null;
-    app = null;
+
+    setTimeout(function () {
+        server.close();
+        server = null;
+        app = null;
+    }, 10000);
 };

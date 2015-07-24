@@ -36,5 +36,5 @@ exports.run = function(api, event) {
     var index = Math.floor(Math.random() * quotes.length),
     result = quotes[index];
 
-    api.sendMessage(result, event.thread_id), event.team_id;
+    api.sendMessage(result, event.thread_id);
 };

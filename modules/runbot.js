@@ -26,10 +26,10 @@ exports.run = function(api, event) {
 	var code = exports.wrapCode(event.body);
 	quarantine({}, code, function(){
 		if (arguments[0] && arguments[0] != null && arguments[0] != 'null') {
-			api.sendMessage('Error:\n' + arguments[0], event.thread_id, event.team_id);
+			api.sendMessage('Error:\n' + arguments[0], event.thread_id);
 		}
 		else {
-			api.sendMessage(arguments[1], event.thread_id, event.team_id);
+			api.sendMessage(arguments[1], event.thread_id);
 		}
 	});
 };

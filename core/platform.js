@@ -74,7 +74,7 @@ exports.messageRxd = function(api, event) {
     case exports.commandPrefix + 'shutdown':
       var shutdownResponses = ['Good Night', 'I don\'t blame you.', 'There you are.', 'Please.... No, Noooo!'];
 			var index = Math.floor(Math.random() * shutdownResponses.length);
-			api.sendMessage(shutdownResponses[index], event.thread_id, event.team_id);
+			api.sendMessage(shutdownResponses[index], event.thread_id);
       exports.shutdown();
       return;
     case exports.commandPrefix + 'restart':
@@ -87,7 +87,7 @@ exports.messageRxd = function(api, event) {
         'Admin: restarting anyway.\n' +
         packageInfo.nameTitle + ': nooooooooooo.....\n' +
         'Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.\n';
-      api.sendMessage(msg, event.thread_id, event.team_id);
+      api.sendMessage(msg, event.thread_id);
       exports.restart();
       return;
     case exports.commandPrefix + packageInfo.name:
@@ -97,34 +97,34 @@ exports.messageRxd = function(api, event) {
   		for (var i = 0; i < loadedModules.length; i++) {
   			help += loadedModules[i].help() + '\n';
   		}
-  		api.sendMessage(help, event.thread_id, event.team_id);
+  		api.sendMessage(help, event.thread_id);
   		return;
     case exports.commandPrefix + 'disable':
       disabled = !disabled;
       if (disabled) {
-        api.sendMessage('I hate you.', event.thread_id, event.team_id);
+        api.sendMessage('I hate you.', event.thread_id);
       }
       else {
         api.sendMessage('Listen closely, take a deep breath. Calm your mind. You know what is best. ' +
           'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
-          event.sender_name + '?', event.thread_id, event.team_id);
+          event.sender_name + '?', event.thread_id);
       }
       break;
     case exports.commandPrefix + 'update':
       var fp = path.resolve(__dirname, '../');
       gitpull(fp, function (err, consoleOutput) {
         if (err) {
-          api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id, event.team_id);
+          api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
         } else {
-          api.sendMessage('Update successful. Restart to load changes.', event.thread_id, event.team_id);
+          api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
         }
       });
       return;
     case exports.commandPrefix + 'ping':
-      api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id, event.team_id);
+      api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
       return;
     case exports.commandPrefix + 'creator':
-      api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id, event.team_id);
+      api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id);
       return;
     default: break;
   }
@@ -136,7 +136,7 @@ exports.messageRxd = function(api, event) {
         loadedModules[i].run(api, event);
       }
       catch(e) {
-        api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id, event.team_id);
+        api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
         console.trace(e);
       }
 			return;
