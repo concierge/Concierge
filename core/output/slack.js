@@ -49,8 +49,7 @@ exports.start = function (callback) {
 		var data = req.body;
 		var event = [];
 		var api = [];
-
-        console.log(data);
+        
 		if (data.user_name != 'slackbot') {
 			event.body = data.text.trim();
 			event.thread_id = data.channel_id + '~' + data.team_id;
