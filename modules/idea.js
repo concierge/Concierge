@@ -3,11 +3,11 @@ var require_install = require('require-install'),
 
 
 exports.match = function(text) {
-    return text.startsWith('/idea');
+    return text.startsWith(this.platform.commandPrefix + 'idea');
 };
 
 exports.help = function() {
-    return '/idea: Generates an idea for your next StartUp.';
+    return this.platform.commandPrefix + 'idea: Generates an idea for your next StartUp.';
 };
 
 exports.idea = function (callback) {

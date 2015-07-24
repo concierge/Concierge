@@ -10,7 +10,8 @@ Create a new file, `config.json` that has the following:
     "output": {
         "username": "<facebookEmail>",
         "password": "<facebookPassword>",
-        "testingName": "<testingName>"
+        "testingName": "<testingName>",
+        "commandPrefix": "/"
     }
 }
 ```
