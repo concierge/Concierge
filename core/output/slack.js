@@ -9,8 +9,8 @@ var express = require('express'),
 			var body = {
 				"token": exports.config.slack_token,
 				"channel": thread,
-				//"username": exports.config.name,
-				//"link_names": 1,
+				"username": exports.config.name,
+				"link_names": 1,
 				"text": text
 			};
 
@@ -61,18 +61,20 @@ exports.start = function (callback) {
 		var data = req.body;
 		var event = [];
 		var api = [];
-
 		
-		event.body = data.text;
-		event.thread_id = data.channel_id;
-		event.thread_name = data.channel_name;
-		event.timestamp = data.timestamp;
-		event.trigger = data.trigger_word;
-		event.sender_name = data.user_name;
-		api.sendMessage = sendMessage;
-		api.sendAttachment = sendAttachment;
+		//console.log(data);	
+		if (data.user_name != 'slackbot') {
+			event.body = data.text.trim();
+			event.thread_id = data.channel_id;
+			event.thread_name = data.channel_name;
+			event.timestamp = data.timestamp;
+			event.sender_name = data.user_name;
+			api.sendMessage = sendMessage;
+			api.sendAttachment = sendAttachment;
 				
-		callback(api, event);
+			callback(api, event);
+		}
+		res.sendStatus(200);
 		
 	});
 	server = app.listen(this.config.port, function () {
