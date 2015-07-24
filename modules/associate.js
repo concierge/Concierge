@@ -40,7 +40,7 @@ exports.printAssociations = function(api, event) {
 		message += a + ' → ' + assoc[a] + '\n';
 	}
 	message.trim();
-	api.sendMessage(message, event.thread_id, event.team_id);
+	api.sendMessage(message, event.thread_id);
 };
 
 exports.clear = function(api, event) {

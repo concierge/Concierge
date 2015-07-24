@@ -50,7 +50,6 @@ platform.listModes(function(modes) {
 		platform.setMode(modes[process.argv[2]]);
 	}
 	catch(e) {
-		console.log(e);
 		console.error('Unknown mode \'' + process.argv[2] + '\'');
 		process.exit(-1);
 	}
