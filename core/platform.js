@@ -124,7 +124,7 @@ exports.messageRxd = function(api, event) {
       api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id, event.team_id);
       return;
     case exports.commandPrefix + 'creator':
-      api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id);
+      api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id, event.team_id);
       return;
     default: break;
   }
