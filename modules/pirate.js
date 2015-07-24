@@ -47,6 +47,6 @@ exports.search = function (query, callback) {
 exports.run = function(api, event) {
     var query = event.body.substr(8);
     exports.search(query, function(result) {
-        api.sendMessage(result, event.thread_id);
+        api.sendMessage(result, event.thread_id, event.team_id);
     });
 };

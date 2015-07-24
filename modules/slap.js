@@ -51,5 +51,5 @@ exports.run = function(api, event) {
     var result = exports.slap(event.sender_name.trim(), query);
 
     // Send to facebook
-    api.sendMessage(result, event.thread_id);
+    api.sendMessage(result, event.thread_id, event.team_id);
 };

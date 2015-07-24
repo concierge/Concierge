@@ -31,6 +31,6 @@ exports.fetch = function(callback) {
 
 exports.run = function(api, event) {
     exports.fetch(function (sentence) {
-        api.sendMessage(sentence, event.thread_id);
+        api.sendMessage(sentence, event.thread_id, event.team_id);
     });
 };
