@@ -2,7 +2,7 @@ var express = require('express'),
 	bodyParser  = require("body-parser"),
 	request = require('request'),
 	app = null,
-    slackTeams = exports.config.slack_teams,
+    slackTeams = this.config.slack_teams,
 	server,
 	sendMessage = function(text, thread, teamId) {
         var slack_token = null;
