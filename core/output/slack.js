@@ -49,7 +49,7 @@ exports.start = function (callback) {
 		var data = req.body;
 		var event = [];
 		var api = [];
-        
+
 		if (data.user_name != 'slackbot') {
 			event.body = data.text.trim();
 			event.thread_id = data.channel_id + '~' + data.team_id;
@@ -68,10 +68,7 @@ exports.start = function (callback) {
 };
 
 exports.stop = function() {
-
-    setTimeout(function () {
-        server.close();
-        server = null;
-        app = null;
-    }, 10000);
+    server.close();
+    server = null;
+    app = null;
 };
