@@ -3,7 +3,7 @@ exports.match = function(text) {
 };
 
 exports.help = function() {
-	return '<text>++.. : Increases <text>\' karma.\n\
+	return '<text>++.. : Increases <text>\'s karma.\n\
 <text>--.. : Decreases <text>\'s karma.\n\
 ' + this.platform.commandPrefix + 'karma : Shows all current karma.';
 };
