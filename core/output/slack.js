@@ -50,6 +50,7 @@ exports.start = function (callback) {
             api = [];
 
         if (data.user_name != 'slackbot') {
+            console.log(data);
             event.body = data.text.trim();
             event.thread_id = data.channel_id + '~' + data.team_id;
             event.thread_name = data.channel_name;
