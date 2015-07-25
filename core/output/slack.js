@@ -49,13 +49,13 @@ var express = require('express'),
             "qs": body
         },
         function (error, response, body) {
-            console.log(body);
+		body = JSON.parse(body);
             if (response.statusCode != 200) {
                 console.log('error: ' + response.statusCode + "\n" + error);
             }
             else {
-                for (var i = 0; body.members.length; i++) {
-                    var user = {
+                for (var i = 0; i <  body.members.length; i++) {
+		var user = {
                         "user_id": body.members[i].id,
                         "user_name": body.members[i].name
                     };
@@ -93,8 +93,9 @@ exports.start = function (callback) {
             //I need to split the id from two formats
             //"<@userid>: ++" , "<@userid>++"
 
-            var matches = data.user_name.match(/@[a-zA-Z1-9]+/g);
-            if (matches.length > 0) {
+            var matches = message.match(/@[^:>]+/g);
+            if (matches != null) {
+		console.log("match found: " + matches);
                 var slackTeams = exports.config.slack_teams,
                     slackTeam;
 
@@ -105,13 +106,16 @@ exports.start = function (callback) {
                     }
                 }
 
+		console.log(slackTeam);
                 for (var j = 0; j < matches.length; j++) {
                     var index = message.indexOf(matches[j]);
                     message = message.substr(0, index) + slackTeam.users.user_id[matches[j]] + message.substr(index + matches[j].length);
                 }
+		console.log("new message: " + message); 
             }
-
-
+		else {
+		console.log("No match found for: " + message);
+		}
             console.log(data);
             event.body = message;
             event.thread_id = data.channel_id + '~' + data.team_id;
