@@ -45,25 +45,24 @@ exports.start = function (callback) {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
     app.post('/', function (req, res) {
-		var data = req.body;
-		var event = [];
-		var api = [];
+        var data = req.body,
+            event = [],
+            api = [];
 
-		if (data.user_name != 'slackbot') {
-			event.body = data.text.trim();
-			event.thread_id = data.channel_id + '~' + data.team_id;
-			event.thread_name = data.channel_name;
-			event.timestamp = data.timestamp;
-			event.sender_name = data.user_name;
-			api.sendMessage = sendMessage;
-			api.team_id = data.team_id;
-				
-			callback(api, event);
-		}
-		res.sendStatus(200);
-		
-	});
-	server = app.listen(this.config.port);
+        if (data.user_name != 'slackbot') {
+            event.body = data.text.trim();
+            event.thread_id = data.channel_id + '~' + data.team_id;
+            event.thread_name = data.channel_name;
+            event.timestamp = data.timestamp;
+            event.sender_name = data.user_name;
+            api.sendMessage = sendMessage;
+            api.team_id = data.team_id;
+
+            callback(api, event);
+        }
+        res.sendStatus(200);
+    });
+    server = app.listen(this.config.port);
 };
 
 exports.stop = function() {
