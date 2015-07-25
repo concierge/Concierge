@@ -97,7 +97,8 @@ exports.start = function (callback) {
             if (matches != null) {
 		console.log("match found: " + matches);
                 var slackTeams = exports.config.slack_teams,
-                    slackTeam;
+                    slackTeam,
+                    userName;
 
                 for (var i = 0; i < slackTeams.length; i++) {
                     if (slackTeams[i].slack_team_id == data.team_id) {
@@ -106,10 +107,17 @@ exports.start = function (callback) {
                     }
                 }
 
+                for (var l = 0; l < slackTeam.users.length; l++) {
+                    if (slackTeam.users[l].user_id == matches[0].split('@', 1)) {
+                        userName = slackTeam.users[l].user_name;
+                        break;
+                    }
+                }
+
 		console.log(slackTeam);
                 for (var j = 0; j < matches.length; j++) {
                     var index = message.indexOf(matches[j]);
-                    message = message.substr(0, index) + slackTeam.users.user_id[matches[j]] + message.substr(index + matches[j].length);
+                    message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
                 }
 		console.log("new message: " + message); 
             }
