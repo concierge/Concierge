@@ -93,12 +93,13 @@ exports.start = function (callback) {
             //I need to split the id from two formats
             //"<@userid>: ++" , "<@userid>++"
 
-            var matches = message.match(/@[^:>]+/g);
+            var matches = message.match(/@[^:>]+[:]|>)?/g);
             if (matches != null) {
 		console.log("match found: " + matches);
                 var slackTeams = exports.config.slack_teams,
                     slackTeam,
-                    userName;
+                    userName,
+			id;
 
                 for (var i = 0; i < slackTeams.length; i++) {
                     if (slackTeams[i].slack_team_id == data.team_id) {
@@ -107,14 +108,19 @@ exports.start = function (callback) {
                     }
                 }
 
+		id = matches[0].split('@')[1];
+		console.log(id);
+		
                 for (var l = 0; l < slackTeam.users.length; l++) {
-                    if (slackTeam.users[l].user_id == matches[0].split('@', 1)) {
+			console.log(slackTeam.users[l].id);
+                    if (slackTeam.users[l].user_id == id) {
                         userName = slackTeam.users[l].user_name;
                         break;
                     }
                 }
 
 		console.log(slackTeam);
+		console.log(userName);
                 for (var j = 0; j < matches.length; j++) {
                     var index = message.indexOf(matches[j]);
                     message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
