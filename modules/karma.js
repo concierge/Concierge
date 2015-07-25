@@ -43,38 +43,57 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 
 	person = person.toProperCase();
 	if (!this.config[thread][person]) {
-		this.config[thread][person] = 0;
+		this.config[thread][person] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null};
 	}
 	if (exports.checkPerson(karmaChange.name, person)) {
 		if (karmaChange.karma > 0) {
 			karmaChange.karma *= -1;
 		}
-		this.config[thread][person] += karmaChange.karma;
-		return person + ' modified their own karma. As punishment they now have ' + this.config[thread][person] + ' karma.';
+		this.config[thread][person].karma += karmaChange.karma;
+		return person + ' modified their own karma. As punishment they now have ' + this.config[thread][person].karma + ' karma.';
 	}
 
-	if (karmaChange.karma >= 5 || karmaChange.karma <= -5) {
+	if (karmaChange.karma >= this.config.bound || karmaChange.karma <= -this.config.bound) {
 		if (karmaChange.karma > 0) {
 			karmaChange.karma *= -1;
 		}
-		this.config[thread][person] += karmaChange.karma;
-		return person + ' modified karma too much. As punishment they now have ' + this.config[thread][person] + ' karma.';
+		this.config[thread][person].karma += karmaChange.karma;
+		return person + ' modified karma too much. As punishment they now have ' + this.config[thread][person].karma + ' karma.';
 	}
 
 	if (!this.config[thread][karmaChange.name]) {
-		this.config[thread][karmaChange.name] = 0;
+		this.config[thread][karmaChange.name] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null};
 	}
-	this.config[thread][karmaChange.name] += karmaChange.karma;
-	return karmaChange.name + ' now has ' + this.config[thread][karmaChange.name] + ' karma.';
+
+	if (new Date() - this.config[thread][karmaChange.name].lastAlteredTime > this.config.alteredTime) {
+		this.config[thread][karmaChange.name].lastAlteredCount = 0;
+	}
+
+	if (person === this.config[thread][karmaChange.name].lastAlteredBy && this.config[thread][karmaChange.name].lastAlteredCount === this.config.alteredCount) {
+		if (karmaChange.karma > 0) {
+			karmaChange.karma *= -1;
+		}
+		this.config[thread][person].karma += karmaChange.karma;
+		return person + ' modified the karma of ' + karmaChange.name + ' too often. As punishment they now have ' + this.config[thread][person].karma + ' karma.';
+	}
+	else {
+		this.config[thread][karmaChange.name].lastAlteredBy = person;
+		this.config[thread][karmaChange.name].lastAlteredCount =
+			person === this.config[thread][karmaChange.name].lastAlteredBy ? this.config[thread][karmaChange.name].lastAlteredCount + 1: 1;
+		this.config[thread][karmaChange.name].lastAlteredTime = new Date();
+	}
+
+	this.config[thread][karmaChange.name].karma += karmaChange.karma;
+	return karmaChange.name + ' now has ' + this.config[thread][karmaChange.name].karma + ' karma.';
 };
 
 exports.printKarma = function(api, event) {
 	var karmas = this.config[event.thread_id];
 	var message = '';
 	for (var k in karmas) {
-		message += k + ': ' + karmas[k] + '\n';
+		message += k + ' \t→ ' + karmas[k].karma + '\n';
 	}
-	api.sendMessage(message, event.thread_id);
+	api.sendMessage((message === '' ? 'Somebody has failed to meet their meanness quota for the day. No karmas to show.' : message), event.thread_id);
 };
 
 exports.run = function(api, event) {
@@ -86,4 +105,16 @@ exports.run = function(api, event) {
 	var karmaChange = exports.parseKarmaChange(event.body);
 	var result = exports.modifyKarma(karmaChange, event.sender_name.trim(), event.thread_id);
 	api.sendMessage(result, event.thread_id);
+};
+
+exports.load = function() {
+	if (!this.config.bound) {
+		this.config.bound = 5;
+	}
+	if (!this.config.alteredCount) {
+		this.config.alteredCount = 3;
+	}
+	if (!this.config.alteredTime) {
+		this.config.alteredTime = 120000; // 2 mins
+	}
 };
