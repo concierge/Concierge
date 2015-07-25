@@ -49,6 +49,7 @@ var express = require('express'),
             "qs": body
         },
         function (error, response, body) {
+            console.log(body);
             if (response.statusCode != 200) {
                 console.log('error: ' + response.statusCode + "\n" + error);
             }
