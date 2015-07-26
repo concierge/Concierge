@@ -36,20 +36,35 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 
 	if (karmaChange.name.trim() === '') {
 		var responses = ['I eat blank karma for breakfast.', 'A karma with every meal is good apparently.',
-		'Thank-you for appriciating my efforts.', 'Karma comes only to those you give it too.', 'You are tosser.'];
+		'Thank-you for appreciating my efforts.', 'Karma comes only to those you give it too.', 'You are tosser.'];
         var index = Math.floor(Math.random() * responses.length);
 		return responses[index] + ' Try again.';
 	}
 
 	person = person.toProperCase();
 	if (!this.config[thread][person]) {
-		this.config[thread][person] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null};
+		this.config[thread][person] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null,quotta:0,timeSinceQuottaStart:new Date()};
 	}
+	if (this.config[thread][person].timeSinceQuottaStart == null) {
+		this.config[thread][person].timeSinceQuottaStart = new Date();
+	}
+
+	if (new Date() - this.config[thread][person].timeSinceQuottaStart > this.config.karmaTimeLimit && this.config[thread][person].karmaTimeLimit != null) {
+		this.config[thread][person].timeSinceQuottaStart = new Date();
+		this.config[thread][person].quotta = 0;
+	}
+
+	if(this.config[thread][person].quotta >= this.config.karmaPerDay) {
+		//todo say how long until they can karma again
+		return person + ' has used there karma quota for today, please try again tomorrow';
+	}
+
 	if (exports.checkPerson(karmaChange.name, person)) {
 		if (karmaChange.karma > 0) {
 			karmaChange.karma *= -1;
 		}
 		this.config[thread][person].karma += karmaChange.karma;
+		this.config[thread][person].quotta += Math.abs(karmaChange.karma);
 		return person + ' modified their own karma. As punishment they now have ' + this.config[thread][person].karma + ' karma.';
 	}
 
@@ -58,11 +73,12 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 			karmaChange.karma *= -1;
 		}
 		this.config[thread][person].karma += karmaChange.karma;
+		this.config[thread][person].quotta += Math.abs(karmaChange.karma);
 		return person + ' modified karma too much. As punishment they now have ' + this.config[thread][person].karma + ' karma.';
 	}
 
 	if (!this.config[thread][karmaChange.name]) {
-		this.config[thread][karmaChange.name] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null};
+		this.config[thread][karmaChange.name] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null,quotta:0,timeSinceQuottaStart:null};
 	}
 
 	if (new Date() - this.config[thread][karmaChange.name].lastAlteredTime > this.config.alteredTime) {
@@ -74,6 +90,7 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 			karmaChange.karma *= -1;
 		}
 		this.config[thread][person].karma += karmaChange.karma;
+		this.config[thread][person].quotta += Math.abs(karmaChange.karma);
 		return person + ' modified the karma of ' + karmaChange.name + ' too often. As punishment they now have ' + this.config[thread][person].karma + ' karma.';
 	}
 	else {
@@ -83,6 +100,19 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 		this.config[thread][karmaChange.name].lastAlteredTime = new Date();
 	}
 
+	if (this.config[thread][person].quotta + Math.abs(karmaChange.karma) >= this.config.karmaPerDay) {
+		var karma = this.config.karmaPerDay - this.config[thread][person].quotta;
+		this.config[thread][person].quotta += karma;
+		if (karmaChange.karma < 0) {
+			karma *= -1;
+		}
+		this.config[thread][karmaChange.name].karma += karma;
+		return karmaChange.name + ' now has ' + this.config[thread][karmaChange.name].karma + ' karma\n' +
+				person + ' has reached their karma limit for today.';
+	}
+
+
+	this.config[thread][person].quotta += Math.abs(karmaChange.karma);
 	this.config[thread][karmaChange.name].karma += karmaChange.karma;
 	return karmaChange.name + ' now has ' + this.config[thread][karmaChange.name].karma + ' karma.';
 };
@@ -116,5 +146,11 @@ exports.load = function() {
 	}
 	if (!this.config.alteredTime) {
 		this.config.alteredTime = 120000; // 2 mins
+	}
+	if (!this.config.karmaTimeLimit) {
+		this.config.karmaTimeLimit = 86400000; // 24hrs
+	}
+	if (!this.config.karmaPerDay) {
+		this.config.karmaPerDay = 10;
 	}
 };
