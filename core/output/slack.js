@@ -66,6 +66,31 @@ var express = require('express'),
         });
     };
 
+    lookUpUserAddToTeam = function(slackTeam, userId, matches, message, callback) {
+        var body = {"token": slackTeam.slack_token, "user": userId},
+            userMap = [];
+        request({
+                "uri": 'https://slack.com/api/users.info',
+                "method": 'GET',
+                "qs": body
+            },
+            function (error, response, body) {
+                body = JSON.parse(body);
+                if (response.statusCode != 200) {
+                    console.log('error: ' + response.statusCode + '\n' + error);
+                    return callback(matches, message, null);
+                }
+                else {
+                    var user = {
+                        "user_id": body.user.id,
+                        "user_name": body.user.name
+                    };
+                    slackTeam.users.push(user);
+                    return callback(matches, message, body.user.name);
+                }
+            });
+    };
+
 exports.start = function (callback) {
     var slackTeams = exports.config.slack_teams,
         slack_token = null;
@@ -89,27 +114,53 @@ exports.start = function (callback) {
                 var slackTeams = exports.config.slack_teams,
                     slackTeam,
                     userName,
-                    id;
+                    id,
+                    foundTeam = false,
+                    foundUser = false;
 
                 for (var i = 0; i < slackTeams.length; i++) {
                     if (slackTeams[i].slack_team_id == data.team_id) {
                         slackTeam = slackTeams[i];
+                        foundTeam = true;
                         break;
                     }
                 }
+                if (foundTeam) {
 
-                id = matches[0].replace(/[ :<>@]+/g, '');
-		
-                for (var l = 0; l < slackTeam.users.length; l++) {
-                    if (slackTeam.users[l].user_id == id) {
-                        userName = slackTeam.users[l].user_name;
-                        break;
+                    id = matches[0].replace(/[ :<>@]+/g, '');
+
+                    for (var l = 0; l < slackTeam.users.length; l++) {
+                        if (slackTeam.users[l].user_id == id) {
+                            userName = slackTeam.users[l].user_name;
+                            foundUser = true;
+                            break;
+                        }
+                    }
+
+                    if (foundUser) {
+                        for (var j = 0; j < matches.length; j++) {
+                            var index = message.indexOf(matches[j]);
+                            message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
+                        }
+                    }
+                    else {
+                        // query slack to see if the user is in the team, they may have been added recently
+                        message = lookUpUserAddToTeam(slackTeam, id, matches, message, function(matches, message, userName) {
+
+                            if (userName != null) {
+                                for (var j = 0; j < matches.length; j++) {
+                                    var index = message.indexOf(matches[j]);
+                                    message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
+                                }
+                            }
+                            else {
+                                return message;
+                            }
+                        });
                     }
                 }
-
-                for (var j = 0; j < matches.length; j++) {
-                    var index = message.indexOf(matches[j]);
-                    message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
+                else {
+                    console.log('No slack team found matching: ' + data.team_id);
                 }
             }
             else {
