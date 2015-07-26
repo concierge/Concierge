@@ -54,8 +54,8 @@ var express = require('express'),
                 console.log('error: ' + response.statusCode + "\n" + error);
             }
             else {
-                for (var i = 0; i <  body.members.length; i++) {
-		            var user = {
+                for (var i = 0; i < body.members.length; i++) {
+                    var user = {
                         "user_id": body.members[i].id,
                         "user_name": body.members[i].name
                     };
@@ -73,11 +73,9 @@ exports.start = function (callback) {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
-
     for (var i = 0; i < slackTeams.length; i++) {
         getUsers(slackTeams[i]);
     }
-
 
     app.post('/', function (req, res) {
         var data = req.body,
@@ -114,9 +112,9 @@ exports.start = function (callback) {
                     message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
                 }
             }
-		    else {
-		        console.log("No match found for: " + message);
-		    }
+            else {
+                console.log("No match found for: " + message);
+            }
 
             event.body = message;
             event.thread_id = data.channel_id + '~' + data.team_id;
