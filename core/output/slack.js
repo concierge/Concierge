@@ -26,8 +26,8 @@ var express = require('express'),
             };
 
             request({
-                    "uri": "https://slack.com/api/chat.postMessage",
-                    "method": "GET",
+                    "uri": 'https://slack.com/api/chat.postMessage',
+                    "method": 'GET',
                     "qs": body
                 },
                 function (error, response, body) {
@@ -37,21 +37,21 @@ var express = require('express'),
                 });
         }
         else {
-            console.log("No slack team found!!!");
+            console.log('No slack team found!!!');
         }
     },
     getUsers = function(slackTeam) {
         var body = {"token": slackTeam.slack_token},
             userMap = [];
         request({
-            "uri": "https://slack.com/api/users.list",
-            "method": "GET",
+            "uri": 'https://slack.com/api/users.list',
+            "method": 'GET',
             "qs": body
         },
         function (error, response, body) {
 		body = JSON.parse(body);
             if (response.statusCode != 200) {
-                console.log('error: ' + response.statusCode + "\n" + error);
+                console.log('error: ' + response.statusCode + '\n' + error);
             }
             else {
                 for (var i = 0; i < body.members.length; i++) {
@@ -113,7 +113,7 @@ exports.start = function (callback) {
                 }
             }
             else {
-                console.log("No match found for: " + message);
+                console.log('No match found for: ' + message);
             }
 
             event.body = message;
