@@ -55,7 +55,7 @@ var express = require('express'),
             }
             else {
                 for (var i = 0; i <  body.members.length; i++) {
-		var user = {
+		            var user = {
                         "user_id": body.members[i].id,
                         "user_name": body.members[i].name
                     };
@@ -65,22 +65,6 @@ var express = require('express'),
             }
         });
     };
-String.prototype.trimLeft = function(charlist) {
-  if (charlist === undefined)
-    charlist = "\s";
- 
-  return this.replace(new RegExp("^[" + charlist + "]+"), "");
-};
-String.prototype.trimRight = function(charlist) {
-  if (charlist === undefined)
-    charlist = "\s";
- 
-  return this.replace(new RegExp("[" + charlist + "]+$"), "");
-};
-String.prototype.trim = function(charlist) {
-  return this.trimLeft(charlist).trimRight(charlist);
-};
-
 
 exports.start = function (callback) {
     var slackTeams = exports.config.slack_teams,
@@ -111,11 +95,11 @@ exports.start = function (callback) {
 
             var matches = message.match(/<?@[^:>]+>:?/g);
             if (matches != null) {
-		console.log("match found: " + matches);
+                console.log("match found: " + matches);
                 var slackTeams = exports.config.slack_teams,
                     slackTeam,
                     userName,
-			id;
+                    id;
 
                 for (var i = 0; i < slackTeams.length; i++) {
                     if (slackTeams[i].slack_team_id == data.team_id) {
@@ -124,28 +108,29 @@ exports.start = function (callback) {
                     }
                 }
 
-		id = matches[0].trim(' ').trim(':').trim('<').trim('>').split('@')[1];
-		console.log(id);
+                id = matches[0].replace(/[ :<>@]+/g, '');
+                console.log(id);
 		
                 for (var l = 0; l < slackTeam.users.length; l++) {
-			console.log(slackTeam.users[l].id);
+			        console.log(slackTeam.users[l].id);
                     if (slackTeam.users[l].user_id == id) {
                         userName = slackTeam.users[l].user_name;
                         break;
                     }
                 }
 
-		console.log(slackTeam);
-		console.log(userName);
+		        console.log(slackTeam);
+		        console.log(userName);
                 for (var j = 0; j < matches.length; j++) {
                     var index = message.indexOf(matches[j]);
                     message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
                 }
-		console.log("new message: " + message); 
+		        console.log("new message: " + message);
             }
-		else {
-		console.log("No match found for: " + message);
-		}
+		    else {
+		        console.log("No match found for: " + message);
+		    }
+
             console.log(data);
             event.body = message;
             event.thread_id = data.channel_id + '~' + data.team_id;
