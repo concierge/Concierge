@@ -43,11 +43,14 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 
 	person = person.toProperCase();
 	if (!this.config[thread][person]) {
-		this.config[thread][person] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null,quotta:0,timeSinceQuottaMax:null};
+		this.config[thread][person] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null,quotta:0,timeSinceQuottaStart:new Date()};
+	}
+	if (this.config[thread][person].timeSinceQuottaStart == null) {
+		this.config[thread][person].timeSinceQuottaStart = new Date();
 	}
 
-	if (new Date() - this.config[thread][person].timeSinceQuottaMax > this.config.karmaTimeLimit && this.config[thread][person].karmaTimeLimit != null) {
-		console.log(this.config[thread][person]);
+	if (new Date() - this.config[thread][person].timeSinceQuottaStart > this.config.karmaTimeLimit && this.config[thread][person].karmaTimeLimit != null) {
+		this.config[thread][person].timeSinceQuottaStart = new Date();
 		this.config[thread][person].quotta = 0;
 	}
 
@@ -75,7 +78,7 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 	}
 
 	if (!this.config[thread][karmaChange.name]) {
-		this.config[thread][karmaChange.name] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null,quotta:0,timeSinceQuottaMax:null};
+		this.config[thread][karmaChange.name] = {karma:0,lastAlteredBy:'',lastAlteredCount:0,lastAlteredTime:null,quotta:0,timeSinceQuottaStart:null};
 	}
 
 	if (new Date() - this.config[thread][karmaChange.name].lastAlteredTime > this.config.alteredTime) {
@@ -103,7 +106,6 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 		if (karmaChange.karma < 0) {
 			karma *= -1;
 		}
-		this.config[thread][person].timeSinceQuottaMax = new Date();
 		this.config[thread][karmaChange.name].karma += karma;
 		return karmaChange.name + ' now has ' + this.config[thread][karmaChange.name].karma + ' karma\n' +
 				person + ' has reached their karma limit for today.';
@@ -111,7 +113,6 @@ exports.modifyKarma = function(karmaChange, person, thread) {
 
 
 	this.config[thread][person].quotta += Math.abs(karmaChange.karma);
-	console.log(this.config[thread][person].quotta);
 	this.config[thread][karmaChange.name].karma += karmaChange.karma;
 	return karmaChange.name + ' now has ' + this.config[thread][karmaChange.name].karma + ' karma.';
 };
