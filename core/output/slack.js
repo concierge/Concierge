@@ -86,16 +86,8 @@ exports.start = function (callback) {
             message = data.text.trim();
 
         if (data.user_name != 'slackbot') {
-
-            //Ok so at this point we have a team id and can get the mapped token from the config
-            //Using this token I can get the list of users
-            //From the list of users I can map the user id to the users name
-            //I need to split the id from two formats
-            //"<@userid>: ++" , "<@userid>++"
-
             var matches = message.match(/<?@[^:>]+>:?/g);
             if (matches != null) {
-                console.log("match found: " + matches);
                 var slackTeams = exports.config.slack_teams,
                     slackTeam,
                     userName,
@@ -109,29 +101,23 @@ exports.start = function (callback) {
                 }
 
                 id = matches[0].replace(/[ :<>@]+/g, '');
-                console.log(id);
 		
                 for (var l = 0; l < slackTeam.users.length; l++) {
-			        console.log(slackTeam.users[l].id);
                     if (slackTeam.users[l].user_id == id) {
                         userName = slackTeam.users[l].user_name;
                         break;
                     }
                 }
 
-		        console.log(slackTeam);
-		        console.log(userName);
                 for (var j = 0; j < matches.length; j++) {
                     var index = message.indexOf(matches[j]);
                     message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
                 }
-		        console.log("new message: " + message);
             }
 		    else {
 		        console.log("No match found for: " + message);
 		    }
 
-            console.log(data);
             event.body = message;
             event.thread_id = data.channel_id + '~' + data.team_id;
             event.thread_name = data.channel_name;
