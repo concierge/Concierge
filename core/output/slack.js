@@ -65,6 +65,22 @@ var express = require('express'),
             }
         });
     };
+String.prototype.trimLeft = function(charlist) {
+  if (charlist === undefined)
+    charlist = "\s";
+ 
+  return this.replace(new RegExp("^[" + charlist + "]+"), "");
+};
+String.prototype.trimRight = function(charlist) {
+  if (charlist === undefined)
+    charlist = "\s";
+ 
+  return this.replace(new RegExp("[" + charlist + "]+$"), "");
+};
+String.prototype.trim = function(charlist) {
+  return this.trimLeft(charlist).trimRight(charlist);
+};
+
 
 exports.start = function (callback) {
     var slackTeams = exports.config.slack_teams,
@@ -93,7 +109,7 @@ exports.start = function (callback) {
             //I need to split the id from two formats
             //"<@userid>: ++" , "<@userid>++"
 
-            var matches = message.match(/@[^:>]+[:]|>)?/g);
+            var matches = message.match(/<?@[^:>]+>:?/g);
             if (matches != null) {
 		console.log("match found: " + matches);
                 var slackTeams = exports.config.slack_teams,
@@ -108,7 +124,7 @@ exports.start = function (callback) {
                     }
                 }
 
-		id = matches[0].split('@')[1];
+		id = matches[0].trim(' ').trim(':').trim('<').trim('>').split('@')[1];
 		console.log(id);
 		
                 for (var l = 0; l < slackTeam.users.length; l++) {
