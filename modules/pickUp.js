@@ -1,6 +1,3 @@
-/**
- * Created by Dion on 29/07/2015.
- */
 var reddit = require('./common/reddit.js'),
     require_install = require('require-install'),
     request = require_install('request'),
@@ -15,7 +12,7 @@ exports.help = function() {
 };
 
 exports.joke = function(callback) {
-    // If we have no stored joke, get some
+    // If we have no stored pickups, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
 
         reddit.reddit('pickuplines', 200, function (err, data) {
@@ -34,13 +31,13 @@ exports.joke = function(callback) {
 };
 
 exports.fuckNode = function(callback) {
-    // Get some random joke
+    // Get some random pickups
 
     var index = Math.floor(Math.random() * results.length),
         title = results[index].data.title,
         text = results[index].data.selftext;
 
-    // Delete the joke, so we don't get it again
+    // Delete pick up, so we don't get it again
     results.splice(index, 1);
 
     callback(title + '\n' + text);
