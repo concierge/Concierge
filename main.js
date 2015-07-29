@@ -34,6 +34,14 @@ if (typeof String.prototype.endsWith != 'function') {
 		return this.indexOf(suffix, this.length - suffix.length) !== -1;
 	};
 }
+if (typeof String.prototype.capitiliseFirst != 'function') {
+	String.prototype.capitiliseFirst = function () {
+		if (this.length >= 2) {
+			return this[0].toUpperCase() + this.substring(1);
+		}
+		return this;
+	};
+}
 
 // Bootstrap platform
 var platform = require('./core/platform.js');
