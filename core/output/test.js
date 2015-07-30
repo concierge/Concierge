@@ -21,7 +21,14 @@ exports.start = function(callback) {
 	if (this.config.sender_name) {
 		event.sender_name = this.config.sender_name;
 	}
+
 	rl.on('line', function (cmd) {
+		if (cmd.startsWith("/setuser")) {
+			var name = cmd.substr(9);
+			event.sender_name = name;
+			return;
+		}
+
 		event.body = cmd;
 		callback(api, event);
 	});
