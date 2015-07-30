@@ -7,6 +7,21 @@
 var games = [];
 
 /**
+ * Maps a coordinate to something a programmer would use
+*/
+function mapToCoord(coord) {
+    var rows = {"A":0, "B":1, "C":2},
+        columns = {"1":0, "2":1, "3":2};
+
+    if (rows[coord] !== undefined){
+        return rows[coord];
+    }
+    else if (columns[coord] !== undefined){
+        return columns[coord];
+    }
+}
+
+/**
  * Removes a game
 */
 function removeGame(game) {
@@ -94,11 +109,17 @@ function createGame(player1, player2, thread) {
 */
 function printGame(game) {
     var output = "",
-        board = game.board;
+        board = game.board,
+        rows = ["A", "B", "C"];
+
+    output += "  1 2 3\n";
 
     for (var i = 0; i < board.length; ++i) {
         for (var j = 0; j < board[i].length; ++j) {
-            if (j > 0) {
+            if (j === 0) {
+                output += rows[i] + " ";
+            }
+            else {
                 output += "|";
             }
 
@@ -209,10 +230,19 @@ exports.run = function(api, event) {
             api.sendMessage("Um. Is that even a coordinate?");
         }
 
+        console.log(move);
+        var y = mapToCoord(move.substr(0, 1)),
+            x = mapToCoord(move.substr(1, 1));
+
         move = {
-            0: move.substr(0, 1),
-            1: move.substr(1, 1)
+            0: y,
+            1: x
         };
+
+        if (move[0] === undefined || move[1] === undefined) {
+            api.sendMessage("Do at least TRY and pick a coordinate on the board", event.thread_id);
+            return;
+        }
 
         var output = place(game, event.sender_name.trim(), move);
         if (output) {
@@ -246,5 +276,3 @@ exports.run = function(api, event) {
         api.sendMessage(event.sender_name.trim() + " surrenders! " + (event.sender_name.trim() !== game.noughts ? game.noughts : game.crosses) + " wins!");
     }
 };
-
-exports.run({sendMessage: function (message) { console.log(message);}}, {body: '/tictactoe "A"', thread_id: 1, sender_name: "B"});
