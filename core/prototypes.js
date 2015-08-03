@@ -36,3 +36,13 @@ if (typeof String.prototype.contains != 'function') {
 		return this.indexOf(str) !== -1;
 	};
 }
+
+// string.capitiliseFirst
+if (typeof String.prototype.capitiliseFirst != 'function') {
+	String.prototype.capitiliseFirst = function () {
+		if (this.length >= 2) {
+			return this[0].toUpperCase() + this.substring(1);
+		}
+		return this;
+	};
+}
