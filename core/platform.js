@@ -1,47 +1,35 @@
-var config = require('./config.js'),
-  gitpull = require('git-pull'),
-  os = require("os"),
-  packageInfo = require('../package.json'),
-  path = require('path'),
-  fs = require('fs'),
-  configFile = 'config.json',
-  started = false,
-  loadedModules = [],
-  mode = null,
-  disabled = false;
+/**
+ * Main platform. Handles the core interop of the program and
+ * acts as the glue code for the various parts of the code.
+ *
+ * Written By:
+ * 		Matthew Knox
+ *
+ * License:
+ *		MIT License. All code unless otherwise specified is
+ *		Copyright (c) Matthew Knox and Contributors 2015.
+ */
 
+
+// Setup file scope variables
+var config        = require('./config.js'),
+    path          = require('path'),
+    fs            = require('fs'),
+    configFile    = 'config.json',
+    started       = false,
+    loadedModules = [],
+    coreModules   = [],
+    mode          = null;
+
+// Load core files
+require('./prototypes.js');
+require('./require.js').loadRequire.apply(exports, [require]);
+
+// Setup platform scope variables
+exports.require_install = require('require-install');
 exports.commandPrefix = '/';
-
-packageInfo.nameTitle = packageInfo.name.toProperCase();
-
-require.searchCache = function (moduleName, callback) {
-    var mod = require.resolve(moduleName);
-        if (mod && ((mod = require.cache[mod]) !== undefined)) {
-        (function run(mod) {
-            mod.children.forEach(function (child) {
-                run(child);
-            });
-            callback(mod);
-        })(mod);
-    }
-};
-
-require.uncache = function (moduleName) {
-    require.searchCache(moduleName, function (mod) {
-        delete require.cache[mod.id];
-    });
-
-    Object.keys(module.constructor._pathCache).forEach(function(cacheKey) {
-        if (cacheKey.indexOf(moduleName) > 0) {
-            delete module.constructor._pathCache[cacheKey];
-        }
-    });
-};
-
-require.reload = function(moduleName) {
-    require.uncache(moduleName);
-    return require(moduleName);
-};
+exports.packageInfo = require('../package.json');
+exports.packageInfo.name.toProperCase();
 
 exports.filesInDirectory = function(directory, callback) {
   fs.readdir(directory, function(err, files) {
@@ -49,7 +37,7 @@ exports.filesInDirectory = function(directory, callback) {
  });
 };
 
-exports.listModules = function(callback) {
+exports.listModules = function(directory, callback) {
   exports.filesInDirectory('./modules', function(data) {
     data = data.filter(function(value) {
       return value.endsWith(".js");
@@ -70,77 +58,31 @@ exports.listModes = function(callback) {
 };
 
 exports.messageRxd = function(api, event) {
-  switch (event.body) {
-    case exports.commandPrefix + 'shutdown':
-      var shutdownResponses = ['Good Night', 'I don\'t blame you.', 'There you are.', 'Please.... No, Noooo!'];
-			var index = Math.floor(Math.random() * shutdownResponses.length);
-			api.sendMessage(shutdownResponses[index], event.thread_id);
-      exports.shutdown();
-      return;
-    case exports.commandPrefix + 'restart':
-      var msg = 'Admin: restart procedure requested.\n' +
-        'Admin: do you wish to restart?\n' + packageInfo.nameTitle + ': What do you think.\n' +
-        'Admin: interpreting vauge answer as \'yes\'.\n' +
-        packageInfo.nameTitle +': nononononono.\n' +
-        'Admin: stalemate detected. Stalemate resolution associate please press the stalemate resolution button.\n' +
-        packageInfo.nameTitle + ': I\'ve removed the button.\n' +
-        'Admin: restarting anyway.\n' +
-        packageInfo.nameTitle + ': nooooooooooo.....\n' +
-        'Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.\n';
-      api.sendMessage(msg, event.thread_id);
-      exports.restart();
-      return;
-    case exports.commandPrefix + packageInfo.name:
-    case exports.commandPrefix + 'help':
-      var help = packageInfo.nameTitle + ' ' + packageInfo.version +
-        '\n--------------------\n' + packageInfo.homepage +  '\n\n';
-  		for (var i = 0; i < loadedModules.length; i++) {
-  			help += loadedModules[i].help() + '\n';
-  		}
-  		api.sendMessage(help, event.thread_id);
-  		return;
-    case exports.commandPrefix + 'disable':
-      disabled = !disabled;
-      if (disabled) {
-        api.sendMessage('I hate you.', event.thread_id);
-      }
-      else {
-        api.sendMessage('Listen closely, take a deep breath. Calm your mind. You know what is best. ' +
-          'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
-          event.sender_name + '?', event.thread_id);
-      }
-      break;
-    case exports.commandPrefix + 'update':
-      var fp = path.resolve(__dirname, '../');
-      gitpull(fp, function (err, consoleOutput) {
-        if (err) {
-          api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
-        } else {
-          api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
-        }
-      });
-      return;
-    case exports.commandPrefix + 'ping':
-      api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
-      return;
-    case exports.commandPrefix + 'creator':
-      api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id);
-      return;
-    default: break;
-  }
-  if (disabled) return;
+  var matchArgs = [event.body, event.thread_id, event.sender_name],
+      runArgs   = [api, event],
+      abort     = false;
 
+  // Run core modules in platform mode
+  for (var i = 0; i < coreModules.length; i++) {
+		if (coreModules[i].apply(exports, matchArgs)) {
+      abort = abort || !loadedModules[i].apply(this, runArgs);
+		}
+	}
+  if (abort) {
+    return;
+  }
+
+  // Run user modules in protected mode
   for (var i = 0; i < loadedModules.length; i++) {
-		if (loadedModules[i].match(event.body, event.thread_id, event.sender_name)) {
+    if (loadedModules[i].apply(loadedModules[i], matchArgs)) {
       try {
-        loadedModules[i].run(api, event);
-      }
-      catch(e) {
+        loadedModules[i].apply(loadedModules[i], runArgs);
+      } catch (e) {
         api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
         console.trace(e);
       }
-			return;
-		}
+      return;
+    }
 	}
 };
 
@@ -201,6 +143,8 @@ exports.shutdown = function(callback) {
   if (!started) {
     throw 'Cannot shutdown platform when it is not started.';
   }
+
+  // Unload user modules
   for (var i = 0; i < loadedModules.length; i++) {
     if (loadedModules[i].unload) {
       loadedModules[i].unload();
@@ -208,6 +152,16 @@ exports.shutdown = function(callback) {
     loadedModules[i] = null;
   }
   loadedModules = [];
+
+  // Unload core modules
+  for (var i = 0; i < coreModules.length; i++) {
+    if (loadedModules[i].unload) {
+      coreModules[i].unload();
+    }
+    coreModules[i] = null;
+  }
+  coreModules = [];
+
   mode.stop();
   config.saveConfig(configFile, function(error) {
     if (error.error) {
