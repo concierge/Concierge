@@ -1,5 +1,7 @@
+var timer;
+
 exports.help = function() {
-	return this.platform.commandPrefix + 'vote "<question>" "<answer1>" "<answer2>"'
+	return this.platform.commandPrefix + 'vote "<question>" <optionalTimeout> "<answer1>" "<answer2>"'
 	+ ' ... : Call a vote on a question.\n' +
 	this.platform.commandPrefix + 'vote cancel : cancel the current vote.\n' +
 	this.platform.commandPrefix + 'vote <number> : vote for an option.';
@@ -9,7 +11,7 @@ exports.match = function(text, thread, senderName, api) {
 	return text.startsWith(this.platform.commandPrefix + 'vote');
 };
 
-exports.createVote = function(api, event, spl) {
+exports.createVote = function(api, event, spl, timeout) {
 	var person = event.sender_name.trim();
 
 	var response = person + ' called a new vote:\n\n' + spl[0] + '\n\n'
@@ -28,6 +30,15 @@ exports.createVote = function(api, event, spl) {
 	}
 
 	api.sendMessage(response, event.thread_id);
+	if (timeout > 0) {
+		api.sendMessage(timeout + ' seconds remaining.', event.thread_id);
+		timer = setTimeout(function() {
+			api.sendMessage('Vote over.', event.thread_id);
+			exports.print(api, event);
+			clearTimeout(timer);
+			delete exports.config[event.thread_id];
+		}, timeout * 1000);
+	}
 };
 
 exports.castVote = function(api, event, val) {
@@ -96,22 +107,36 @@ exports.run = function(api, event) {
 			api.sendMessage('Why did you think you could cancel a vote when one hasn\'t been cast? Stupid ' + event.sender_name.trim() + '!', event.thread_id);
 		}
 		else {
+			clearTimeout(timer);
 			delete this.config[event.thread_id];
+			api.sendMessage('Vote cancelled.', event.thread_id);
 		}
 		return;
 	}
 
 	var spl = event.body.split('"');
+	
+	var timeout = -1;
+	if (exports.isNumeric(spl[2].trim())) {
+		timeout = parseInt(spl[2].trim());
+	}
+	
 	var a = [];
 	for (var i = 1; i < spl.length; i+=2) {
 		a.push(spl[i]);
 	}
 	spl = a;
-
+	
 	if (spl.length < 3)  {
 		api.sendMessage('WTF are you doing????!', event.thread_id);
 		return;
 	}
 
-	exports.createVote(api, event, spl);
+	exports.createVote(api, event, spl, timeout);
+};
+
+exports.unload = function() {
+	if (timer) {
+		clearTimeout(timer);
+	}
 };
