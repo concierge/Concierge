@@ -68,6 +68,6 @@ exports.run = function(api, event) {
 	var query = event.body.substr(6);
 	exports.search(query, function(image) {
 		var img = exports.ensureExt(image.unescapedUrl);
-		api.sendMessage(image.unescapedUrl, event.thread_id);
+		api.sendImage("url", img, "I found this:", event.thread_id);
 	});
 };

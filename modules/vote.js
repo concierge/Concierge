@@ -43,7 +43,7 @@ exports.createVote = function(api, event, spl, timeout) {
 
 exports.castVote = function(api, event, val) {
 	var person = event.sender_name.trim();
-
+	
 	if (!this.config[event.thread_id]) {
 		api.sendMessage('No vote in progress. Stupid ' + person + '!', event.thread_id);
 		return;
@@ -59,6 +59,8 @@ exports.castVote = function(api, event, val) {
 		return;
 	}
 
+	val--;
+	
 	this.config[event.thread_id][person] = true;
 	if (!this.config[event.thread_id].votes[val]) {
 		this.config[event.thread_id].votes[val] = 1;

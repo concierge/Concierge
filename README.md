@@ -3,6 +3,8 @@
 
 <i>It does way more than this now...</i>
 
+<b>Please Note: this documentation is now significantly out of date. For creating modules please use the examples within the modules directory.</b>
+
 ## Usage
 Create a new file, `config.json` that has the following:
 ```

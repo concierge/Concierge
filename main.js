@@ -46,9 +46,17 @@ if (typeof String.prototype.capitiliseFirst != 'function') {
 // Bootstrap platform
 var platform = require('./core/platform.js');
 
+// Determine if debug output is enabled
+var debug = false;
+if (process.argv[2] === 'debug') {
+	process.argv.splice(2, 1);
+	debug = true;
+	platform.debug = true;
+}
+
 // Get startup mode
 if (!process.argv[2]) {
-  process.argv.push('test');
+	process.argv.push('test');
 }
 process.argv[2] = process.argv[2].toLowerCase();
 
@@ -58,8 +66,12 @@ platform.listModes(function(modes) {
 		platform.setMode(modes[process.argv[2]]);
 	}
 	catch(e) {
+		if (debug) {
+			console.error(e);
+			console.trace();
+		}
 		console.error('Unknown mode \'' + process.argv[2] + '\'');
 		process.exit(-1);
 	}
-  platform.start();
+	platform.start();
 });

@@ -44,29 +44,33 @@ require.reload = function(moduleName) {
 };
 
 exports.filesInDirectory = function(directory, callback) {
-  fs.readdir(directory, function(err, files) {
-    callback(err ? [] : files);
- });
+	fs.readdir(directory, function(err, files) {
+		if (exports.debug && err) {
+			console.error(err);
+			console.trace();
+		}
+		callback(err ? [] : files);
+	});
 };
 
 exports.listModules = function(callback) {
-  exports.filesInDirectory('./modules', function(data) {
-    data = data.filter(function(value) {
-      return value.endsWith(".js");
-    });
-    callback(data);
-  });
+	exports.filesInDirectory('./modules', function(data) {
+		data = data.filter(function(value) {
+			return value.endsWith(".js");
+		});
+		callback(data);
+	});
 };
 
 exports.listModes = function(callback) {
-  exports.filesInDirectory('./core/output', function(files) {
-    var obj = {};
-    for (var i = 0; i < files.length; i++) {
-      var name = path.basename(files[i], '.js').toLowerCase();
-      obj[name] = files[i];
-    }
-    callback(obj);
-  });
+	exports.filesInDirectory('./core/output', function(files) {
+		var obj = {};
+		for (var i = 0; i < files.length; i++) {
+			var name = path.basename(files[i], '.js').toLowerCase();
+			obj[name] = files[i];
+		}
+		callback(obj);
+	});
 };
 
 exports.messageRxd = function(api, event) {
@@ -132,6 +136,7 @@ exports.messageRxd = function(api, event) {
 
   for (var i = 0; i < loadedModules.length; i++) {
 		if (loadedModules[i].match(event.body, event.thread_id, event.sender_name)) {
+			api.sendTyping(event.thread_id);
       try {
         loadedModules[i].run(api, event);
       }
@@ -175,7 +180,6 @@ exports.start = function() {
           index = Object.keys(require.cache).indexOf(fp),
           m = null;
         if (index !== -1) {
-          //delete require.cache[modules[i]];
           console.log("Reloading module: " + modules[i]);
           m = require.reload(fp);
         }
