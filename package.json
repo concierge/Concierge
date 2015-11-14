@@ -5,7 +5,7 @@
   "main": "main.js",
   "dependencies": {
     "express": "*",
-    "facebook-chat-api": "*",
+    "facebook-chat-api": "1.0.2",
     "git-pull": "*",
     "quarantine": "*",
     "redwrap": "*",
