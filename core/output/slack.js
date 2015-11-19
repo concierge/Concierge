@@ -173,7 +173,7 @@ exports.start = function (callback) {
 			setTitle: renameChannel
 		});
 
-    for (teamId in SlackTeams) {
+    for (teamId in slackTeams) {
         getUsers(teamId);
     }
 
