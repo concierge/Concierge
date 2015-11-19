@@ -227,8 +227,8 @@ exports.start = function (callback) {
 						shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
 						callback(platform, shimMessage);
 						}
-        }
-        res.sendStatus(200);
+        	res.sendStatus(200);
+				}
     });
     server = app.listen(this.config.port);
 };
