@@ -111,6 +111,7 @@ var express = require('express'),
     getUsers = function(slackTeam) {
         var body = {"token": slackTeam.slack_token},
             userMap = [];
+				console.log(body);
         request({
             "uri": 'https://slack.com/api/users.list',
             "method": 'GET',
@@ -118,8 +119,8 @@ var express = require('express'),
         },
         function (error, response, body) {
 					body = JSON.parse(body);
-            if (response.statusCode != 200) {
-                console.log('error: ' + response.statusCode + '\n' + error);
+            if (response.statusCode != 200 || body.ok == false) {
+                console.log('failed to get list of users');
             }
             else {
 							console.log(body);
