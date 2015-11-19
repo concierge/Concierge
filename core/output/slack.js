@@ -111,6 +111,7 @@ var express = require('express'),
     getUsers = function(slackTeam) {
         var body = {"token": slackTeam.slack_token},
             userMap = [];
+				console.log(slackTeam);
 				console.log(body);
         request({
             "uri": 'https://slack.com/api/users.list',
@@ -176,7 +177,7 @@ exports.start = function (callback) {
 		});
 
     for (teamId in slackTeams) {
-        getUsers(teamId);
+        getUsers(slackTeams[teamId]);
     }
 
     app.post('/', function (req, res) {
