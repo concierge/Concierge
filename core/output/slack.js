@@ -170,13 +170,7 @@ exports.start = function (callback) {
 		platform = shim.createPlatformModule({
 			sendMessage: sendMessage,
 			sendFile: sendFile,
-			setTitle: function(title, thread) {
-				if (endTyping != null) {
-					endTyping();
-					endTyping = null;
-				}
-				api.setTitle(title, thread);
-			}
+			setTitle: renameChannel
 		});
 
     for (teamId in SlackTeams) {
@@ -186,10 +180,10 @@ exports.start = function (callback) {
     app.post('/', function (req, res) {
         var data = req.body,
             event = [],
-            api = [],
             message = data.text.trim(),
 						shimMessage = null;
 
+				console.log(data);
         if (data.user_name != 'slackbot') {
 					// Check that the message sent contains a identifier
 					// TODO: need to check that regex is correct?
@@ -228,9 +222,8 @@ exports.start = function (callback) {
             event.threadID = data.channel_id + '~' + data.team_id;
 						event.senderID = data.user_id;
             event.senderName = data.user_name;
-            api.sendMessage = sendMessage;
-            api.team_id = data.team_id;
 
+						console.log(event);
 						shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
 						callback(platform, shimMessage);
 						}
