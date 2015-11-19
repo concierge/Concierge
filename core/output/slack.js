@@ -13,7 +13,7 @@ var express = require('express'),
           thread_id = thread_components[0],
           thread_team_id = thread_components[1];
 
-				slack_token = slackTeam[thread_team_id].slack_token;
+				slack_token = slackTeams[thread_team_id].slack_token;
 
         if (slack_token != null) {
             var body = {
@@ -49,7 +49,7 @@ var express = require('express'),
 				thread_id = thread_components[0],
 				thread_team_id = thread_components[1];
 
-			slack_token = slackTeam[thread_team_id].slack_token;
+			slack_token = slackTeams[thread_team_id].slack_token;
 
 			if (slack_token != null) {
 					var body = {
@@ -83,7 +83,7 @@ var express = require('express'),
 				thread_id = thread_components[0],
 				thread_team_id = thread_components[1];
 
-			slack_token = slackTeam[thread_team_id].slack_token;
+			slack_token = slackTeams[thread_team_id].slack_token;
 
 			if (slack_token != null) {
 					var body = {
