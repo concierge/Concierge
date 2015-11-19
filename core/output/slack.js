@@ -5,17 +5,13 @@ var express = require('express'),
    	server,
 	sendMessage = function(text, thread) {
         var slackTeams = exports.config.slack_teams,
-		    slack_token = null,
-            thread_components = thread.split('~', 2),
-            thread_id = thread_components[0],
-            thread_team_id = thread_components[1];
+		    	slack_token = null,
+          thread_components = thread.split('~', 2),
+          thread_id = thread_components[0],
+          thread_team_id = thread_components[1];
 
-        for (var i = 0; i < slackTeams.length; i++) {
-            if (slackTeams[i].slack_team_id == thread_team_id) {
-                slack_token = slackTeams[i].slack_token;
-                break;
-            }
-        }
+				slack_token = slackTeam[thread_team_id].slack_token;
+
         if (slack_token != null) {
             var body = {
                 "token": slack_token,
@@ -49,24 +45,20 @@ var express = require('express'),
             "qs": body
         },
         function (error, response, body) {
-		body = JSON.parse(body);
+					body = JSON.parse(body);
             if (response.statusCode != 200) {
                 console.log('error: ' + response.statusCode + '\n' + error);
             }
             else {
                 for (var i = 0; i < body.members.length; i++) {
-                    var user = {
-                        "user_id": body.members[i].id,
-                        "user_name": body.members[i].name
-                    };
-                    userMap.push(user);
+                    userMap[body.members[i].id] = body.members[i].name
                 }
                 slackTeam.users = userMap;
             }
         });
-    };
+    },
 
-    lookUpUserAddToTeam = function(slackTeam, userId, matches, message, callback) {
+    lookUpUserAddToTeam = function(slackTeam, userId, match, message, callback) {
         var body = {"token": slackTeam.slack_token, "user": userId},
             userMap = [];
         request({
@@ -78,18 +70,23 @@ var express = require('express'),
                 body = JSON.parse(body);
                 if (response.statusCode != 200) {
                     console.log('error: ' + response.statusCode + '\n' + error);
-                    return callback(matches, message, null);
+                    return message
                 }
                 else {
-                    var user = {
-                        "user_id": body.user.id,
-                        "user_name": body.user.name
-                    };
-                    slackTeam.users.push(user);
-                    return callback(matches, message, body.user.name);
+                    slackTeam.users[body.user.id] = body.user.name;
+                    return callback(body.user.name, message, match);
                 }
             });
-    };
+    },
+
+		replaceUserIdWithUserName = function(userName, message, match) {
+			if (userName) {
+				var index = message.indexOf(match);
+				return message.substr(0, index) + userName + message.substr(index + match.length);
+			}
+		};
+
+
 
 exports.start = function (callback) {
     var slackTeams = exports.config.slack_teams,
@@ -98,8 +95,15 @@ exports.start = function (callback) {
     app.use(bodyParser.json());
     app.use(bodyParser.urlencoded({ extended: true }));
 
-    for (var i = 0; i < slackTeams.length; i++) {
-        getUsers(slackTeams[i]);
+		"slack_teams": {
+			"team id goes here": {
+				"slackToken":  ,
+				"users":
+			}
+		}
+
+    for (teamId in SlackTeams) {
+        getUsers(teamId);
     }
 
     app.post('/', function (req, res) {
@@ -109,62 +113,38 @@ exports.start = function (callback) {
             message = data.text.trim();
 
         if (data.user_name != 'slackbot') {
+					// Check that the message sent contains a identifier
+					// Fix regex
+					// make a lookup table
             var matches = message.match(/<?@[^:>]+>:?/g);
             if (matches != null) {
                 var slackTeams = exports.config.slack_teams,
                     slackTeam,
                     userName,
-                    id,
-                    foundTeam = false,
-                    foundUser = false;
+                    id;
 
-                for (var i = 0; i < slackTeams.length; i++) {
-                    if (slackTeams[i].slack_team_id == data.team_id) {
-                        slackTeam = slackTeams[i];
-                        foundTeam = true;
-                        break;
-                    }
-                }
-                if (foundTeam) {
+								slackTeam = slackTeams[data.team_id];
 
-                    id = matches[0].replace(/[ :<>@]+/g, '');
+                if (slackTeam) {
 
-                    for (var l = 0; l < slackTeam.users.length; l++) {
-                        if (slackTeam.users[l].user_id == id) {
-                            userName = slackTeam.users[l].user_name;
-                            foundUser = true;
-                            break;
-                        }
-                    }
+                  for (var j = 0; j < matches.length; j++) {
+											// replace identifier with empty string
+											id = matches[j].replace(/[ :<>@]+/g, '');
 
-                    if (foundUser) {
-                        for (var j = 0; j < matches.length; j++) {
-                            var index = message.indexOf(matches[j]);
-                            message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
-                        }
-                    }
-                    else {
-                        // query slack to see if the user is in the team, they may have been added recently
-                        message = lookUpUserAddToTeam(slackTeam, id, matches, message, function(matches, message, userName) {
-
-                            if (userName != null) {
-                                for (var j = 0; j < matches.length; j++) {
-                                    var index = message.indexOf(matches[j]);
-                                    message = message.substr(0, index) + userName + message.substr(index + matches[j].length);
-                                }
-                            }
-                            else {
-                                return message;
-                            }
-                        });
-                    }
+											// find the user
+											userName = slackTeam.users[id];
+											if (!userName) {
+		                      // query slack to see if the user is in the team, they may have been added recently
+		                      message = lookUpUserAddToTeam(slackTeam, id, matches[j], message, replaceUserIdWithUserName);
+		                  }
+											else {
+												message = replaceUserIdWithUserName(userName, message, matches[j]);
+											}
+										}
                 }
                 else {
                     console.log('No slack team found matching: ' + data.team_id);
                 }
-            }
-            else {
-                console.log('No match found for: ' + message);
             }
 
             event.body = message;
