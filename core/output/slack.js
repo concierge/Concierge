@@ -122,6 +122,7 @@ var express = require('express'),
                 console.log('error: ' + response.statusCode + '\n' + error);
             }
             else {
+							console.log(body);
                 for (var i = 0; i < body.members.length; i++) {
                     userMap[body.members[i].id] = body.members[i].name
                 }
