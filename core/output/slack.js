@@ -111,8 +111,6 @@ var express = require('express'),
     getUsers = function(slackTeam) {
         var body = {"token": slackTeam.slack_token},
             userMap = [];
-				console.log(slackTeam);
-				console.log(body);
         request({
             "uri": 'https://slack.com/api/users.list',
             "method": 'GET',
@@ -124,7 +122,6 @@ var express = require('express'),
                 console.log('failed to get list of users');
             }
             else {
-							console.log(body);
                 for (var i = 0; i < body.members.length; i++) {
                     userMap[body.members[i].id] = body.members[i].name
                 }
@@ -186,7 +183,6 @@ exports.start = function (callback) {
             message = data.text.trim(),
 						shimMessage = null;
 
-				console.log(data);
         if (data.user_name != 'slackbot') {
 					// Check that the message sent contains a identifier
 					// TODO: need to check that regex is correct?
@@ -226,7 +222,6 @@ exports.start = function (callback) {
 						event.senderID = data.user_id;
             event.senderName = data.user_name;
 
-						console.log(event);
 						shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
 						callback(platform, shimMessage);
 						}
