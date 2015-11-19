@@ -183,10 +183,8 @@ exports.start = function (callback) {
 			var matches = message.match(/<?@[^:>]+>:?/g);
 			if (matches != null) {
 				var slackTeams = exports.config.slack_teams,
-				slackTeam,
 				userName,
-				id;
-
+				id,
 				slackTeam = slackTeams[data.team_id];
 
 				if (slackTeam) {
