@@ -35,7 +35,6 @@ exports.yesOrNo = function (callback) {
 };
 
 exports.search = function (query, callback) {
-    //TODO waiting for update to anim to use same api to embed images in fb chat.
     if (!query || query === '') {
         var index = Math.floor(Math.random() * insults.length);
         callback(insults[index] + ', try again');
@@ -48,6 +47,6 @@ exports.search = function (query, callback) {
 exports.run = function(api, event) {
     var query = event.body.substr(6);
     exports.search(query, function(result) {
-        api.sendMessage(result, event.thread_id);
+		api.sendImage("url", result, "Hmmmmmmm", event.thread_id);
     });
 };

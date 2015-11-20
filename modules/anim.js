@@ -24,7 +24,7 @@ exports.search = function (query, callback) {
 		}
 	}
 
-	var q = {v: '1.0', rsz: '8', q: query, safe: 'active', imgtype: 'animated'};
+	var q = {v: '1.0', rsz: '8', q: query, safe: 'active', imgtype: 'animated', as_filetype: 'gif'};
 
 	request.get({url: 'http://ajax.googleapis.com/ajax/services/search/images', qs: q}, function(error, response, body) {
 		if (response.statusCode === 200 && response.body) {
@@ -68,6 +68,6 @@ exports.run = function(api, event) {
 	var query = event.body.substr(6);
 	exports.search(query, function(image) {
 		var img = exports.ensureExt(image.unescapedUrl);
-		api.sendMessage(image.unescapedUrl, event.thread_id);
+		api.sendImage("url", img, "I found this:", event.thread_id);
 	});
 };

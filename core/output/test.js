@@ -1,16 +1,13 @@
 var readline = require('readline'),
 	rl = null,
-	api = {
-		sendMessage: function(text, thread) {
-			console.log(text);
-		}
-	},
-	event = {
-		type: "message",
-		thread_id: 1,
-		body: "",
-		sender_name: "TESTING"
-	};
+	shim = require('../shim.js'),
+	api = shim.createPlatformModule({
+		sendMessage: function(message, thread) {
+			console.log(message);
+		},
+		sendTyping: function(thread) {}
+	}),
+	senderName = "TESTING";
 
 exports.start = function(callback) {
 	rl = readline.createInterface({
@@ -25,11 +22,11 @@ exports.start = function(callback) {
 	rl.on('line', function (cmd) {
 		if (cmd.startsWith("/setuser")) {
 			var name = cmd.substr(9);
-			event.sender_name = name;
+			senderName = name;
 			return;
 		}
 
-		event.body = cmd;
+		var event = shim.createEvent(1, 0, senderName, cmd);
 		callback(api, event);
 	});
 };
