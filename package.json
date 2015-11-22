@@ -11,7 +11,8 @@
     "redwrap": "*",
     "request": "*",
     "require-install": "*",
-    "body-parser": "*"
+    "body-parser": "*",
+	"colors": "1.1.2"
   },
   "devDependencies": {},
   "scripts": {

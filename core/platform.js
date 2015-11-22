@@ -11,14 +11,14 @@
  */
 
 // Setup file scope variables
-var config				= require('./config.js'),
-		path			= require('path'),
-		fs				= require('fs'),
-		configFile		= 'config.json',
-		started			= false,
-		loadedModules	= [],
-		coreModules		= [],
-		mode			= null;
+var config			= require('./config.js'),
+	path			= require('path'),
+	fs				= require('fs'),
+	configFile		= 'config.json',
+	started			= false,
+	loadedModules	= [],
+	coreModules		= [],
+	mode			= null;
 
 // Load core files
 require('./prototypes.js');
@@ -83,12 +83,11 @@ exports.start = function() {
 	}
 	if (!mode) {
 		throw 'Mode must be set before starting';
-	}
-	console.log(exports.packageInfo.name.toProperCase() + ' '
-						+ exports.packageInfo.version
-						+ '\n------------------------------------\n'
-						+ 'Starting system...\n'
-						+ 'Loading configuration...');
+    }
+    console.title(exports.packageInfo.name.toProperCase() + ' ' + exports.packageInfo.version);
+    console.info('------------------------------------');
+    console.warn('Starting system...\n'
+				+ 'Loading configuration...');
 	config.loadConfig(configFile, function() {
         mode.platform = exports;
 		mode.config = config.getConfig("output");
@@ -100,7 +99,7 @@ exports.start = function() {
 		}
 
 		// Load core modules
-		console.log('Loading core components...');
+		console.warn('Loading core components...');
 		exports.listModules(coreMoulesDir, function(modules) {
 			for (var i = 0; i < modules.length; i++) {
 				var fp = path.resolve(__dirname, '../' + coreMoulesDir + '/' + modules[i]),
@@ -115,18 +114,18 @@ exports.start = function() {
 		});
 
 		// Load Kassy modules
-		console.log('Loading modules...');
+		console.warn('Loading modules...');
 		exports.listModules(modulesDir, function(modules) {
 			for (var i = 0; i < modules.length; i++) {
 				var fp = path.resolve(__dirname, '../' + modulesDir + '/' + modules[i]),
 					index = Object.keys(require.cache).indexOf(fp),
 					m = null;
 				if (index !== -1) {
-					console.log("Reloading module: " + modules[i]);
+					console.info("Reloading module: " + modules[i]);
 					m = require.reload(fp);
 				}
 				else {
-					console.log("New module found: " + modules[i]);
+					console.info("New module found: " + modules[i]);
 					m = require(fp);
 				}
 				m.commandPrefix = exports.commandPrefix;
@@ -138,7 +137,7 @@ exports.start = function() {
 			}
 			mode.start(exports.messageRxd);
 			started = true;
-			console.log('System has started. Hello World!');
+			console.warn('System has started. Hello World!');
 		});
 	});
 };

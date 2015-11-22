@@ -19,16 +19,16 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-// Bootstrap platform
-var platform    = require('./core/platform.js'),
+// Start platform
+var consolec    = require('./core/console.js'),
+    platform    = require('./core/platform.js'),
     modes       = require('./core/modes.js');
 
 // Determine if debug output is enabled
-var debug = false;
 if (process.argv[2] === 'debug') {
+    console.warn('Debug mode enabled.');
 	process.argv.splice(2, 1);
-	debug = true;
-	platform.debug = true;
+    consolec.setDebug(true);
 }
 
 // Get startup mode
@@ -43,17 +43,22 @@ modes.listModes(function(modes) {
 	try {
 		platform.setMode(modes[process.argv[2]]);
 	}
-	catch(e) {
-		if (debug) {
-			console.error(e);
-			console.trace();
-		}
-        console.error('Unknown mode \'' + process.argv[2] + '\'');
-	    console.error('The modes avalible on your system are:');
+	catch (e) {
+	    console.critical(e);
+        console.error(('Unknown mode \'' + process.argv[2] + '\''));
+	    console.info('The modes avalible on your system are:');
 	    for (var mode in modes) {
-	        console.error('\t- \'' + mode + '\'');
+	        console.info('\t- \'' + mode + '\'');
 	    }
 		process.exit(-1);
-	}
-	platform.start();
+    }
+
+    try {
+        platform.start();
+    }
+    catch (e) {
+        console.critical(e);
+        console.error('A critical error occured while running. Please check your configuration or report a bug.');
+        process.exit(-2);
+    }
 });
