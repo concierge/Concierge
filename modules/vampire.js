@@ -5,11 +5,11 @@
  * Date Written: 29/07/2015
  */
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'vampire');
+    return text.startsWith(this.commandPrefix + 'vampire');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'vampire : Makes things sound like a vampire';
+    return this.commandPrefix + 'vampire : Makes things sound like a vampire';
 };
 
 exports.run = function(api, event) {

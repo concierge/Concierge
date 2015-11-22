@@ -10,15 +10,15 @@ var require_install = require('require-install'),
 })()";
 
 exports.match = function(text) {
-	return text.startsWith(this.platform.commandPrefix + 'runbot');
+	return text.startsWith(this.commandPrefix + 'runbot');
 };
 
 exports.help = function() {
-	return this.platform.commandPrefix + 'runbot <jscode> : Runs JS code.';
+	return this.commandPrefix + 'runbot <jscode> : Runs JS code.';
 };
 
 exports.wrapCode = function(message) {
-	var code = message.substr(this.platform.commandPrefix.length + 6);
+	var code = message.substr(this.commandPrefix.length + 6);
 	return logCodeBeginning + code + logCodeEnding;
 };
 

@@ -5,11 +5,11 @@
  * Date Written: 28/07/2015
  */
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'lithp');
+    return text.startsWith(this.commandPrefix + 'lithp');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'lithp : Speaks with a lisp';
+    return this.commandPrefix + 'lithp : Speaks with a lisp';
 };
 
 exports.run = function(api, event) {

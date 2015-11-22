@@ -4,11 +4,14 @@ var reddit = require('./common/reddit.js'),
     results = [];
 
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'joke');
+	console.log(text);
+	console.log(this.commandPrefix + 'joke');
+	console.log(text.startsWith(this.commandPrefix + 'joke'));
+    return text.startsWith(this.commandPrefix + 'joke');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'joke : A mixed bag of fun.';
+    return this.commandPrefix + 'joke : A mixed bag of fun.';
 };
 
 exports.joke = function(callback) {

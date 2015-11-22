@@ -4,12 +4,12 @@ exports.match = function(text) {
 };
 
 exports.run = function(api, event) {
-  var help = packageInfo.nameTitle + ' '
+  var help = this.packageInfo.name + ' '
       + this.packageInfo.version + '\n--------------------\n'
-      + packageInfo.homepage +  '\n\n';
+      + this.packageInfo.homepage +  '\n\n';
 
-  for (var i = 0; i < loadedModules.length; i++) {
-    help += loadedModules[i].help() + '\n';
+  for (var i = 0; i < this.loadedModules.length; i++) {
+    help += this.loadedModules[i].help() + '\n';
   }
   
   api.sendMessage(help, event.thread_id);

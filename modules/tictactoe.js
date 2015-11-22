@@ -169,21 +169,21 @@ function checkWin(game, player) {
 }
 
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'tictactoe')
-        || text.startsWith(this.platform.commandPrefix + 'move')
-        || text.startsWith(this.platform.commandPrefix + 'surrender');
+    return text.startsWith(this.commandPrefix + 'tictactoe')
+        || text.startsWith(this.commandPrefix + 'move')
+        || text.startsWith(this.commandPrefix + 'surrender');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + "tictactoe <opponent's full name> : starts a new game against the specified opponent\n" +
-           this.platform.commandPrefix + "move <row><column> : places a piece at the specified row and column, if you are in a game\n" +
-           this.platform.commandPrefix + "surrender : gives up on a game";
+    return this.commandPrefix + "tictactoe <opponent's full name> : starts a new game against the specified opponent\n" +
+           this.commandPrefix + "move <row><column> : places a piece at the specified row and column, if you are in a game\n" +
+           this.commandPrefix + "surrender : gives up on a game";
 };
 
 exports.run = function(api, event) {
     "use strict"
     var command = event.body,
-        commandPrefix = this.platform ? this.platform.commandPrefix : "/";
+        commandPrefix = this.commandPrefix;
 
     //If we are creating a new game
     if (command.startsWith(commandPrefix + "tictactoe")) {

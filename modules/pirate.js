@@ -4,11 +4,11 @@ var require_install = require('require-install'),
 
 
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'pirate');
+    return text.startsWith(this.commandPrefix + 'pirate');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'pirate <message> : Translates your message into pirate speak.';
+    return this.commandPrefix + 'pirate <message> : Translates your message into pirate speak.';
 };
 
 exports.pirate = function (query, callback) {

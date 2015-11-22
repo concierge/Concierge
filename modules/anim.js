@@ -3,11 +3,11 @@ var require_install = require('require-install'),
 	animCache = {}; // yes...
 
 exports.match = function(text) {
-	return text.startsWith(this.platform.commandPrefix + 'anim');
+	return text.startsWith(this.commandPrefix + 'anim');
 };
 
 exports.help = function() {
-	return this.platform.commandPrefix + 'anim <query> : Searches for animated GIF.';
+	return this.commandPrefix + 'anim <query> : Searches for animated GIF.';
 };
 
 exports.search = function (query, callback) {

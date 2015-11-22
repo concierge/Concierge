@@ -1,11 +1,11 @@
 exports.match = function(text) {
-	return text.endsWith('++') || text.endsWith('--') || text === this.platform.commandPrefix + 'karma';
+	return text.endsWith('++') || text.endsWith('--') || text === this.commandPrefix + 'karma';
 };
 
 exports.help = function() {
-	return '<text>++.. : Increases <text>\'s karma.\n\
-<text>--.. : Decreases <text>\'s karma.\n\
-' + this.platform.commandPrefix + 'karma : Shows all current karma.';
+    return '<text>++.. : Increases <text>\'s karma.\n'
+        + '<text>--.. : Decreases <text>\'s karma.\n'
+        + this.commandPrefix + 'karma : Shows all current karma.';
 };
 
 exports.parseKarmaChange = function(message) {
@@ -127,7 +127,7 @@ exports.printKarma = function(api, event) {
 };
 
 exports.run = function(api, event) {
-	if (event.body === this.platform.commandPrefix + 'karma') {
+	if (event.body === this.commandPrefix + 'karma') {
 		exports.printKarma(api, event);
 		return;
 	}

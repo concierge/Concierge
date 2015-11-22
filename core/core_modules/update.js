@@ -1,10 +1,11 @@
-var gitpull = require_install('git-pull');
+var require_install	= require('require-install'),
+    gitpull		    = require_install('git-pull');
 
 exports.match = function(text) {
-  text === this.commandPrefix + 'update';
+  return text === this.commandPrefix + 'update';
 };
 
-exports.run(api, event) {
+exports.run = function(api, event) {
   var fp = path.resolve(__dirname, '../');
   gitpull(fp, function (err, consoleOutput) {
     if (err) {

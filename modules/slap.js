@@ -6,12 +6,12 @@
 
 // Define the 'regex' command matching criteria boolean
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'slap');
+    return text.startsWith(this.commandPrefix + 'slap');
 };
 
 // Give users help if they can't slaps
 exports.help = function() {
-    return this.platform.commandPrefix + 'slap <infidel>: Slaps an annoying infidel - descriptively!';
+    return this.commandPrefix + 'slap <infidel>: Slaps an annoying infidel - descriptively!';
 };
 
 

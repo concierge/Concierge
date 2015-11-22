@@ -5,7 +5,7 @@ exports.match = function(text) {
 };
 
 exports.run = function(api, event) {
-  if (event.body === text === this.commandPrefix + 'disable') {
+  if (event.body === this.commandPrefix + 'disable') {
     if (disabled) {
       api.sendMessage('I hate you.', event.thread_id);
     }

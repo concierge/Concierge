@@ -1,14 +1,14 @@
 var timer;
 
 exports.help = function() {
-	return this.platform.commandPrefix + 'vote "<question>" <optionalTimeout> "<answer1>" "<answer2>"'
+	return this.commandPrefix + 'vote "<question>" <optionalTimeout> "<answer1>" "<answer2>"'
 	+ ' ... : Call a vote on a question.\n' +
-	this.platform.commandPrefix + 'vote cancel : cancel the current vote.\n' +
-	this.platform.commandPrefix + 'vote <number> : vote for an option.';
+	this.commandPrefix + 'vote cancel : cancel the current vote.\n' +
+	this.commandPrefix + 'vote <number> : vote for an option.';
 };
 
 exports.match = function(text, thread, senderName, api) {
-	return text.startsWith(this.platform.commandPrefix + 'vote');
+	return text.startsWith(this.commandPrefix + 'vote');
 };
 
 exports.createVote = function(api, event, spl, timeout) {

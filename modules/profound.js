@@ -11,11 +11,11 @@ var require_install = require('require-install'),
   request = require_install('request');
 
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'profound');
+    return text.startsWith(this.commandPrefix + 'profound');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'profound : Calculates the meaning of life. You probably wouldn\'t understand';
+    return this.commandPrefix + 'profound : Calculates the meaning of life. You probably wouldn\'t understand';
 };
 
 exports.fetch = function(callback) {

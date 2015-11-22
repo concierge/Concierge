@@ -4,11 +4,11 @@ var reddit = require('./common/reddit.js'),
     results = [];
 
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'insult');
+    return text.startsWith(this.commandPrefix + 'insult');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'insult : Will almost certainly return profanity.';
+    return this.commandPrefix + 'insult : Will almost certainly return profanity.';
 };
 
 exports.insult = function(callback) {

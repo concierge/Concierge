@@ -5,6 +5,6 @@ exports.match = function(text) {
 };
 
 exports.run = function(api, event) {
-  api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
+  api.sendMessage(this.packageInfo.name + ' ' + this.packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
   return false;
 };

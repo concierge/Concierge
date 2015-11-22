@@ -8,11 +8,11 @@ var require_install = require('require-install'),
   request = require_install('request');
 
 exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'fawlty');
+    return text.startsWith(this.commandPrefix + 'fawlty');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'fawlty : Fixes fawlty code. Probably.';
+    return this.commandPrefix + 'fawlty : Fixes fawlty code. Probably.';
 };
 
 var quotes = [
