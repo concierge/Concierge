@@ -1,0 +1,5 @@
+﻿{
+  "name": "tictactoe",
+  "version": 2.0,
+  "startup": "tictactoe.js"
+}

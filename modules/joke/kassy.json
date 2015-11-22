@@ -1,0 +1,5 @@
+﻿{
+  "name": "joke",
+  "version": 2.0,
+  "startup": "joke.js"
+}

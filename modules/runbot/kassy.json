@@ -1,0 +1,5 @@
+﻿{
+  "name": "runbot",
+  "version": 2.0,
+  "startup": "runbot.js"
+}

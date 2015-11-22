@@ -1,0 +1,5 @@
+﻿{
+  "name": "8ball",
+  "version": 2.0,
+  "startup": "8Ball.js"
+}

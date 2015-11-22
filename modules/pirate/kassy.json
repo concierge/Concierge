@@ -1,0 +1,5 @@
+﻿{
+  "name": "pirate",
+  "version": 2.0,
+  "startup": "pirate.js"
+}

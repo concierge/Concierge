@@ -1,5 +1,4 @@
-*.json
-!*package.json
+*config.json
 *node_modules*
 .idea/
 nohup.out
