@@ -13,7 +13,8 @@
 // Setup file scope variables
 var config			= require('./config.js'),
 	path			= require('path'),
-	fs				= require('fs'),
+    fs              = require('fs'),
+    modules         = require('./core/modules.js'),
 	configFile		= 'config.json',
 	started			= false,
 	loadedModules	= [],
@@ -32,8 +33,6 @@ exports.loadedModules = loadedModules; // pointer for core modules
 
 // Correct title case
 exports.packageInfo.name = exports.packageInfo.name.toProperCase();
-
-
 
 exports.messageRxd = function(api, event) {
 	var matchArgs	= [event.body, event.thread_id, event.sender_name],
@@ -90,7 +89,8 @@ exports.start = function() {
 				+ 'Loading configuration...');
 	config.loadConfig(configFile, function() {
         mode.platform = exports;
-		mode.config = config.getConfig("output");
+        mode.config = config.getConfig("output");
+        modules.config = config.getConfig("disabled");
 		if (mode.config.commandPrefix) {
 			exports.commandPrefix = mode.config.commandPrefix;
 		}
@@ -99,7 +99,8 @@ exports.start = function() {
 		}
 
 		// Load core modules
-		console.warn('Loading core components...');
+        console.warn('Loading core components...');
+        modules.
 		exports.listModules(coreMoulesDir, function(modules) {
 			for (var i = 0; i < modules.length; i++) {
 				var fp = path.resolve(__dirname, '../' + coreMoulesDir + '/' + modules[i]),

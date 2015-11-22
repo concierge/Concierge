@@ -21,3 +21,13 @@ exports.listModules = function (directory, callback) {
         callback(data);
     });
 };
+
+exports.loadCoreModule = function(platform, module) {
+    var fp = path.resolve(__dirname, '../' + coreMoulesDir + '/' + module),
+        index = Object.keys(require.cache).indexOf(fp),
+        m = index !== -1 ? require.reload(fp) : require(fp);
+    m.platform = exports;
+    if (m.load) {
+        m.load();
+    }
+};
