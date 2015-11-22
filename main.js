@@ -20,7 +20,8 @@
  */
 
 // Bootstrap platform
-var platform = require('./core/platform.js');
+var platform    = require('./core/platform.js'),
+    modes       = require('./core/modes.js');
 
 // Determine if debug output is enabled
 var debug = false;
@@ -32,12 +33,13 @@ if (process.argv[2] === 'debug') {
 
 // Get startup mode
 if (!process.argv[2]) {
+    console.info('No mode specified, defaulting to \'test\'.');
 	process.argv.push('test');
 }
 process.argv[2] = process.argv[2].toLowerCase();
 
 // Start platform or fail
-platform.listModes(function(modes) {
+modes.listModes(function(modes) {
 	try {
 		platform.setMode(modes[process.argv[2]]);
 	}
@@ -46,7 +48,11 @@ platform.listModes(function(modes) {
 			console.error(e);
 			console.trace();
 		}
-		console.error('Unknown mode \'' + process.argv[2] + '\'');
+        console.error('Unknown mode \'' + process.argv[2] + '\'');
+	    console.error('The modes avalible on your system are:');
+	    for (var mode in modes) {
+	        console.error('\t- \'' + mode + '\'');
+	    }
 		process.exit(-1);
 	}
 	platform.start();

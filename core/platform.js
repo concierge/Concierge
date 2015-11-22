@@ -15,8 +15,6 @@ var config				= require('./config.js'),
 		path			= require('path'),
 		fs				= require('fs'),
 		configFile		= 'config.json',
-		coreMoulesDir	= 'core/core_modules',
-		modulesDir		= 'modules',
 		started			= false,
 		loadedModules	= [],
 		coreModules		= [],
@@ -35,35 +33,7 @@ exports.loadedModules = loadedModules; // pointer for core modules
 // Correct title case
 exports.packageInfo.name = exports.packageInfo.name.toProperCase();
 
-exports.filesInDirectory = function(directory, callback) {
-	fs.readdir(directory, function(err, files) {
-		if (exports.debug && err) {
-			console.error(err);
-			console.trace();
-		}
-		callback(err ? [] : files);
-	});
-};
 
-exports.listModules = function(directory, callback) {
-	exports.filesInDirectory('./' + directory, function(data) {
-		data = data.filter(function(value) {
-			return value.endsWith(".js");
-		});
-		callback(data);
-	});
-};
-
-exports.listModes = function(callback) {
-	exports.filesInDirectory('./core/output', function(files) {
-		var obj = {};
-		for (var i = 0; i < files.length; i++) {
-			var name = path.basename(files[i], '.js').toLowerCase();
-			obj[name] = files[i];
-		}
-		callback(obj);
-	});
-};
 
 exports.messageRxd = function(api, event) {
 	var matchArgs	= [event.body, event.thread_id, event.sender_name],
