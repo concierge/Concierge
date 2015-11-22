@@ -90,7 +90,7 @@ sendFile = function(type, file, description, thread) {
 	}
 	else {
 		if (exports.debug) {
-			console.warn()'No slack team found!!!');
+			console.warn('No slack team found!!!');
 		}
 	}
 },
@@ -220,9 +220,7 @@ init = function(token, callback) {
 },
 
 findSlackBot = function(body, slackTeam) {
-	var i = 0;
-
-	for (i; i < body.users.length; i++) {
+	for (var i = 0; i < body.users.length; i++) {
 		if (body.users[i].name === 'slackbot') {
 			slackTeam.bot_id = body.users[i].id;
 			break;
@@ -231,18 +229,15 @@ findSlackBot = function(body, slackTeam) {
 },
 
 generateChannelsMap = function(data) {
-	var channels = {},
-	i = 0,
-	j = 0,
-	k = 0;
+	var channels = {};
 
-	for (i; i < data.channels.length; i++) {
+	for (var i = 0; i < data.channels.length; i++) {
 		channels[data.channels[i].id] = data.channels[i];
 	}
-	for (j; j < data.groups.length; j++) {
+	for (var j = 0; j < data.groups.length; j++) {
 		channels[data.groups[j].id] = data.groups[j];
 	}
-	for (k; k < data.ims.length; k++) {
+	for (var k = 0; k < data.ims.length; k++) {
 		channels[data.ims[k].id] = data.ims[k];
 	}
 
@@ -250,9 +245,8 @@ generateChannelsMap = function(data) {
 },
 
 generateUserMap = function(data) {
-	var map = {},
-	i = 0;
-	for (i; i < data.users.length; i++) {
+	var map = {};
+	for (var i = 0; i < data.users.length; i++) {
 		map[data.users[i].id] = data.users[i];
 	}
 	return map;

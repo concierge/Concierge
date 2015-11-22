@@ -59,8 +59,8 @@ exports.createPlatformModule = function(platform) {
 	}
 
 	if (!platform.sendPrivateMessage) {
-		platform.sendPrivateMessage = function(title, thread, senderId) {
-			platform.sendMessage(title, thread);
+		platform.sendPrivateMessage = function(message, thread, senderId) {
+			platform.sendMessage(message, thread);
 		}
 	}
 
