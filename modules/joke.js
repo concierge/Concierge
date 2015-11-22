@@ -4,9 +4,6 @@ var reddit = require('./common/reddit.js'),
     results = [];
 
 exports.match = function(text) {
-	console.log(text);
-	console.log(this.commandPrefix + 'joke');
-	console.log(text.startsWith(this.commandPrefix + 'joke'));
     return text.startsWith(this.commandPrefix + 'joke');
 };
 

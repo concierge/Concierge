@@ -4,14 +4,14 @@ exports.match = function(text) {
 
 exports.run = function(api, event) {
   var msg = 'Admin: restart procedure requested.\n' +
-    'Admin: do you wish to restart?\n' + packageInfo.nameTitle + ': What do you think.\n' +
+    'Admin: do you wish to restart?\n' + this.packageInfo.name + ': What do you think.\n' +
     'Admin: interpreting vauge answer as \'yes\'.\n' +
-    packageInfo.nameTitle +': nononononono.\n' +
+    this.packageInfo.name +': nononononono.\n' +
     'Admin: stalemate detected. Stalemate resolution associate please press the stalemate resolution button.\n' +
-    packageInfo.nameTitle + ': I\'ve removed the button.\n' +
+    this.packageInfo.name + ': I\'ve removed the button.\n' +
     'Admin: restarting anyway.\n' +
-    packageInfo.nameTitle + ': nooooooooooo.....\n' +
-    'Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.\n';
+    this.packageInfo.name + ': nooooooooooo.....\n' +
+    'Admin: ' + this.packageInfo.name + ' Rebooting. Please wait for restart to complete.\n';
   api.sendMessage(msg, event.thread_id);
   this.restart();
   return false;

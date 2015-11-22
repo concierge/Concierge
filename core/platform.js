@@ -174,36 +174,36 @@ exports.start = function() {
 };
 
 exports.shutdown = function(callback) {
-  if (!started) {
-    throw 'Cannot shutdown platform when it is not started.';
-  }
-
-  // Unload user modules
-  for (var i = 0; i < loadedModules.length; i++) {
-    if (loadedModules[i].unload) {
-      loadedModules[i].unload();
+    if (!started) {
+        throw 'Cannot shutdown platform when it is not started.';
     }
-    loadedModules[i] = null;
-  }
-  loadedModules = [];
 
-  // Unload core modules
-  for (var i = 0; i < coreModules.length; i++) {
-    if (loadedModules[i].unload) {
-      coreModules[i].unload();
+    // Unload user modules
+    for (var i = 0; i < loadedModules.length; i++) {
+        if (loadedModules[i].unload) {
+            loadedModules[i].unload();
+        }
+        loadedModules[i] = null;
     }
-    coreModules[i] = null;
-  }
-  coreModules = [];
+    loadedModules = [];
 
-  mode.stop();
+    // Unload core modules
+    for (var i = 0; i < coreModules.length; i++) {
+        if (coreModules[i].unload) {
+            coreModules[i].unload();
+        }
+        coreModules[i] = null;
+    }
+    coreModules = [];
+
+    mode.stop();
 
   config.saveConfig(configFile, function(error) {
     if (exports.debug && error.error) {
       console.error(error);
     }
     started = false;
-    console.log(packageInfo.nameTitle + " has shutdown.");
+    console.log(exports.packageInfo.name + " has shutdown.");
     if (callback) {
       callback();
     }
