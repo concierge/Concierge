@@ -101,7 +101,7 @@ exports.messageRxd = function(api, event) {
 			for (var i = 0; i < loadedModules.length; i++) {
 				help += loadedModules[i].help() + '\n';
 			}
-			api.sendMessage(help, event.thread_id);
+			api.sendPrivateMessage(help, event.thread_id, event.sender_id);
 			return;
 		case exports.commandPrefix + 'disable':
 			disabled = !disabled;
@@ -154,7 +154,7 @@ exports.setMode = function(newMode) {
 		throw 'Cannot change mode when it is already started.';
 	}
 	mode = require('./output/' + newMode);
-}
+};
 
 exports.start = function() {
 	if (started) {

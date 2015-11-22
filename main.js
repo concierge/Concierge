@@ -42,6 +42,16 @@ if (typeof String.prototype.capitiliseFirst != 'function') {
 		return this;
 	};
 }
+if (typeof Object.prototype.removeItem != 'function') {
+	Object.prototype.removeItem = function (key) {
+   if (!this.hasOwnProperty(key))
+      return
+   if (isNaN(parseInt(key)) || !(this instanceof Array))
+      delete this[key]
+   else
+      this.splice(key, 1)
+	};
+}
 
 // Bootstrap platform
 var platform = require('./core/platform.js');

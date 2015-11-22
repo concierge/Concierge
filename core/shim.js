@@ -4,13 +4,13 @@ exports.createPlatformModule = function(platform) {
 			throw "What kind of shit platform is this that doesn't even support sending messages?";
 		};
 	}
-	
+
 	if (!platform.sendUrl) {
 		platform.sendUrl = function(url, thread) {
 			platform.sendMessage(url, thread); // fallback to sending a message
 		};
 	}
-	
+
 	if (!platform.sendImage) {
 		platform.sendImage = function(type, image, description, thread) {
 			switch(type) {
@@ -27,7 +27,7 @@ exports.createPlatformModule = function(platform) {
 			}
 		};
 	}
-	
+
 	if (!platform.sendFile) {
 		platform.sendFile = function(type, file, description, thread) {
 			platform.sendMessage(description, thread);
@@ -44,19 +44,26 @@ exports.createPlatformModule = function(platform) {
 			}
 		}
 	}
-	
+
 	if (!platform.sendTyping) {
 		platform.sendTyping = function(thread) {
+			//TODO fix me
 			platform.sendMessage("Working on it...", thread); // fallback to sending a message
 		}
 	}
-	
+
 	if (!platform.setTitle) {
 		platform.setTitle = function(title, thread) { // fallback to sending a message
 			platform.sendMessage("If I could set the title of this chat I would set it to \"" + title + "\"", thread);
 		}
 	}
-	
+
+	if (!platform.sendPrivateMessage) {
+		platform.sendPrivateMessage = function(title, thread, senderId) {
+			platform.sendMessage(title, thread);
+		}
+	}
+
 	return platform;
 };
 

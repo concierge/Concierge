@@ -1,17 +1,17 @@
 {
   "name": "kassy",
-  "version": "2.0.3",
-  "description": "Extensible facebook chat bot.",
+  "version": "2.1.0",
+  "description": "Extensible chat bot.",
   "main": "main.js",
   "dependencies": {
-    "express": "*",
+    "events": "^1.1.0",
     "facebook-chat-api": "1.0.2",
     "git-pull": "*",
     "quarantine": "*",
     "redwrap": "*",
     "request": "*",
     "require-install": "*",
-    "body-parser": "*"
+    "ws": "^0.8.0"
   },
   "devDependencies": {},
   "scripts": {

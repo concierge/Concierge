@@ -3,7 +3,7 @@
 
 <i>It does way more than this now...</i>
 
-Kassy is a modular, easily extensible general purpose chat bot. Small node.js modules can be written for it then placed in the modules directory. They will load on startup (or restart) and become part of what the chat bot provides. Current pre-installed modules are located [here](https://github.com/mrkno/Kassy/tree/master/modules). They include a variety of functionality from getting animated gifs to running arbitrary sandboxed javascript code, voting and giving karma.
+Kassy is a modular, easily extensible general purpose chat bot. Small node.js modules can be written for it then placed in the modules directory. They will load on startup (or restart) and become part of what the chat bot provides. Current pre-installed modules are located [here](https://github.com/mrkno/Kassy/tree/master/modules). They include a variety of functionality from getting animated gifs to running arbitrary sandboxed JavaScript code, voting and giving karma.
 
 ## Usage
 First clone the repository and install required npm packages:
@@ -29,21 +29,16 @@ Create a new file, `config.json` that has the following:
 ```
 Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets.
 
-To start in facebook mode, run `node main.js facebook`.
+To start in Facebook mode, run `node main.js facebook`.
 
 #### Slack Integration
-<b>This section is still being written.</b>
-
 Create a new file, `config.json` that has the following:
 ```
 {
     "output": {
         "name": "Kassy",
-        "slack_teams": [
-            {
-                "slack_team_id": "<slackTeamId>",
-                "slack_token": "<slackToken>"
-            },
+        "slack_tokens": [
+            <yourSlackTeamToken>
             ....
         ],
         "port": "<portNumber>",
@@ -52,6 +47,10 @@ Create a new file, `config.json` that has the following:
 }
 ```
 Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets and update your slack team configuration to match.
+
+Slack integration supports multiple teams at once simply add your teams slack bot token to config.json and start Kassy
+
+Tokens can be issued from here https://api.slack.com/web
 
 To start in slack mode, run `node main.js slack`.
 
@@ -67,7 +66,7 @@ Additional special commands exist in testing mode that are not in any other mode
 
 ### Special Commands
 There are a number of special commands that will not be listed by help and cannot be overridden by custom modules.
-- `/help` and `/kassy`. Shows the avalible module commands.
+- `/help` and `/kassy`. Shows the available module commands.
 - `/shutdown`. Terminates the program gracefully.
 - `/restart`. Restarts the program, reloading and searching for new modules. Useful if you have made changes to an existing module or have created a new module.
 - `/disable`. Toggles ignoring of commands - will not ignore special commands.
@@ -93,14 +92,14 @@ instead of:
 var module = require('module');
 ```
 
-This is so that `package.json` does not need to be updated for every module and to allow for seemless updating using the built in updator.
+This is so that `package.json` does not need to be updated for every module and to allow for seamless updating using the built in updater.
 
 ### Methods
 
 Every module must provide the same basic methods, which can then be expanded to perform whatever tasks are required. These are as follows:
 
 #### `exports.match(messageText, messageThread, senderName)`
-This method is used to test wheather your module should be run on the given message.
+This method is used to test whether your module should be run on the given message.
 
 Arguments:
 - `messageText`. The text of the message that has been received. String.
@@ -135,14 +134,14 @@ Arguments:<br />
 <i>None</i>
 
 #### `exports.load()`
-<i>Optional</i>. 
+<i>Optional</i>.
 This method is called once when the program is first starting up. No output module is guaranteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
 
 Arguments:<br />
 <i>None</i>
 
 ### API
-<i>Please note that not all methods are gaurenteed to work as described if the platform does not support the feature. A fallback will be provided in this case.</i>
+<i>Please note that not all methods are guaranteed to work as described if the platform does not support the feature. A fallback will be provided in this case.</i>
 
 The `api` object contains the following methods:
 #### `sendMessage(message, thread)`
@@ -151,6 +150,14 @@ Sends a message to the specified thread.
 Arguments:
 - `message`. The message to send. String.
 - `thread`. The thread to send it to. String.
+
+#### `sendPrivateMessage(message, thread, senderId)`
+Sends a message to an individual.
+
+Arguments:
+- `message`. The message to send. String.
+- `thread`. The thread which the associated command which sends the private message. String.
+- `senderId`. The sender to send the message to. String.
 
 #### `sendUrl(url, thread)`
 Sends a url to the specified thread. If url linking is not supported, will behave like `sendMessage`.
