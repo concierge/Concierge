@@ -6,20 +6,16 @@ sockets = [],
 eventReceivedCallback = null,
 
 sendMessage = function(message, thread) {
-	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].token;
+	var teamInfo = getChannelIdAndTeamId(thread);
 
 	message.replace('<', '&lt');
 	message.replace('>', '&gt');
 	message.replace('&', '&amp');
 
-	if (slack_token != null) {
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
-			"channel": thread_id,
+			"token": teamInfo.token,
+			"channel": teamInfo.channel_id,
 			"username": exports.config.name,
 			"link_names": 1,
 			"text": message,
@@ -41,7 +37,7 @@ sendMessage = function(message, thread) {
 			}
 			else if (!body.ok) {
 				if (exports.debug) {
-					console.warn('Failed to send message to channel with id: ' + thread_id + ', error: ' + body.error);
+					console.warn('Failed to send message to channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 				}
 			}
 		});
@@ -53,17 +49,27 @@ sendMessage = function(message, thread) {
 	}
 },
 
-sendFile = function(type, file, description, thread) {
+getChannelIdAndTeamId = function(thread) {
 	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].token;
+	thread_components = thread.split('\0', 2),
+	channelId = thread_components[0],
+	teamId = thread_components[1],
+	token = slackTeams[thread_team_id].token;
 
-	if (slack_token != null) {
+	return { "channel_id": channelId, "team_id": teamId, "token": token };
+},
+
+createThreadId = function(channelId, teamId) {
+	return channelId + '\0' + teamId;
+}
+
+sendFile = function(type, file, description, thread) {
+	var teamInfo = getChannelIdAndTeamId(thread);
+
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
-			"channel": thread_id,
+			"token": teamInfo.token,
+			"channel": teamInfo.channel_id,
 			"file": file,
 			"filetype": type,
 			"title": description
@@ -83,7 +89,7 @@ sendFile = function(type, file, description, thread) {
 			}
 			else if (!body.ok) {
 				if (exports.debug) {
-					console.warn('Failed send file to channel with id: ' + thread_id + ', error: ' + body.error);
+					console.warn('Failed send file to channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 				}
 			}
 		});
@@ -96,16 +102,12 @@ sendFile = function(type, file, description, thread) {
 },
 
 renameChannel = function(title, thread) {
-	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].token;
+	var teamInfo = getChannelIdAndTeamId(thread);
 
-	if (slack_token != null) {
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
-			"channel": thread_id,
+			"token": teamInfo.token,
+			"channel": teamInfo.channel_id,
 			"name": title
 		};
 
@@ -123,7 +125,7 @@ renameChannel = function(title, thread) {
 			}
 			else if (!body.ok) {
 				if (exports.debug) {
-					console.warn('Failed to rename channel with id: ' + thread_id + ', error: ' + body.error);
+					console.warn('Failed to rename channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 				}
 			}
 		});
@@ -136,18 +138,13 @@ renameChannel = function(title, thread) {
 },
 
 sendTyping = function(thread) {
-	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	socket = sockets[thread_team_id],
-	eventId = slackTeams[thread_team_id].event_id;
-	eventId++;
+	var teamInfo = getChannelIdAndTeamId(thread),
+	socket = sockets[teamInfo.team_id];
 
 	if (socket != null) {
 		var body = {
-			"id": eventId,
-			"channel": thread_id,
+			"id": slackTeams[teamInfo.team_id].event_id++,
+			"channel": teamInfo.channel_id,
 			"type": "typing"
 		};
 		socket.send(JSON.stringify(body));
@@ -275,15 +272,11 @@ connect = function(connectionDetails) {
 },
 
 openPrivateMessage = function(message, thread, senderId) {
-	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].token;
+	var teamInfo = getChannelIdAndTeamId(thread);
 
-	if (slack_token != null) {
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
+			"token": teamInfo.token,
 			"user": senderId
 		};
 
@@ -301,12 +294,12 @@ openPrivateMessage = function(message, thread, senderId) {
 			}
 			else if (!body.ok) {
 				if (exports.debug) {
-					console.warn('Failed to send message to user with id: ' + thread_id + ', error: ' + body.error);
+					console.warn('Failed to send message to user with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 				}
 			}
 			else {
-				slackTeams[thread_team_id].channels[body.channel] = {"channel": body.channel, "user": senderId};
-				sendMessage(message, body.channel.id + '~' + thread_team_id);
+				slackTeams[teamInfo.team_id].channels[body.channel] = {"channel": body.channel, "user": senderId};
+				sendMessage(message, createThreadId(body.channel.id, teamInfo.team_id));
 			}
 		});
 	}
@@ -439,10 +432,9 @@ recMessage = function(event, teamId) {
 		}
 
 		event.body = message;
-		event.threadID = event.channel + '~' + teamId;
+		event.threadID = createThreadId(event.channel, teamId);
 		event.senderID = event.user;
 		event.senderName = slackTeam.users[event.user].name;
-		console.log(message);
 		shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
 		eventReceivedCallback(platform, shimMessage);
 	}
