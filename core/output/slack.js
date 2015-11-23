@@ -327,16 +327,16 @@ eventReceived = function(event, teamId) {
 		channelRename(event, teamId);
 		break;
 		case 'im_created':
-		imCreated(event, teamId);
+		channelCreated(event, teamId);
 		break;
 		case 'group_joined':
-		groupJoined(event, teamId);
+		channelCreated(event, teamId);
 		break;
 		case 'group_close':
-		groupClose(event, teamId);
+		channelDeleted(event, teamId);
 		break;
 		case 'group_rename':
-		groupRename(event, teamId);
+		channelRename(event, teamId);
 		break;
 		case 'user_change':
 		userChange(event, teamId);
@@ -362,26 +362,6 @@ userChange = function(event, teamId) {
 	slackTeam.users[event.user.id] = event.user;
 },
 
-groupRename = function(event, teamId) {
-	var slackTeam = exports.config.slack_teams[teamId];
-	slackTeam.channels[event.channel.id].name = event.channel.name;
-},
-
-groupClose = function(event, teamId) {
-	var slackTeam = exports.config.slack_teams[teamId];
-	slackTeam.channels.removeItem(event.channel);
-},
-
-groupJoined = function(event, teamId) {
-	var slackTeam = exports.config.slack_teams[teamId];
-	slackTeam.channels[event.channel.id] = event.channel;
-},
-
-imCreated = function(event, teamId) {
-	var slackTeam = exports.config.slack_teams[teamId];
-	slackTeam.channels[event.channel.id] = event.channel;
-},
-
 channelCreated = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
 	slackTeam.channels[event.channel.id] = event.channel;
@@ -389,12 +369,16 @@ channelCreated = function(event, teamId) {
 
 channelDeleted = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
-	slackTeam.channels.removeItem(event.channel);
+	removeHelper(slackTeam.channels, event.channel);
 },
 
 channelRename = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
-	slackTeam[event.channel.id].name = event.channel.name;
+	slackTeam.channels[event.channel.id].name = event.channel.name;
+},
+
+removeHelper = function(object, key) {
+	delete object.key;
 },
 
 recMessage = function(event, teamId) {
@@ -469,7 +453,10 @@ exports.start = function (callback) {
 
 exports.stop = function() {
 	platform = null;
+	console.log(Object.keys(sockets));
 	for (var socket in sockets) {
+		console.log(socket);
+		console.log(sockets[socket].close);
 		sockets[socket].close();
 	}
 };
