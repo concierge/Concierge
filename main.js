@@ -41,7 +41,9 @@ process.argv[2] = process.argv[2].toLowerCase();
 // Start platform or fail
 modes.listModes(function(modes) {
 	try {
-		platform.setMode(modes[process.argv[2]]);
+		if (!platform.setMode(modes[process.argv[2]])) {
+		    process.exit(-1);
+		}
 	}
 	catch (e) {
 	    console.critical(e);
@@ -50,7 +52,7 @@ modes.listModes(function(modes) {
 	    for (var mode in modes) {
 	        console.info('\t- \'' + mode + '\'');
 	    }
-		process.exit(-1);
+		process.exit(-2);
     }
 
     try {
@@ -59,6 +61,6 @@ modes.listModes(function(modes) {
     catch (e) {
         console.critical(e);
         console.error('A critical error occured while running. Please check your configuration or report a bug.');
-        process.exit(-2);
+        process.exit(-3);
     }
 });

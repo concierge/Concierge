@@ -14,7 +14,7 @@
 var config			= require('./config.js'),
 	path			= require('path'),
     fs              = require('fs'),
-    modules         = require('./core/modules.js'),
+    modules         = require('./modules.js'),
 	configFile		= 'config.json',
 	started			= false,
 	loadedModules	= [],
@@ -58,11 +58,8 @@ exports.messageRxd = function(api, event) {
 				loadedModules[i].run.apply(loadedModules[i], runArgs);
 			}
 			catch (e) {
-				api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
-				if (exports.debug) {
-					console.error(e);
-					console.trace(e);
-				}
+                api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
+			    console.critical(e);
 			}
 			return;
 		}
@@ -70,10 +67,19 @@ exports.messageRxd = function(api, event) {
 };
 
 exports.setMode = function(newMode) {
-	if (started) {
-		throw 'Cannot change mode when it is already started.';
-	}
-	mode = require('./output/' + newMode);
+    try {
+        if (started) {
+            throw 'Cannot change mode when it is already started.';
+        }
+        mode = require('./output/' + newMode);
+        return true;
+    }
+    catch (e) {
+        console.critical(e);
+        console.error('Loading the output mode file \'' + newMode + '\' failed.' +
+            '\n\nIf this is your file please ensure that it is syntatically correct.');
+        return false;
+    }
 };
 
 exports.start = function() {
@@ -100,46 +106,24 @@ exports.start = function() {
 
 		// Load core modules
         console.warn('Loading core components...');
-        modules.
-		exports.listModules(coreMoulesDir, function(modules) {
-			for (var i = 0; i < modules.length; i++) {
-				var fp = path.resolve(__dirname, '../' + coreMoulesDir + '/' + modules[i]),
-					index = Object.keys(require.cache).indexOf(fp),
-					m = index !== -1 ? require.reload(fp) : require(fp);
-                m.platform = exports;
-				if (m.load) {
-					m.load();
-				}
-				coreModules.push(m);
-			}
-		});
+        modules.listCoreModules(function (m) {
+            for (var i = 0; i < m.length; i++) {
+                coreModules.push(modules.loadCoreModule(exports, m[i]));
+            }
+        });
 
 		// Load Kassy modules
 		console.warn('Loading modules...');
-		exports.listModules(modulesDir, function(modules) {
-			for (var i = 0; i < modules.length; i++) {
-				var fp = path.resolve(__dirname, '../' + modulesDir + '/' + modules[i]),
-					index = Object.keys(require.cache).indexOf(fp),
-					m = null;
-				if (index !== -1) {
-					console.info("Reloading module: " + modules[i]);
-					m = require.reload(fp);
-				}
-				else {
-					console.info("New module found: " + modules[i]);
-					m = require(fp);
-				}
-				m.commandPrefix = exports.commandPrefix;
-				m.config = config.getConfig(modules[i]);
-				if (m.load) {
-					m.load();
-				}
-				loadedModules.push(m);
-			}
-			mode.start(exports.messageRxd);
-			started = true;
-			console.warn('System has started. Hello World!');
-		});
+        modules.listModules(function (m) {
+            for (var i = 0; i < m.length; i++) {
+                loadedModules.push(modules.loadModule(m[i]));
+            }
+        });
+        
+        // Start output
+        mode.start(exports.messageRxd);
+        started = true;
+        console.warn('System has started. Hello World!');
 	});
 };
 
@@ -168,16 +152,14 @@ exports.shutdown = function(callback) {
 
     mode.stop();
 
-  config.saveConfig(configFile, function(error) {
-    if (exports.debug && error.error) {
-      console.error(error);
-    }
-    started = false;
-    console.log(exports.packageInfo.name + " has shutdown.");
-    if (callback) {
-      callback();
-    }
-  });
+    config.saveConfig(configFile, function (error) {
+        console.debug(error);
+        started = false;
+        console.log(exports.packageInfo.name + " has shutdown.");
+        if (callback) {
+            callback();
+        }
+    });
 };
 
 exports.restart = function() {
