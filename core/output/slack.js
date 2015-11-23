@@ -273,7 +273,8 @@ connect = function(connectionDetails) {
 },
 
 openPrivateMessage = function(message, thread, senderId) {
-	var teamInfo = getChannelIdAndTeamId(thread);
+	var slackTeams = exports.config.slack_teams,
+		teamInfo = getChannelIdAndTeamId(thread);
 
 	if (teamInfo.token != null) {
 		var body = {
