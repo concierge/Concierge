@@ -138,7 +138,8 @@ renameChannel = function(title, thread) {
 },
 
 sendTyping = function(thread) {
-	var teamInfo = getChannelIdAndTeamId(thread),
+	var slackTeams = exports.config.slack_teams,
+	teamInfo = getChannelIdAndTeamId(thread),
 	socket = sockets[teamInfo.team_id];
 
 	if (socket != null) {
