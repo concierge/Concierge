@@ -54,7 +54,7 @@ getChannelIdAndTeamId = function(thread) {
 	thread_components = thread.split('\0', 2),
 	channelId = thread_components[0],
 	teamId = thread_components[1],
-	token = slackTeams[thread_team_id].token;
+	token = slackTeams[teamId].token;
 
 	return { "channel_id": channelId, "team_id": teamId, "token": token };
 },
