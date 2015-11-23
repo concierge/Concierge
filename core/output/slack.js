@@ -469,7 +469,7 @@ exports.start = function (callback) {
 
 exports.stop = function() {
 	platform = null;
-	for (socket in sockets) {
-		socket.close();
+	for (var socket in sockets) {
+		sockets[socket].close();
 	}
 };
