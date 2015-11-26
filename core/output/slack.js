@@ -1,6 +1,8 @@
 var request = require('request'),
 shim = require('../shim.js'),
-socket = require('ws')
+socket = require('ws'),
+eventemitter3 = require('eventemitter3'),
+eventEmitter = new eventemitter3(),
 platform = null,
 sockets = [],
 eventReceivedCallback = null,
@@ -149,7 +151,6 @@ sendTyping = function(thread) {
 			"type": "typing"
 		};
 		socket.send(JSON.stringify(body));
-
 	}
 	else {
 		if (exports.debug) {
@@ -186,7 +187,17 @@ init = function(token, callback) {
 			slackTeams = exports.config.slack_teams;
 		}
 
-		body = JSON.parse(body);
+		try {
+			body = JSON.parse(body);
+		}
+		catch(e) {
+			if (exports.debug) {
+				console.warn("failed to parse message: " + body);
+			}
+			console.warn("failed to parse message: " + body);
+			callback(false);
+		}
+
 		if (response.statusCode != 200) {
 			if (exports.debug) {
 				console.error('error: ' + response.statusCode);
@@ -205,6 +216,7 @@ init = function(token, callback) {
 			team = slackTeams[teamId];
 			team.token = token;
 			team.event_id = 0;
+			team.lastMessageSinceConnection = false,
 
 			//Generate user map
 			team.users = generateUserMap(body);
@@ -251,24 +263,32 @@ generateUserMap = function(data) {
 },
 
 connect = function(connectionDetails) {
-	var slackTeams = exports.config.slack_teams;
+	var slackTeams = exports.config.slack_teams,
+	s;
 
 	if (connectionDetails) {
 		(function (connectionDetails) {
-			sockets[connectionDetails.team_id] = new socket(connectionDetails.url);
-			sockets[connectionDetails.team_id].on('open', function() {
+			s = new socket(connectionDetails.url);
+			sockets[connectionDetails.team_id] = s;
+			s.on('open', function() {
 				if (exports.debug) {
 					console.info("Connection to team: " + slackTeams[connectionDetails.team_id].team.name + " established");
 				}
+				eventEmitter.emit('open');
 			}).on('message', function(data) {
 				eventReceived(JSON.parse(data), connectionDetails.team_id);
-			}).on('close', function() {
+				eventEmitter.emit('message', data);
+			}).on('close', function(data) {
 				if (exports.debug) {
 					console.info("Disconnected from team: " + slackTeams[connectionDetails.team_id].team.name);
 				}
-				init(slackTeams[connectionDetails.teamId].token, connect);
+				eventEmitter.emit('close', data);
+				init(slackTeams[connectionDetails.team_id].token, connect);
 			});
 		})(connectionDetails);
+	}
+	else {
+		exports.start(eventReceivedCallback);
 	}
 },
 
@@ -387,8 +407,20 @@ recMessage = function(event, teamId) {
 	id,
 	message = event.text;
 
+	console.log("got message");
+	if (!slackTeam.lastMessageSinceConnection) {
+		console.log("last message since connection");
+		slackTeam.lastMessageSinceConnection = true;
+		console.log(event.reply_to);
+		if (event.reply_to) {
+			console.log("return");
+			//throw away this message
+			return;
+		}
+	}
+
+	console.log("continue");
 	if (event.user!= slackTeam.bot_id) {
-		// TODO: fix url character encoding
 		var matches = event.text.match(/<?@[^:>]+>:?/g);
 		if (matches != null) {
 			if (slackTeam) {
@@ -426,7 +458,6 @@ recMessage = function(event, teamId) {
 	}
 };
 
-
 exports.start = function (callback) {
 	var slackTokens = exports.config.slack_tokens,
 	connectionDetails = null;
@@ -453,10 +484,7 @@ exports.start = function (callback) {
 
 exports.stop = function() {
 	platform = null;
-	console.log(Object.keys(sockets));
 	for (var socket in sockets) {
-		console.log(socket);
-		console.log(sockets[socket].close);
 		sockets[socket].close();
 	}
 };
