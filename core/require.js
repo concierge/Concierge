@@ -39,4 +39,10 @@ exports.loadRequire = function(req) {
         req.uncache(moduleName);
         return require(moduleName);
     };
+
+    req.once = function(moduleName) {
+        var mod = req(moduleName);
+        req.uncache(moduleName);
+        return mod;
+    };
 };
