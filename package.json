@@ -4,6 +4,7 @@
   "description": "Extensible facebook chat bot.",
   "main": "main.js",
   "dependencies": {
+    "deasync": "^0.1.4",
     "express": "*",
     "facebook-chat-api": "1.0.2",
     "git-pull": "*",
@@ -12,7 +13,7 @@
     "request": "*",
     "require-install": "*",
     "body-parser": "*",
-    "colors": "1.1.2"
+    "colors": "^1.1.2"
   },
   "devDependencies": {},
   "scripts": {
