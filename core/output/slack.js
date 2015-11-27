@@ -1,11 +1,22 @@
 var request = require('request'),
 shim = require('../shim.js'),
 socket = require('ws'),
-eventemitter3 = require('eventemitter3'),
-eventEmitter = new eventemitter3(),
+deasync = require('deasync'),
 platform = null,
 sockets = [],
 eventReceivedCallback = null,
+numSocketsToShutDown = 0,
+temp = socket.Receiver.prototype.endPacket;
+
+// socket.Receiver.prototype.endPacket = function() {
+// 	if (this.dead) {
+// 		return;
+// 	}
+// 	else {
+// 		temp.call(this);
+// 	}
+// }
+
 
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -150,6 +161,7 @@ sendTyping = function(thread) {
 			"channel": teamInfo.channel_id,
 			"type": "typing"
 		};
+		console.log("typing");
 		socket.send(JSON.stringify(body));
 	}
 	else {
@@ -274,15 +286,19 @@ connect = function(connectionDetails) {
 				if (exports.debug) {
 					console.info("Connection to team: " + slackTeams[connectionDetails.team_id].team.name + " established");
 				}
-				eventEmitter.emit('open');
 			}).on('message', function(data) {
 				eventReceived(JSON.parse(data), connectionDetails.team_id);
-				eventEmitter.emit('message', data);
 			}).on('close', function(data) {
+				console.log("received close event");
 				if (exports.debug) {
 					console.info("Disconnected from team: " + slackTeams[connectionDetails.team_id].team.name);
 				}
-				eventEmitter.emit('close', data);
+				if (numSocketsToShutDown > 0) {
+					numSocketsToShutDown--;
+					console.log("shutdown socket close");
+					return;
+				}
+				console.log("normal close");
 				init(slackTeams[connectionDetails.team_id].token, connect);
 			});
 		})(connectionDetails);
@@ -408,6 +424,8 @@ recMessage = function(event, teamId) {
 	message = event.text;
 
 	console.log("got message");
+	console.log(slackTeam.lastMessageSinceConnection);
+	console.log(message);
 	if (!slackTeam.lastMessageSinceConnection) {
 		console.log("last message since connection");
 		slackTeam.lastMessageSinceConnection = true;
@@ -456,6 +474,14 @@ recMessage = function(event, teamId) {
 		shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
 		eventReceivedCallback(platform, shimMessage);
 	}
+},
+
+closeSockets = function() {
+	console.log("closing sockets");
+	for (var socket in sockets) {
+		sockets[socket].close();
+	}
+	console.log("sockets closed");
 };
 
 exports.start = function (callback) {
@@ -483,8 +509,12 @@ exports.start = function (callback) {
 };
 
 exports.stop = function() {
-	platform = null;
-	for (var socket in sockets) {
-		sockets[socket].close();
-	}
+	console.log("start shutdown");
+	numSocketsToShutDown = Object.keys(sockets).length;
+	console.log(numSocketsToShutDown);
+	closeSockets();
+	deasync.loopWhile(function() {
+		return numSocketsToShutDown > 0;
+	});
+	console.log("end shutdown");
 };
