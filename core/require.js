@@ -10,6 +10,13 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
+if (typeof require.prototype.once != 'function') {
+    require.prototype.once = function (str) {
+        console.log("hello world");
+        return this.indexOf(str) === 0;
+    };
+}
+
 exports.loadRequire = function(req) {
     req.searchCache = function (moduleName, callback) {
         var mod = require.resolve(moduleName);
@@ -38,5 +45,11 @@ exports.loadRequire = function(req) {
     req.reload = function(moduleName) {
         req.uncache(moduleName);
         return require(moduleName);
+    };
+
+    req.once = function(moduleName) {
+        var mod = req(moduleName);
+        req.uncache(moduleName);
+        return mod;
     };
 };

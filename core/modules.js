@@ -42,7 +42,7 @@ exports.listModules = function (callback) {
         var modules = {};
 
         for (var i = 0; i < data.length; i++) {
-            var value = data[i];
+            var value = path.join(modulesDir, data[i]);
 
             var stat = fs.statSync(value);
             if (!stat.isDirectory()) {
@@ -54,7 +54,7 @@ exports.listModules = function (callback) {
             if (stat == null) {
                 return false;
             }
-            var kj = require(p);
+            var kj = require.once(p);
             
             if (!kj.name) {
                 return false;
@@ -70,7 +70,7 @@ exports.listModules = function (callback) {
 exports.loadModule = function (module) {
     try {
         var modulePath = path.resolve(__dirname, '../' + modulesDir + '/' + module),
-            kassyJson = require(path.join(modulePath, '/' + descriptor)),
+            kassyJson = require.once(path.join(modulePath, '/' + descriptor)),
             startPath = path.join(modulePath, '/' + kassyJson.startup),
             index = Object.keys(require.cache).indexOf(startPath),
             m = null;
