@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "2.1.0",
+  "version": "3.0.0-alpha",
   "description": "Extensible facebook chat bot.",
   "main": "main.js",
   "dependencies": {
