@@ -12,17 +12,17 @@
 var fs              = require('fs'),
     path            = require('path'),
     files           = require('./files.js'),
+    config          = require('./config.js'),
     coreMoulesDir   = 'core/core_modules',
     modulesDir      = 'modules',
     descriptor      = 'kassy.json';
 
 exports.listCoreModules = function (callback) {
-    files.filesInDirectory('./' + coreMoulesDir, function (data) {
-        data = data.filter(function (value) {
-            return value.endsWith(".js");
-        });
-        callback(data);
+    var data = files.filesInDirectory('./' + coreMoulesDir);
+    data = data.filter(function (value) {
+        return value.endsWith(".js");
     });
+    callback(data);
 };
 
 exports.loadCoreModule = function(platform, module) {
@@ -37,60 +37,72 @@ exports.loadCoreModule = function(platform, module) {
 };
 
 exports.listModules = function (callback) {
-    files.filesInDirectory('./' + modulesDir, function (data) {
+    var data = files.filesInDirectory('./' + modulesDir),
+        modules = {};
 
-        var modules = {};
-
-        for (var i = 0; i < data.length; i++) {
-            var value = path.join(modulesDir, data[i]);
-
-            var stat = fs.statSync(value);
+    for (var i = 0; i < data.length; i++) {
+        try {
+            var value = path.join(modulesDir, data[i]),
+                stat = fs.statSync(value);
             if (!stat.isDirectory()) {
-                return false;
+                continue;
             }
 
-            var p = path.join(value, '/' + descriptor);
+            var folderPath = path.join(__dirname, './../' + value),
+                p = path.join(folderPath, '/' + descriptor);
             stat = fs.statSync(p);
             if (stat == null) {
-                return false;
+                continue;
             }
-            var kj = require.once(p);
+
+            var kj = require.once(p);            
+            if (!kj.name || !kj.startup) {
+                continue;
+            }
             
-            if (!kj.name) {
-                return false;
+            if (!kj.folderPath) {
+                kj.folderPath = folderPath;
             }
-
-            modules[kj.name] = value;
+            modules[kj.name] = kj;
+        } catch (e) {
+            console.critical(e);
+            console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
+            continue;
         }
-
-        callback(modules);
-    });
+    }
+    callback(modules);
 };
 
 exports.loadModule = function (module) {
     try {
-        var modulePath = path.resolve(__dirname, '../' + modulesDir + '/' + module),
-            kassyJson = require.once(path.join(modulePath, '/' + descriptor)),
-            startPath = path.join(modulePath, '/' + kassyJson.startup),
-            index = Object.keys(require.cache).indexOf(startPath),
-            m = null;
-        if (index !== -1) {
-            console.info("Reloading module: " + module);
-            m = require.reload(startPath);
-        } else {
-            console.info("New module found: " + module);
-            m = require(startPath);
+        var modulePath  = module.folderPath,
+            startPath   = path.join(modulePath, module.startup),
+            index       = Object.keys(require.cache).indexOf(startPath),
+            m           = null;
+        
+        try {
+            if (index !== -1) {
+                console.write("Reloading module: '" + module.name + "'... " + (console.isDebug() ? "\n" : ""));
+                m = require.reload(startPath);
+            } else {
+                console.write("Loading module '" + module.name + "'... " + (console.isDebug() ? "\n" : ""));
+                m = require.once(startPath);
+            }
+        } catch (e) {
+            throw 'Could not require module \'' + module.name + '\'. Does it have a syntax error?';
         }
         m.commandPrefix = exports.commandPrefix;
-        m.config = config.getConfig(module);
+        m.config = config.loadModuleConfig(module, modulePath);
         if (m.load) {
             m.load();
         }
+        console.info(console.isDebug() ? "Loading Succeeded" : "\t[DONE]");
         return m;
     }
     catch (e) {
+        console.error(console.isDebug() ? "Loading Failed" : "\t[FAIL]");
         console.critical(e);
-        console.error('Module \'' + module + '\' could not be loaded.');
+        console.debug('Module \'' + module.name + '\' could not be loaded.');
         return null;
     }
 };

@@ -1,6 +1,5 @@
-var require_install = require('require-install'),
-    request = require_install('request'),
-    reddit = require_install('redwrap');
+var request = require.safe('request'),
+    reddit = require.safe('redwrap');
 
 
 exports.reddit = function(thing, numberOfQueries, callback) {

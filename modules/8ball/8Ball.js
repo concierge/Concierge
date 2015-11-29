@@ -1,6 +1,4 @@
-var require_install = require('require-install'),
-  request = require_install('request');
-
+var request = require.safe('request');
 
 exports.match = function(text) {
     return text.startsWith(this.commandPrefix + '8ball');

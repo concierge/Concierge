@@ -4,8 +4,7 @@
  * Written By: Jay Harris
  * Date Written: 21/07/2015
  */
-var require_install = require('require-install'),
-  request = require_install('request');
+var request = require.safe('request');
 
 exports.match = function(text) {
     return text.startsWith(this.commandPrefix + 'fawlty');

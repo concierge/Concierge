@@ -5,7 +5,7 @@
  * Date Written: 22/07/2015
  */
 
- var wikiquote = require("./common/wikiquote.js");
+ var wikiquote = require("./../common/wikiquote.js");
 
 // Define the 'regex' command matching criteria boolean
 exports.match = function(text) {

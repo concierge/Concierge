@@ -1,5 +1,4 @@
-var require_install = require('require-install'),
-  request = require_install('request');
+var request = require.safe('request');
 
 /**
  * This is a *very* heavily modified version of the library found here:

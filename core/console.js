@@ -51,6 +51,14 @@ console.critical = function(args) {
     }
 };
 
+console.write = function (args) {
+    process.stdout.write(args.info);
+};
+
 exports.setDebug = function(enabled) {
     debug = enabled;
+};
+
+console.isDebug = function() {
+    return debug;
 };

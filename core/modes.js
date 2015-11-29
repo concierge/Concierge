@@ -14,12 +14,11 @@ var files           = require('./files.js'),
     modesLocation   = './core/output';
 
 exports.listModes = function (callback) {
-    files.filesInDirectory(modesLocation, function (files) {
-        var obj = {};
-        for (var i = 0; i < files.length; i++) {
-            var name = path.basename(files[i], '.js').toLowerCase();
-            obj[name] = files[i];
-        }
-        callback(obj);
-    });
+    var modes = files.filesInDirectory(modesLocation);
+    var obj = {};
+    for (var i = 0; i < modes.length; i++) {
+        var name = path.basename(modes[i], '.js').toLowerCase();
+        obj[name] = modes[i];
+    }
+    callback(obj);
 };

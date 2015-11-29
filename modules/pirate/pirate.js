@@ -1,7 +1,5 @@
-var require_install = require('require-install'),
-    request = require_install('request'),
-    querystring = require_install("querystring");
-
+var request = require.safe('request'),
+    querystring = require.safe("querystring");
 
 exports.match = function(text) {
     return text.startsWith(this.commandPrefix + 'pirate');

@@ -14,7 +14,7 @@
 var config			= require('./config.js'),
 	path			= require('path'),
     fs              = require('fs'),
-    modules         = require('./modules.js'),
+    
 	configFile		= 'config.json',
 	started			= false,
 	loadedModules	= [],
@@ -23,7 +23,9 @@ var config			= require('./config.js'),
 
 // Load core files
 require('./prototypes.js');
-require('./require.js').loadRequire.apply(exports, [require]);
+require('./require.js');
+
+modules = require('./modules.js');
 
 // Setup platform scope variables
 exports.require_install = require('require-install');
@@ -89,42 +91,43 @@ exports.start = function() {
 	if (!mode) {
 		throw 'Mode must be set before starting';
     }
+    mode.platform = exports;
+
     console.title(exports.packageInfo.name.toProperCase() + ' ' + exports.packageInfo.version);
     console.info('------------------------------------');
     console.warn('Starting system...\n'
-				+ 'Loading configuration...');
-	config.loadConfig(configFile, function() {
-        mode.platform = exports;
-        mode.config = config.getConfig("output");
-        modules.config = config.getConfig("disabled");
-		if (mode.config.commandPrefix) {
-			exports.commandPrefix = mode.config.commandPrefix;
-		}
-		else {
-			mode.config.commandPrefix = exports.commandPrefix;
-		}
+				+ 'Loading system configuration...');
 
-		// Load core modules
-        console.warn('Loading core components...');
-        modules.listCoreModules(function (m) {
-            for (var i = 0; i < m.length; i++) {
-                coreModules.push(modules.loadCoreModule(exports, m[i]));
-            }
-        });
+    mode.config = config.loadOutputConfig();
+    modules.config = config.loadDisabledConfig();
 
-		// Load Kassy modules
-		console.warn('Loading modules...');
-        modules.listModules(function (m) {
-            for (var i = 0; i < m.length; i++) {
-                loadedModules.push(modules.loadModule(m[i]));
-            }
-        });
+	if (mode.config.commandPrefix) {
+		exports.commandPrefix = mode.config.commandPrefix;
+	}
+	else {
+		mode.config.commandPrefix = exports.commandPrefix;
+	}
+
+	// Load core modules
+    console.warn('Loading core components...');
+    modules.listCoreModules(function (m) {
+        for (var i = 0; i < m.length; i++) {
+            coreModules.push(modules.loadCoreModule(exports, m[i]));
+        }
+    });
+
+	// Load Kassy modules
+	console.warn('Loading modules...');
+    modules.listModules(function (m) {
+        for (var mod in m) {
+            loadedModules.push(modules.loadModule(m[mod]));
+        }
+    });
         
-        // Start output
-        mode.start(exports.messageRxd);
-        started = true;
-        console.warn('System has started. Hello World!');
-	});
+    // Start output
+    mode.start(exports.messageRxd);
+    started = true;
+    console.warn('System has started. ' + 'Hello World!'.rainbow);
 };
 
 exports.shutdown = function(callback) {

@@ -1,6 +1,5 @@
-var reddit = require('./common/reddit.js'),
-    require_install = require('require-install'),
-    request = require_install('request'),
+var reddit = require('./../common/reddit.js'),
+    request = require.safe('request'),
     results = [];
 
 exports.match = function(text) {

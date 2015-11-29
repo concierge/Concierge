@@ -11,12 +11,19 @@
 
 var fs = require('fs');
 
-exports.filesInDirectory = function (directory, callback) {
-    fs.readdir(directory, function (err, files) {
+exports.filesInDirectory = function (directory) {
+    try {
+        var files = fs.readdirSync(directory);
+        if (files == null) {
+            throw 'No files found.';
+        }
+        return files;
+    }
+    catch (e) {
         if (exports.debug && err) {
             console.error(err);
             console.trace();
         }
-        callback(err ? [] : files);
-    });
+        return [];
+    }
 };
