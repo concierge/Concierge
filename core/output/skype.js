@@ -14,33 +14,24 @@ findContactName = function(id) {
 	
 exports.start = function(callback) {
 	skype = new skyweb();
-	
-	console.log('Logging into skype...');
-	skype.login(exports.config.skype_username, exports.config.skype_password).then(function (account) {
-		console.log('Successfully logged into skype as ' + skype.skypeAccount.selfInfo.username + '.');
-		
-		console.log('Creating contacts lookup table.');
+		skype.login(exports.config.username, exports.config.password).then(function (account) {
 		var scontacts = skype.contactsService.contacts;
 		for (var i = 0; i < scontacts.length; i++) {
 			var name = scontacts[i].display_name;
 			contacts[scontacts[i].id] = name ? name : scontacts[i].id;
 		}
 		
-		console.log('Creating platform API.');
 		var api = {
 			sendMessage: function(message, thread) {
-				console.log('sending ' + message);
 				skype.sendMessage(thread, message);
 			}
 		};
 		platform = shim.createPlatformModule(api);
 		
-		console.log('Registering message received callback.');
 		skype.messagesCallback = function (messages) {
 			messages.forEach(function (message) {
 				console.log(JSON.stringify(message,null,2));
 				if (message.resource.messagetype === 'Text') {
-
 					var threadLink = message.resource.conversationLink,
 						threadId = threadLink.substring(threadLink.lastIndexOf('/') + 1),
 						content = message.resource.content,
@@ -56,7 +47,6 @@ exports.start = function(callback) {
 };
 
 exports.stop = function() {
-	console.log('stopping');
 	contacts = {};
 	platform = null;
 	skype = null;
