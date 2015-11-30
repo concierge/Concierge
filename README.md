@@ -53,7 +53,23 @@ Create a new file, `config.json` that has the following:
 ```
 Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets and update your slack team configuration to match.
 
-To start in slack mode, run `node main.js slack`.
+#### Skype Integration
+To start in slack mode, run `node main.js skype`.
+Create a new file, `config.json` that has the following:
+```
+{
+    "output": {
+        "username": "<skypeUsername/skypeEmail>",
+        "password": "<skypePassword>",
+        "commandPrefix": "!"
+    }
+}
+```
+Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets.
+
+To start in skype mode, run `node main.js skype`.
+
+<b>Please note: the account that Kassy is logged in as will not see the messages it sends.</b>
 
 #### Testing Mode
 
