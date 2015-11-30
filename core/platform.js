@@ -14,7 +14,6 @@
 var config			= require('./config.js'),
 	path			= require('path'),
     fs              = require('fs'),
-    
 	configFile		= 'config.json',
 	started			= false,
 	loadedModules	= [],
@@ -107,6 +106,7 @@ exports.start = function() {
 	else {
 		mode.config.commandPrefix = exports.commandPrefix;
 	}
+	modules.commandPrefix = exports.commandPrefix;
 
 	// Load core modules
     console.warn('Loading core components...');
@@ -155,14 +155,12 @@ exports.shutdown = function(callback) {
 
     mode.stop();
 
-    config.saveConfig(configFile, function (error) {
-        console.debug(error);
-        started = false;
-        console.log(exports.packageInfo.name + " has shutdown.");
-        if (callback) {
-            callback();
-        }
-    });
+	config.saveConfig();
+	started = false;
+	console.log(exports.packageInfo.name + " has shutdown.");
+	if (callback) {
+		callback();
+	}
 };
 
 exports.restart = function() {

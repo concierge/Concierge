@@ -63,8 +63,11 @@ exports.getConfig = function (m) {
     }
     
     if (!isSystem) {
-        console.warn("Configuration data for module '" + m + "' stored in deprecated location. " +
-            "Please move configuration to module specific configuration file.");
+        console.warn("\nConfiguration data for module '" + m + "' stored in deprecated location.\n" +
+            "Configuration will be moved to module specific configuration file.");
+		var cfg = sysConfig[m];
+		delete sysConfig[m];
+		return cfg;
     }
     return sysConfig[m];
 };
@@ -80,11 +83,19 @@ exports.loadModuleConfig = function (module, location, ignoreCache) {
 
     var loc = path.join(location, modConfigFile),
         configData = loadConfig(loc),
-        deprecatedData = exports.getConfig(module.name);
-    for (var name in deprecatedData) {
-        configData[name] = deprecatedData[name];
+        deprecatedDataA = exports.getConfig(module.name),
+        deprecatedDataB = exports.getConfig(module.name + '.js');
+    for (var name in deprecatedDataA) {
+        configData[name] = deprecatedDataA[name];
+    }
+	for (var name in deprecatedDataB) {
+        configData[name] = deprecatedDataB[name];
     }
     
+	modConfig[module.name] = {
+		location: path.join(location, modConfigFile),
+		data: configData
+	};
     return configData;
 };
 
