@@ -38,7 +38,6 @@ exports.start = function(callback) {
 		console.log('Registering message received callback.');
 		skype.messagesCallback = function (messages) {
 			messages.forEach(function (message) {
-				console.log(JSON.stringify(message,null,2));
 				if (message.resource.messagetype === 'Text') {
 
 					var threadLink = message.resource.conversationLink,
