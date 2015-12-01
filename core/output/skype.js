@@ -46,8 +46,10 @@ exports.start = function(callback) {
 						senderId = message.resource.from.substring(message.resource.from.lastIndexOf(':') + 1),
 						senderName = findContactName(senderId);
 					
-					var event = shim.createEvent(threadId, senderId, senderName, content);
-					callback(platform, event);
+					if (shouldListenToChat(threadId)) {
+						var event = shim.createEvent(threadId, senderId, senderName, content);
+						callback(platform, event);
+					}
 				}
 			});
 		};
