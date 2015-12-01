@@ -55,6 +55,23 @@ Replace each of the angle bracketed strings (`<...>`) with the respective inform
 
 To start in slack mode, run `node main.js slack`.
 
+#### Skype Integration
+Create a new file, `config.json` that has the following:
+```
+{
+    "output": {
+        "username": "<skypeUsername/skypeEmail>",
+        "password": "<skypePassword>",
+        "commandPrefix": "!"
+    }
+}
+```
+Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets.
+
+To start in skype mode, run `node main.js skype`.
+
+<b>Please note: the account that Kassy is logged in as will not see the messages it sends.</b>
+
 #### Testing Mode
 
 Testing mode requires no configuration. It provides a testing ground to experiment with your modules before using them live in one of the service integrations.
