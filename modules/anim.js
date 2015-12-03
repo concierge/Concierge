@@ -67,7 +67,13 @@ exports.ensureExt = function (url) {
 exports.run = function(api, event) {
 	var query = event.body.substr(6);
 	exports.search(query, function(image) {
-		var img = exports.ensureExt(image.unescapedUrl);
-		api.sendImage("url", img, "I found this:", event.thread_id);
+		var img = image.unescapedUrl;
+		if (img) {
+			var url = exports.ensureExt(image.unescapedUrl);
+			api.sendImage("url", url, "I found this:", event.thread_id);
+		}
+		else {
+			api.sendMessage("Something went very wrong.", event.thread_id);
+		}
 	});
 };
