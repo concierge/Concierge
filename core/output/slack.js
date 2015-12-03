@@ -1,11 +1,12 @@
 var request = require('request'),
 shim = require('../shim.js'),
-socket = require('ws'),
+WebSocket = require('ws'),
 deasync = require('deasync'),
 platform = null,
 sockets = [],
 eventReceivedCallback = null,
 numSocketsToShutDown = 0,
+shuttingDown = false,
 
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -270,7 +271,7 @@ connect = function(connectionDetails) {
 
 	if (connectionDetails) {
 		(function (connectionDetails) {
-			s = new socket(connectionDetails.url);
+			s = new WebSocket(connectionDetails.url);
 			sockets[connectionDetails.team_id] = s;
 			s.on('open', function() {
 				if (exports.debug) {
@@ -342,6 +343,7 @@ openPrivateMessage = function(message, thread, senderId) {
 },
 
 eventReceived = function(event, teamId) {
+	if (shuttingDown) return;
 	switch (event.type) {
 		case 'message':
 		recMessage(event, teamId);
@@ -485,7 +487,7 @@ recMessage = function(event, teamId) {
 closeSockets = function() {
 	console.log("closing sockets");
 	for (var socket in sockets) {
-		sockets[socket].close();
+		sockets[socket].terminate();
 	}
 	console.log("sockets closed");
 };
@@ -516,6 +518,7 @@ exports.start = function (callback) {
 
 exports.stop = function() {
 	console.log("start shutdown");
+	shuttingDown = true;
 	numSocketsToShutDown = Object.keys(sockets).length;
 	console.log(numSocketsToShutDown);
 	closeSockets();
