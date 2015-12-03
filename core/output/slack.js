@@ -6,17 +6,6 @@ platform = null,
 sockets = [],
 eventReceivedCallback = null,
 numSocketsToShutDown = 0,
-temp = socket.Receiver.prototype.endPacket;
-
-// socket.Receiver.prototype.endPacket = function() {
-// 	if (this.dead) {
-// 		return;
-// 	}
-// 	else {
-// 		temp.call(this);
-// 	}
-// }
-
 
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -157,11 +146,12 @@ sendTyping = function(thread) {
 
 	if (socket != null) {
 		var body = {
-			"id": slackTeams[teamInfo.team_id].event_id++,
-			"channel": teamInfo.channel_id,
-			"type": "typing"
+			"id": slackTeams[teamInfo.team_id].event_id += 2347,
+			"type": "typing",
+			"channel": teamInfo.channel_id
 		};
 		console.log("typing");
+		console.log(JSON.stringify(body));
 		socket.send(JSON.stringify(body));
 	}
 	else {
@@ -300,6 +290,9 @@ connect = function(connectionDetails) {
 				}
 				console.log("normal close");
 				init(slackTeams[connectionDetails.team_id].token, connect);
+			}).on('error', function(data) {
+				console.log("received error");
+				console.log(data);
 			});
 		})(connectionDetails);
 	}
@@ -439,31 +432,44 @@ recMessage = function(event, teamId) {
 
 	console.log("continue");
 	if (event.user!= slackTeam.bot_id) {
-		var matches = event.text.match(/<?@[^:>]+>:?/g);
-		if (matches != null) {
-			if (slackTeam) {
+		var matches = null,
+			lastMatchIndex = -1,
+			regex = /<@([^>\|]+)(\|[^>]+)?>:?/,
+			message = event.text,
+			matches;
 
-				for (var j = 0; j < matches.length; j++) {
-					// replace identifier with empty string
-					id = matches[j].replace(/[ :<>@]+/g, '');
-
-					userName = slackTeam.users[id].name;
+		if (slackTeam) {
+			matches = regex.exec(message);
+			while (matches !== null) {
+				if (lastMatchIndex === matches.index) {
+					console.log("broken beyond belief");
+					break;
+				}
+				lastMatchIndex = matches.index;
+				console.log(matches);
+				var match = matches[1];
+				if (match != null) {
+					userName = slackTeam.users[match].name;
+					console.log(userName);
 					if (!userName) {
-						// User not found, this shouldn't happen, but in case it does, Kassy doesn't know who you are.
-						message = lookUpUserAddToTeam("Who the hell are you?", message, matches[j]);
+						// User not found, this shouldn't happen, but in case it does, Kassy doesn't know who you are so lets call you "Bob"
+						message = replaceUserIdWithUserName("Bob", message, matches[0]);
 						if (exports.debug) {
-							console.info("User not found in team, with id: " + id);
+							console.info("User not found in team, with id: " + match);
 						}
 					}
 					else {
-						message = replaceUserIdWithUserName(userName, message, matches[j]);
+						message = replaceUserIdWithUserName(userName, message, matches[0]);
 					}
 				}
+				console.log(message);
+				matches = regex.exec(message);
+				console.log(matches);
 			}
-			else {
-				if (exports.debug) {
-					console.warn('No slack team found matching: ' + teamId);
-				}
+		}
+		else {
+			if (exports.debug) {
+				console.warn('No slack team found matching: ' + teamId);
 			}
 		}
 
