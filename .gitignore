@@ -1,4 +1,5 @@
 *config.json
+*.log
 *node_modules*
 .idea/
 nohup.out

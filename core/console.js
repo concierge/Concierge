@@ -10,10 +10,17 @@
  */
 
 var colours = require('colors'),
+	fs		= require('fs'),
+	strip	= require('stripcolorcodes'),
     info    = console.info,
     error   = console.error,
     warn    = console.warn,
-    debug   = false;
+	write	= process.stdout.write,
+	perr	= process.stderr.write,
+    debug   = false,
+	log		= false,
+	logStr	= null,
+	logFile	= 'kassy.log';
 
 colours.setTheme({
     info:   'cyan',
@@ -55,8 +62,45 @@ console.write = function (args) {
     process.stdout.write(args.info);
 };
 
+process.on('exit', function () {
+   if (log) {
+	   logStr.end();
+   }
+});
+
+process.stdout.write = function (data) {
+	write.apply(this, arguments);
+	if (log) {
+		logStr.write(strip(data));
+	}
+};
+
+process.stderr.write = function (data) {
+	perr.apply(this, arguments);
+	if (log) {
+		logStr.write(strip(data));
+	}
+};
+
 exports.setDebug = function(enabled) {
     debug = enabled;
+};
+
+exports.setLog = function(enabled) {
+	log = enabled;
+	if (enabled) {
+		try {
+			fs.unlinkSync(logFile);
+		}
+		catch (e){}	// ignore, probably doesn't exist
+		logStr = fs.createWriteStream(logFile, {flags: 'a'});
+	}
+	else {
+		if (logStr != null) {
+			logStr.end();
+		}
+		logStr = null;
+	}
 };
 
 console.isDebug = function() {

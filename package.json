@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "3.0.0-alpha",
+  "version": "3.0.0-beta",
   "description": "Extensible facebook chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -14,7 +14,9 @@
     "require-install": "*",
     "body-parser": "*",
     "colors": "^1.1.2",
-    "skyweb": "0.0.2"
+    "skyweb": "0.0.2",
+	"figlet": "1.1.1",
+	"stripcolorcodes": "0.1.0"
   },
   "devDependencies": {},
   "scripts": {

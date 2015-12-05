@@ -9,8 +9,10 @@
  *		MIT License. All code unless otherwise specified is
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
+
+var figlet = require('figlet'),
  
-var Platform = function(modes) {
+Platform = function(modes) {
 	require.reload('./prototypes.js');
 	
 	this.config			= require('./config.js');
@@ -90,7 +92,9 @@ Platform.prototype.start = function() {
 		throw 'Modes must be set before starting';
     }
 
-    console.title(this.packageInfo.name.toProperCase() + ' ' + this.packageInfo.version);
+	console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
+	
+    console.title(' ' + this.packageInfo.version);
     console.info('------------------------------------');
     console.warn('Starting system...\n'
 				+ 'Loading system configuration...');

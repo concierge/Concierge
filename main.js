@@ -39,6 +39,13 @@ if (arguments[0] === 'debug') {
     consolec.setDebug(true);
 }
 
+// Determine if logging output is enabled
+if (arguments[0] === 'log') {
+    console.warn('Logging mode enabled.');
+	arguments.splice(0, 1);
+    consolec.setLog(true);
+}
+
 // Check startup modes
 for (var i = 0; i < arguments.length; i++) {
 	arguments[i] = arguments[i].toLowerCase();

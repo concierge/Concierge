@@ -23,7 +23,7 @@ exports.start = function(callback) {
 	}
 
 	rl.on('line', function (cmd) {
-		if (cmd.startsWith("/setuser")) {
+		if (cmd.startsWith(exports.config.commandPrefix + "setuser")) {
 			var name = cmd.substr(9);
 			senderName = name;
 			return;
