@@ -1,6 +1,6 @@
-var require_install	= require('require-install'),
-	request			= require_install('request'),
-	animCache		= {};
+var require_install = require('require-install'),
+	request = require_install('request'),
+	animCache = {};
 
 exports.match = function(text) {
 	return text.startsWith(this.platform.commandPrefix + 'anim');
