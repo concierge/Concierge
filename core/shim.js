@@ -15,6 +15,7 @@ exports.createPlatformModule = function(platform) {
 		platform.sendImage = function(type, image, description, thread) {
 			switch(type) {
 				case "url": // fallback to sending a url
+					platform.sendMessage(description, thread);
 					platform.sendUrl(image, thread);
 					break;
 				case "file": // fallback to sending a file

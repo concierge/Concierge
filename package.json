@@ -14,6 +14,7 @@
     "require-install": "*",
     "body-parser": "*",
     "colors": "^1.1.2"
+    "skyweb": "0.0.2"
   },
   "devDependencies": {},
   "scripts": {
