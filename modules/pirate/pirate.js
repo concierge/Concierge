@@ -1,8 +1,8 @@
 var request = require.safe('request'),
     querystring = require.safe("querystring");
 
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'pirate');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'pirate');
 };
 
 exports.help = function() {

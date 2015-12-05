@@ -1,7 +1,7 @@
 var startTime;
 
-exports.match = function(text) {
-  return text === this.commandPrefix + 'uptime';
+exports.match = function(text, commandPrefix) {
+  return text === commandPrefix + 'uptime';
 };
 
 exports.run = function(api, event) {

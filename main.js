@@ -19,48 +19,47 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-// Start platform
-var consolec    = require('./core/console.js'),
-    platform    = require('./core/platform.js'),
-    modes       = require('./core/modes.js');
+// Load NodeJS Modifications/Variables
+require('./core/require.js');
+require('./core/prototypes.js');
+require('./core/status.js');
+
+var consolec	= require('./core/console.js'),
+	modesf		= require('./core/modes.js'),
+	startup		= require('./core/startup.js'),
+	modes		= Object.keys(modesf.listModes()),
+	arguments	= process.argv;
+
+arguments.splice(0, 2);
 
 // Determine if debug output is enabled
-if (process.argv[2] === 'debug') {
+if (arguments[0] === 'debug') {
     console.warn('Debug mode enabled.');
-	process.argv.splice(2, 1);
+	arguments.splice(0, 1);
     consolec.setDebug(true);
 }
 
-// Get startup mode
-if (!process.argv[2]) {
-    console.info('No mode specified, defaulting to \'test\'.');
-	process.argv.push('test');
-}
-process.argv[2] = process.argv[2].toLowerCase();
-
-// Start platform or fail
-modes.listModes(function(modes) {
-	try {
-		if (!platform.setMode(modes[process.argv[2]])) {
-		    process.exit(-1);
+// Check startup modes
+for (var i = 0; i < arguments.length; i++) {
+	arguments[i] = arguments[i].toLowerCase();
+	if (!modes.includes(arguments[i])) {
+		console.error(('Unknown mode \'' + arguments[i] + '\''));
+		console.info('The modes avalible on your system are:');
+		for (var i = 0; i < modes.length; i++) {
+			console.info('\t- \'' + modes[i] + '\'');
 		}
-	}
-	catch (e) {
-	    console.critical(e);
-        console.error(('Unknown mode \'' + process.argv[2] + '\''));
-	    console.info('The modes avalible on your system are:');
-	    for (var mode in modes) {
-	        console.info('\t- \'' + mode + '\'');
-	    }
 		process.exit(-2);
-    }
+	}
+}
 
-    try {
-        platform.start();
-    }
-    catch (e) {
-        console.critical(e);
-        console.error('A critical error occured while running. Please check your configuration or report a bug.');
-        process.exit(-3);
-    }
+if (!arguments || arguments.length == 0) {
+    console.info('No mode specified, defaulting to \'test\'.');
+	arguments.push('test');
+}
+
+process.on('uncaughtException', function(err) {
+	console.error('An unhandled error occurred. Start as debug for details.');
+	console.critical(err);
 });
+
+startup.run(arguments);

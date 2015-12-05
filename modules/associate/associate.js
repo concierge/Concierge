@@ -2,8 +2,8 @@ exports.help = function() {
 	return this.commandPrefix + 'associate "<hook>" "<text>" or clear : Associate and disassociate a phrase with another.';
 };
 
-exports.match = function(text, thread, senderName, api) {
-	if (text.startsWith(this.commandPrefix + 'associate')) {
+exports.match = function(text, commandPrefix, thread, senderName, api) {
+	if (text.startsWith(commandPrefix + 'associate')) {
 		return true;
 	}
 
@@ -49,15 +49,15 @@ exports.clear = function(api, event) {
 };
 
 exports.run = function(api, event) {
-	if (!event.body.startsWith(this.commandPrefix + 'associate')) {
+	if (!event.body.startsWith(api.commandPrefix + 'associate')) {
 		return exports.match(event.body, event.thread_id, null, api);
 	}
 
-	if (event.body === this.commandPrefix + 'associate') {
+	if (event.body === api.commandPrefix + 'associate') {
 		return exports.printAssociations(api, event);
 	}
 
-	if (event.body === this.commandPrefix + 'associate clear') {
+	if (event.body === api.commandPrefix + 'associate clear') {
 		return exports.clear(api, event);
 	}
 

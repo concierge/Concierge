@@ -1,9 +1,10 @@
 var fb = require("facebook-chat-api"),
 	fs = require("fs"),
-	shim = require("../shim.js"),
+	shim = require.once("../shim.js"),
 	stopListeningMethod = null,
 	platform = null,
-	endTyping = null;
+	endTyping = null,
+	platformApi = null;
 
 exports.start = function(callback) {
 	fb({email: this.config.username, password: this.config.password}, function (err, api) {
@@ -12,8 +13,10 @@ exports.start = function(callback) {
 			process.exit(-1);
 		}
 		api.setOptions({listenEvents: true});
+		platformApi = api;
 		
 		platform = shim.createPlatformModule({
+			commandPrefix: exports.config.commandPrefix,
 			sendMessage: function(message, thread) {
 				if (endTyping != null) {
 					endTyping();
@@ -98,5 +101,6 @@ exports.stop = function() {
 		endTyping = null;
 	}
 	stopListeningMethod();
+	platformApi.logout();
 	platform = null;
 };

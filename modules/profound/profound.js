@@ -9,8 +9,8 @@
  */
 var request = require.safe('request');
 
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'profound');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'profound');
 };
 
 exports.help = function() {

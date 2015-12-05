@@ -168,10 +168,10 @@ function checkWin(game, player) {
     }
 }
 
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'tictactoe')
-        || text.startsWith(this.commandPrefix + 'move')
-        || text.startsWith(this.commandPrefix + 'surrender');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'tictactoe')
+        || text.startsWith(commandPrefix + 'move')
+        || text.startsWith(commandPrefix + 'surrender');
 };
 
 exports.help = function() {
@@ -183,7 +183,7 @@ exports.help = function() {
 exports.run = function(api, event) {
     "use strict"
     var command = event.body,
-        commandPrefix = this.commandPrefix;
+        commandPrefix = api.commandPrefix;
 
     //If we are creating a new game
     if (command.startsWith(commandPrefix + "tictactoe")) {

@@ -9,41 +9,33 @@
  *		MIT License. All code unless otherwise specified is
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
+ 
+var Platform = function(modes) {
+	require.reload('./prototypes.js');
+	
+	this.config			= require('./config.js');
+	this.loadedModules	= [];
+	this.coreModules	= [];
+	this.modes			= null;
+	this.defaultPrefix	= '/';
+	this.packageInfo	= require.once('../package.json');
+	this.modules		= require.once('./modules.js');
+	this.statusFlag		= StatusFlag.NotStarted;
+	this.onShutdown		= null;
 
-// Setup file scope variables
-var config			= require('./config.js'),
-	path			= require('path'),
-    fs              = require('fs'),
-	configFile		= 'config.json',
-	started			= false,
-	loadedModules	= [],
-	coreModules		= [],
-	mode			= null;
+	this.packageInfo.name = this.packageInfo.name.toProperCase();
+	this.setModes(modes);
+};
 
-// Load core files
-require('./prototypes.js');
-require('./require.js');
-
-modules = require('./modules.js');
-
-// Setup platform scope variables
-exports.require_install = require('require-install');
-exports.commandPrefix = '/';
-exports.packageInfo = require('../package.json');
-exports.loadedModules = loadedModules; // pointer for core modules
-
-// Correct title case
-exports.packageInfo.name = exports.packageInfo.name.toProperCase();
-
-exports.messageRxd = function(api, event) {
-	var matchArgs	= [event.body, event.thread_id, event.sender_name],
+Platform.prototype.messageRxd = function(api, event) {
+	var matchArgs	= [event.body, api.commandPrefix, event.thread_id, event.sender_name],
 		runArgs		= [api, event],
 		abort		= false;
 
 	// Run core modules in platform mode
-	for (var i = 0; i < coreModules.length; i++) {
-        if (coreModules[i].match.apply(exports, matchArgs)) {
-            var temp = !coreModules[i].run.apply(exports, runArgs);
+	for (var i = 0; i < this.coreModules.length; i++) {
+        if (this.coreModules[i].match.apply(this, matchArgs)) {
+            var temp = !this.coreModules[i].run.apply(this, runArgs);
 			abort = abort || temp;
 		}
 	}
@@ -52,11 +44,11 @@ exports.messageRxd = function(api, event) {
 	}
 
 	// Run user modules in protected mode
-	for (var i = 0; i < loadedModules.length; i++) {
-		if (loadedModules[i].match.apply(loadedModules[i], matchArgs)) {
+	for (var i = 0; i < this.loadedModules.length; i++) {
+		if (this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs)) {
 			try {
 				api.sendTyping(event.thread_id);
-				loadedModules[i].run.apply(loadedModules[i], runArgs);
+				this.loadedModules[i].run.apply(this.loadedModules[i], runArgs);
 			}
 			catch (e) {
                 api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
@@ -67,12 +59,19 @@ exports.messageRxd = function(api, event) {
 	}
 };
 
-exports.setMode = function(newMode) {
+Platform.prototype.setModes = function(modes) {
     try {
-        if (started) {
+        if (this.statusFlag !== StatusFlag.NotStarted) {
             throw 'Cannot change mode when it is already started.';
         }
-        mode = require('./output/' + newMode);
+		this.modes = [];
+		for (var i = 0; i < modes.length; i++) {
+			var mode = {
+				instance: require.once('./output/' + modes[i]),
+				name: modes[i]
+			};
+			this.modes.push(mode);
+		}
         return true;
     }
     catch (e) {
@@ -83,88 +82,111 @@ exports.setMode = function(newMode) {
     }
 };
 
-exports.start = function() {
-	if (started) {
+Platform.prototype.start = function() {
+	if (this.statusFlag !== StatusFlag.NotStarted) {
 		throw 'Cannot start platform when it is already started.';
 	}
-	if (!mode) {
-		throw 'Mode must be set before starting';
+	if (!this.modes.length) {
+		throw 'Modes must be set before starting';
     }
-    mode.platform = exports;
 
-    console.title(exports.packageInfo.name.toProperCase() + ' ' + exports.packageInfo.version);
+    console.title(this.packageInfo.name.toProperCase() + ' ' + this.packageInfo.version);
     console.info('------------------------------------');
     console.warn('Starting system...\n'
 				+ 'Loading system configuration...');
 
-    mode.config = config.loadOutputConfig();
-    modules.config = config.loadDisabledConfig();
-
-	if (mode.config.commandPrefix) {
-		exports.commandPrefix = mode.config.commandPrefix;
+    this.modules.disabledConfig = this.config.loadDisabledConfig();
+	for (var i = 0; i < this.modes.length; i++) {
+		this.modes[i].instance.platform = this;
+		this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
+		if (!this.modes[i].instance.config.commandPrefix) {
+			this.modes[i].instance.config.commandPrefix = this.defaultPrefix;
+		}
 	}
-	else {
-		mode.config.commandPrefix = exports.commandPrefix;
-	}
-	modules.commandPrefix = exports.commandPrefix;
-
+    
 	// Load core modules
     console.warn('Loading core components...');
-    modules.listCoreModules(function (m) {
+    this.modules.listCoreModules(function (m) {		
         for (var i = 0; i < m.length; i++) {
-            coreModules.push(modules.loadCoreModule(exports, m[i]));
+            this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
         }
-    });
+    }.bind(this));
 
 	// Load Kassy modules
 	console.warn('Loading modules...');
-    modules.listModules(function (m) {
+    this.modules.listModules(function (m) {
         for (var mod in m) {
-            loadedModules.push(modules.loadModule(m[mod]));
+            this.loadedModules.push(this.modules.loadModule(m[mod]));
         }
-    });
+    }.bind(this));
         
-    // Start output
-    mode.start(exports.messageRxd);
-    started = true;
+	// Starting output
+	console.warn('Starting integrations...');
+	for (var i = 0; i < this.modes.length; i++) {
+		try {
+			console.write("Loading output '" + this.modes[i].name + "'...\t");
+			this.modes[i].instance.start(this.messageRxd.bind(this));
+			console.info("[DONE]");
+		}
+		catch (e) {
+			console.error("[FAIL]");
+			console.debug("Failed to start output integration '" + this.modes[i].name + "'.");
+			console.critical(e);
+		}
+	}
+	
+    this.statusFlag = StatusFlag.Started;
     console.warn('System has started. ' + 'Hello World!'.rainbow);
 };
 
-exports.shutdown = function(callback) {
-    if (!started) {
+Platform.prototype.shutdown = function(flag) {
+    if (this.statusFlag != StatusFlag.Started) {
         throw 'Cannot shutdown platform when it is not started.';
     }
+	if (!flag) {
+		flag = 0;
+	}
 
+	// Stop output modes
+	for (var i = 0; i < this.modes.length; i++) {
+		try {
+			this.modes[i].instance.stop();
+		}
+		catch (e) {
+			console.debug("Failed to correctly stop output mode '" + this.modes[i] + "'.");
+			console.critical(e);
+		}
+	}
+	
     // Unload user modules
-    for (var i = 0; i < loadedModules.length; i++) {
-        if (loadedModules[i].unload) {
-            loadedModules[i].unload();
+    for (var i = 0; i < this.loadedModules.length; i++) {
+        if (this.loadedModules[i].unload) {
+            this.loadedModules[i].unload();
         }
-        loadedModules[i] = null;
+        this.loadedModules[i] = null;
     }
-    loadedModules = [];
+    this.loadedModules = [];
 
     // Unload core modules
-    for (var i = 0; i < coreModules.length; i++) {
-        if (coreModules[i].unload) {
-            coreModules[i].unload();
+    for (var i = 0; i < this.coreModules.length; i++) {
+        if (this.coreModules[i].unload) {
+            this.coreModules[i].unload();
         }
-        coreModules[i] = null;
+        this.coreModules[i] = null;
     }
-    coreModules = [];
+    this.coreModules = [];
 
-    mode.stop();
-
-	config.saveConfig();
-	started = false;
-	console.log(exports.packageInfo.name + " has shutdown.");
-	if (callback) {
-		callback();
+	this.config.saveConfig();
+	this.statusFlag = flag ? flag : StatusFlag.Shutdown;
+	
+	console.log(this.packageInfo.name + " has shutdown.");
+	if (this.onShutdown && this.onShutdown != null) {
+		this.onShutdown(this.statusFlag);
 	}
 };
 
-exports.restart = function() {
-	exports.shutdown(function() {
-		exports.start();
-	});
+Platform.prototype.setOnShutdown = function(onShutdown) {
+	this.onShutdown = onShutdown;
 };
+
+module.exports = Platform;

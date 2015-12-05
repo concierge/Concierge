@@ -1,5 +1,5 @@
-exports.match = function(text) {
-	return text.endsWith('++') || text.endsWith('--') || text === this.commandPrefix + 'karma';
+exports.match = function(text, commandPrefix) {
+	return text.endsWith('++') || text.endsWith('--') || text === commandPrefix + 'karma';
 };
 
 exports.help = function() {
@@ -127,7 +127,7 @@ exports.printKarma = function(api, event) {
 };
 
 exports.run = function(api, event) {
-	if (event.body === this.commandPrefix + 'karma') {
+	if (event.body === api.commandPrefix + 'karma') {
 		exports.printKarma(api, event);
 		return;
 	}

@@ -9,16 +9,16 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-var files           = require('./files.js'),
+var files           = require.once('./files.js'),
     path            = require('path'),
     modesLocation   = './core/output';
 
-exports.listModes = function (callback) {
+exports.listModes = function () {
     var modes = files.filesInDirectory(modesLocation);
     var obj = {};
     for (var i = 0; i < modes.length; i++) {
         var name = path.basename(modes[i], '.js').toLowerCase();
         obj[name] = modes[i];
     }
-    callback(obj);
+	return obj;
 };

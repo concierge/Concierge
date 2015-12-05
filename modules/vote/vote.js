@@ -7,8 +7,8 @@ exports.help = function() {
 	this.commandPrefix + 'vote <number> : vote for an option.';
 };
 
-exports.match = function(text, thread, senderName, api) {
-	return text.startsWith(this.commandPrefix + 'vote');
+exports.match = function(text, commandPrefix, thread, senderName, api) {
+	return text.startsWith(commandPrefix + 'vote');
 };
 
 exports.createVote = function(api, event, spl, timeout) {

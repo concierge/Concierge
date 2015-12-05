@@ -11,7 +11,7 @@
 
 var fs              = require('fs'),
     path            = require('path'),
-    files           = require('./files.js'),
+    files           = require.once('./files.js'),
     config          = require('./config.js'),
     coreMoulesDir   = 'core/core_modules',
     modulesDir      = 'modules',
@@ -28,7 +28,7 @@ exports.listCoreModules = function (callback) {
 exports.loadCoreModule = function(platform, module) {
     var fp = path.resolve(__dirname, '../' + coreMoulesDir + '/' + module),
         index = Object.keys(require.cache).indexOf(fp),
-        m = index !== -1 ? require.reload(fp) : require(fp);
+        m = index !== -1 ? require.reload(fp) : require.once(fp);
     m.platform = exports;
     if (m.load) {
         m.load();
@@ -60,6 +60,10 @@ exports.listModules = function (callback) {
                 continue;
             }
             
+			if (exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+				continue;
+			}
+			
             if (!kj.folderPath) {
                 kj.folderPath = folderPath;
             }
@@ -91,7 +95,6 @@ exports.loadModule = function (module) {
         } catch (e) {
             throw 'Could not require module \'' + module.name + '\'. Does it have a syntax error?';
         }
-        m.commandPrefix = exports.commandPrefix;
         m.config = config.loadModuleConfig(module, modulePath);
         if (m.load) {
             m.load();

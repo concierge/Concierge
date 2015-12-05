@@ -4,8 +4,8 @@
  * Written By: Jay Harris
  * Date Written: 28/07/2015
  */
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'lithp');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'lithp');
 };
 
 exports.help = function() {

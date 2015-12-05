@@ -8,21 +8,21 @@ var quarantine = require.safe("quarantine")(500),
 	return console.result;\
 })()";
 
-exports.match = function(text) {
-	return text.startsWith(this.commandPrefix + 'runbot');
+exports.match = function(text, commandPrefix) {
+	return text.startsWith(commandPrefix + 'runbot');
 };
 
 exports.help = function() {
 	return this.commandPrefix + 'runbot <jscode> : Runs JS code.';
 };
 
-exports.wrapCode = function(message) {
-	var code = message.substr(this.commandPrefix.length + 6);
+exports.wrapCode = function(message, prefix) {
+	var code = message.substr(prefix.length + 6);
 	return logCodeBeginning + code + logCodeEnding;
 };
 
 exports.run = function(api, event) {
-	var code = exports.wrapCode(event.body);
+	var code = exports.wrapCode(event.body, api.commandPrefix);
 	quarantine({}, code, function(){
 		if (arguments[0] && arguments[0] != null && arguments[0] != 'null') {
 			api.sendMessage('Error:\n' + arguments[0], event.thread_id);

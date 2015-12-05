@@ -1,8 +1,8 @@
 var request = require.safe('request'),
 	animCache = {}; // yes...
 
-exports.match = function(text) {
-	return text.startsWith(this.commandPrefix + 'anim');
+exports.match = function(text, commandPrefix) {
+	return text.startsWith(commandPrefix + 'anim');
 };
 
 exports.help = function() {

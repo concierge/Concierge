@@ -11,6 +11,7 @@
 
 var fs              = require('fs'),
     path            = require('path'),
+	modules			= Object.keys(require('./modules.js')),
     modConfig       = null,
     modConfigFile   = 'config.json',
     sysConfig       = null,
@@ -50,7 +51,7 @@ exports.saveConfig = function () {
 };
 
 exports.getConfig = function (m) {
-    var isSystem = sysConfigZones.indexOf(m) >= 0;
+    var isSystem = sysConfigZones.includes(m);
     
     if (!sysConfig) {
         sysConfig = loadConfig(sysConfigFile);
@@ -58,7 +59,8 @@ exports.getConfig = function (m) {
     
     if (!isSystem && !sysConfig[m]) {
         return {};
-    } else {
+    }
+	else if (!sysConfig[m]) {
         sysConfig[m] = {};
     }
     
@@ -99,8 +101,19 @@ exports.loadModuleConfig = function (module, location, ignoreCache) {
     return configData;
 };
 
-exports.loadOutputConfig = function () {
-    return exports.getConfig(sysConfigZones[0]);
+exports.loadOutputConfig = function (outputName) {
+	var config = exports.getConfig(sysConfigZones[0]);
+	if (!config[outputName]) {
+		config[outputName] = {};
+	}
+	
+	for (var obj in config) {
+		if (!modules.includes(obj)) continue;
+		if (!config[outputName][obj]) {
+			config[outputName][obj] = config[obj];
+		}
+	}
+    return config[outputName];
 };
 
 exports.loadDisabledConfig = function () {

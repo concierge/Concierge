@@ -1,14 +1,13 @@
-var reddit = require('./common/reddit.js'),
-    require_install = require('require-install'),
-    request = require_install('request'),
+var reddit = require('./../common/reddit.js'),
+    request = require.safe('request'),
     results = [];
 
-exports.match = function(text) {
-    return text.startsWith(this.platform.commandPrefix + 'programmer');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'programmer');
 };
 
 exports.help = function() {
-    return this.platform.commandPrefix + 'programmer : Reactions of a programmer.';
+    return this.commandPrefix + 'programmer : Reactions of a programmer.';
 };
 
 exports.reaction = function(callback) {

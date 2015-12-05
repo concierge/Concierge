@@ -1,15 +1,18 @@
 var readline = require('readline'),
 	rl = null,
-	shim = require('../shim.js'),
+	shim = require.once('../shim.js'),
+	api = null,
+	senderName = "TESTING";
+
+exports.start = function(callback) {
 	api = shim.createPlatformModule({
+		commandPrefix: exports.config.commandPrefix,
 		sendMessage: function(message, thread) {
 			console.log(message);
 		},
 		sendTyping: function(thread) {}
-	}),
-	senderName = "TESTING";
-
-exports.start = function(callback) {
+	})
+	
 	rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout

@@ -1,7 +1,7 @@
 var request = require.safe('request');
 
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'idea');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'idea');
 };
 
 exports.help = function() {

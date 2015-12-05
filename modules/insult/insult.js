@@ -2,8 +2,8 @@ var reddit = require('./../common/reddit.js'),
     request = require.safe('request'),
     results = [];
 
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'insult');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'insult');
 };
 
 exports.help = function() {

@@ -8,8 +8,8 @@
  var wikiquote = require("./../common/wikiquote.js");
 
 // Define the 'regex' command matching criteria boolean
-exports.match = function(text) {
-    return text.startsWith(this.commandPrefix + 'quote');
+exports.match = function(text, commandPrefix) {
+    return text.startsWith(commandPrefix + 'quote');
 };
 
 // Says surprisingly helpful things...
