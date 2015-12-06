@@ -11,7 +11,7 @@
 
 var fs              = require('fs'),
     path            = require('path'),
-	modules			= Object.keys(require('./modules.js')),
+	modes			= require('./modes.js').listModes(),
     modConfig       = null,
     modConfigFile   = 'config.json',
     sysConfig       = null,
@@ -108,7 +108,7 @@ exports.loadOutputConfig = function (outputName) {
 	}
 	
 	for (var obj in config) {
-		if (!modules.includes(obj)) continue;
+		if (modes.includes(obj)) continue;
 		if (!config[outputName][obj]) {
 			config[outputName][obj] = config[obj];
 		}

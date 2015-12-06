@@ -27,7 +27,7 @@ require('./core/status.js');
 var consolec	= require('./core/unsafe/console.js'),
 	modesf		= require('./core/modes.js'),
 	startup		= require('./core/startup.js'),
-	modes		= Object.keys(modesf.listModes()),
+	modes		= modesf.listModes(),
 	arguments	= process.argv;
 
 arguments.splice(0, 2);

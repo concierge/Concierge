@@ -50,7 +50,7 @@ exports.clear = function(api, event) {
 
 exports.run = function(api, event) {
 	if (!event.body.startsWith(api.commandPrefix + 'associate')) {
-		return exports.match(event.body, event.thread_id, null, api);
+		return exports.match(event.body, api.commandPrefix, event.thread_id, null, api);
 	}
 
 	if (event.body === api.commandPrefix + 'associate') {

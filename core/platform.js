@@ -156,7 +156,7 @@ Platform.prototype.start = function() {
 };
 
 Platform.prototype.shutdown = function(flag) {
-    if (this.statusFlag != StatusFlag.Started) {
+    if (this.statusFlag !== StatusFlag.Started) {
         throw 'Cannot shutdown platform when it is not started.';
     }
 	if (!flag) {
@@ -195,7 +195,7 @@ Platform.prototype.shutdown = function(flag) {
 	this.config.saveConfig();
 	this.statusFlag = flag ? flag : StatusFlag.Shutdown;
 	
-	console.log(this.packageInfo.name + " has shutdown.");
+	console.warn(this.packageInfo.name + " has shutdown.");
 	if (this.onShutdown && this.onShutdown != null) {
 		this.onShutdown(this.statusFlag);
 	}

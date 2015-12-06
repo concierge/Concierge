@@ -15,10 +15,8 @@ var files           = require.once('./files.js'),
 
 exports.listModes = function () {
     var modes = files.filesInDirectory(modesLocation);
-    var obj = {};
     for (var i = 0; i < modes.length; i++) {
-        var name = path.basename(modes[i], '.js').toLowerCase();
-        obj[name] = modes[i];
+        modes[i] = path.basename(modes[i], '.js').toLowerCase();
     }
-	return obj;
+	return modes;
 };

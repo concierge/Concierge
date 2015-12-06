@@ -56,7 +56,7 @@ var request = require.safe('request');
       var result = JSON.parse(body);
         var sectionArray = [];
         var sections = result.parse.sections;
-        for(var s in sections) {
+        for(var s = 0; s < sections.length; s++) {
           var splitNum = sections[s].number.split('.');
           if(splitNum.length > 1 && splitNum[0] === "1") {
             sectionArray.push(sections[s].index);
