@@ -11,7 +11,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'fawlty : Fixes fawlty code. Probably.';
+    return [[this.commandPrefix + 'fawlty','Fixes fawlty code. Probably.']];
 };
 
 var quotes = [

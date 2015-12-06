@@ -11,7 +11,7 @@ exports.match = function(text, commandPrefix) {
 
 // Give users help if they can't slaps
 exports.help = function() {
-    return this.commandPrefix + 'slap <infidel>: Slaps an annoying infidel - descriptively!';
+    return [[this.commandPrefix + 'slap <infidel>','Slaps an annoying infidel - descriptively!']];
 };
 
 

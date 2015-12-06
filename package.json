@@ -4,19 +4,19 @@
   "description": "Extensible facebook chat bot.",
   "main": "main.js",
   "dependencies": {
-    "deasync": "^0.1.4",
+    "body-parser": "*",
+    "colors": "^1.1.2",
+    "descrevit": "git+https://github.com/mrkno/descrevit.git",
     "express": "*",
     "facebook-chat-api": "1.0.2",
+    "figlet": "1.1.1",
     "git-pull": "*",
     "quarantine": "*",
     "redwrap": "*",
     "request": "*",
     "require-install": "*",
-    "body-parser": "*",
-    "colors": "^1.1.2",
     "skyweb": "0.0.2",
-	"figlet": "1.1.1",
-	"stripcolorcodes": "0.1.0"
+    "stripcolorcodes": "0.1.0"
   },
   "devDependencies": {},
   "scripts": {

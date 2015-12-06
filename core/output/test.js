@@ -9,8 +9,7 @@ exports.start = function(callback) {
 		commandPrefix: exports.config.commandPrefix,
 		sendMessage: function(message, thread) {
 			console.log(message);
-		},
-		sendTyping: function(thread) {}
+		}
 	})
 	
 	rl = readline.createInterface({

@@ -5,7 +5,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + '8ball <query> : Answers your questions to life.';
+    return [[this.commandPrefix + '8ball <query>','Answers your questions to life.']];
 };
 
 insults = ['You\'re asking the impossible',

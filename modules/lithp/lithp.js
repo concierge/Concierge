@@ -9,7 +9,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'lithp : Speaks with a lisp';
+    return [[this.commandPrefix + 'lithp','Speaks with a lisp']];
 };
 
 exports.run = function(api, event) {

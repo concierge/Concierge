@@ -7,13 +7,13 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'pickup : Relationship advice.';
+    return [[this.commandPrefix + 'pickup','Relationship advice.']];
 };
 
-exports.joke = function(callback) {
+exports.joke = function(callback, waitCallback) {
     // If we have no stored pickups, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
-
+		waitCallback();
         reddit.reddit('pickuplines', 200, function (err, data) {
             if (!err) {
                 results = data;
@@ -45,5 +45,8 @@ exports.fuckNode = function(callback) {
 exports.run = function(api, event) {
     exports.joke(function(result) {
         api.sendMessage(result, event.thread_id);
-    });
+    },
+	function() {
+		api.sendTyping(event.thread_id);
+	});
 };

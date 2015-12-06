@@ -33,13 +33,12 @@ Module.wrap = function (content) {
 /*
  * Set the function that should be injected.
  * Note: everything required must be defined within this function,
- * nothing else will be accessable from the callers location.
+ * nothing else will be accessible from the callers location.
  * 
  * func: function - the function to inject.
  * returns: undefined.
  */
 exports.setInjectionFunction = function(func) {
     injectFunc = func.toString();
-    injectFunc = injectFunc.replace("\r", "");
-    injectFunc = injectFunc.replace("\n", "");
+    injectFunc = injectFunc.replace(/(\r\n|\n|\r)/gm,"");
 };

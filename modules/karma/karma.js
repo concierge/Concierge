@@ -3,9 +3,9 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return '<text>++.. : Increases <text>\'s karma.\n'
-        + '<text>--.. : Decreases <text>\'s karma.\n'
-        + this.commandPrefix + 'karma : Shows all current karma.';
+    return [['<text>++','Increases <text>\'s karma.'],
+			['<text>--','Decreases <text>\'s karma.'],
+			[this.commandPrefix + 'karma','Shows all current karma.']];
 };
 
 exports.parseKarmaChange = function(message) {

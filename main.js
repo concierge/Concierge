@@ -24,7 +24,7 @@ require('./core/require.js');
 require('./core/prototypes.js');
 require('./core/status.js');
 
-var consolec	= require('./core/console.js'),
+var consolec	= require('./core/unsafe/console.js'),
 	modesf		= require('./core/modes.js'),
 	startup		= require('./core/startup.js'),
 	modes		= Object.keys(modesf.listModes()),
@@ -65,7 +65,12 @@ if (!arguments || arguments.length == 0) {
 }
 
 process.on('uncaughtException', function(err) {
-	console.error('An unhandled error occurred. Start as debug for details.');
+	if (console.isDebug()) {
+		console.error('CRITICAL ERROR WAS UNHANDLED:');
+	}
+	else {
+		console.error('An unhandled error occurred. Start as debug for details.');
+	}
 	console.critical(err);
 });
 

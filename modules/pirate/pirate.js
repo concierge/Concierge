@@ -6,7 +6,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'pirate <message> : Translates your message into pirate speak.';
+    return [[this.commandPrefix + 'pirate <message>','Translates your message into pirate speak.']];
 };
 
 exports.pirate = function (query, callback) {

@@ -175,9 +175,9 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + "tictactoe <opponent's full name> : starts a new game against the specified opponent\n" +
-           this.commandPrefix + "move <row><column> : places a piece at the specified row and column, if you are in a game\n" +
-           this.commandPrefix + "surrender : gives up on a game";
+    return [[this.commandPrefix + "tictactoe <opponent's full name>","starts a new game against the specified opponent"],
+           [this.commandPrefix + "move <row><column>","places a piece at the specified row and column, if you are in a game"],
+           [this.commandPrefix + "surrender","gives up on a game"]];
 };
 
 exports.run = function(api, event) {

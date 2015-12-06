@@ -14,7 +14,7 @@ exports.match = function(text, commandPrefix) {
 
 // Says surprisingly helpful things...
 exports.help = function() {
-    return this.commandPrefix + 'quote <person>: Attempts to get a quote by said person';
+    return [[this.commandPrefix + 'quote <person>','Attempts to get a quote by said person']];
 };
 
 //Gets a quote from the specified author and passes it into the callback

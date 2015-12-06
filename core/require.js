@@ -12,10 +12,10 @@
 
 var hook = require('./unsafe/hook.js');
 
-hook.setInjectionFunction(function() {
-    require.searchCache = function (moduleName, callback) {
-        var mod = require.resolve(moduleName);
-        if (mod && ((mod = require.cache[mod]) !== undefined)) {
+global.requireHook = function(req) {
+    req.searchCache = function (moduleName, callback) {
+        var mod = req.resolve(moduleName);
+        if (mod && ((mod = req.cache[mod]) !== undefined)) {
             (function run(mod) {
                 mod.children.forEach(function (child) {
                     run(child);
@@ -25,9 +25,9 @@ hook.setInjectionFunction(function() {
         }
     };
 
-    require.uncache = function (moduleName) {
-        require.searchCache(moduleName, function (mod) {
-            delete require.cache[mod.id];
+    req.uncache = function (moduleName) {
+        req.searchCache(moduleName, function (mod) {
+            delete req.cache[mod.id];
         });
         
         Object.keys(module.constructor._pathCache).forEach(function (cacheKey) {
@@ -37,16 +37,20 @@ hook.setInjectionFunction(function() {
         });
     };
 
-    require.reload = function (moduleName) {
-        require.uncache(moduleName);
-        return require(moduleName);
+    req.reload = function (moduleName) {
+        req.uncache(moduleName);
+        return req(moduleName);
     };
     
-    require.once = function (moduleName) {
-        var mod = require(moduleName);
-        require.uncache(moduleName);
+    req.once = function (moduleName) {
+        var mod = req(moduleName);
+        req.uncache(moduleName);
         return mod;
     };
 
-    require.safe = require("require-install");
+    req.safe = require("require-install");
+};
+
+hook.setInjectionFunction(function() {
+	global.requireHook(require);
 });

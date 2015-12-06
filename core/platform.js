@@ -24,9 +24,22 @@ Platform = function(modes) {
 	this.modules		= require.once('./modules.js');
 	this.statusFlag		= StatusFlag.NotStarted;
 	this.onShutdown		= null;
+	this.waitingTime	= 250;
 
 	this.packageInfo.name = this.packageInfo.name.toProperCase();
 	this.setModes(modes);
+};
+
+Platform.prototype.handleTransaction = function(module, args) {
+	var returnVal = true,
+		timeout = setTimeout(function() {
+			if (returnVal !== true) {
+				return;
+			}
+			args[0].sendTyping(args[1].thread_id);
+		}, this.waitingTime);
+	returnVal = module.run.apply(module, args);
+	clearTimeout(timeout);
 };
 
 Platform.prototype.messageRxd = function(api, event) {
@@ -49,8 +62,7 @@ Platform.prototype.messageRxd = function(api, event) {
 	for (var i = 0; i < this.loadedModules.length; i++) {
 		if (this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs)) {
 			try {
-				api.sendTyping(event.thread_id);
-				this.loadedModules[i].run.apply(this.loadedModules[i], runArgs);
+				this.handleTransaction(this.loadedModules[i], runArgs);
 			}
 			catch (e) {
                 api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);

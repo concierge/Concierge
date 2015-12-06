@@ -5,7 +5,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'idea: Generates an idea for your next StartUp.';
+    return [[this.commandPrefix + 'idea','Generates an idea for your next StartUp.']];
 };
 
 exports.idea = function (callback) {

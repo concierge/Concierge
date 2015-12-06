@@ -1,5 +1,4 @@
 var reddit = require('./../common/reddit.js'),
-    request = require.safe('request'),
     results = [];
 
 exports.match = function(text, commandPrefix) {
@@ -7,13 +6,13 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'insult : Will almost certainly return profanity.';
+    return [[this.commandPrefix + 'insult','Will almost certainly return profanity.']];
 };
 
-exports.insult = function(callback) {
+exports.insult = function(callback, waitCallback) {
     // If we have no stored insults, get some
     if (results === undefined || results === null || results.length === 0) {
-
+		waitCallback();
         reddit.reddit('insults', 200, function (err, data) {
             if (!err) {
                 results = data;
@@ -45,5 +44,8 @@ exports.fuckNode = function(callback) {
 exports.run = function(api, event) {
     exports.insult(function(result) {
         api.sendMessage(result, event.thread_id);
-    });
+    },
+	function() {
+		api.sendTyping(event.thread_id);
+	});
 };

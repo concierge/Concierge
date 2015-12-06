@@ -7,13 +7,13 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'programmer : Reactions of a programmer.';
+    return [[this.commandPrefix + 'programmer','Reactions of a programmer.']];
 };
 
-exports.reaction = function(callback) {
+exports.reaction = function(callback, waitCallback) {
     // If we have no stored reactions, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
-
+		waitCallback();
         reddit.reddit('programmerreactions', 200, function (err, data) {
             if (!err) {
                 results = data;
@@ -52,5 +52,8 @@ exports.run = function(api, event) {
 			api.sendMessage(result.title, event.thread_id);
 			api.sendMessage(result.body, event.thread_id);
 		}
-    });
+    },
+	function() {
+		api.sendTyping(event.thread_id);
+	});
 };

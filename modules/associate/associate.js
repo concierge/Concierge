@@ -1,5 +1,5 @@
 exports.help = function() {
-	return this.commandPrefix + 'associate "<hook>" "<text>" or clear : Associate and disassociate a phrase with another.';
+	return [[this.commandPrefix + 'associate "<hook>" "<text>" or clear','Associate and disassociate a phrase with another.']];
 };
 
 exports.match = function(text, commandPrefix, thread, senderName, api) {

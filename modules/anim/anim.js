@@ -6,10 +6,10 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-	return this.commandPrefix + 'anim <query> : Searches for animated GIF.';
+	return [[this.commandPrefix + 'anim <query>','Searches for animated GIF.']];
 };
 
-exports.search = function (query, callback) {
+exports.search = function (query, callback, waitCallback) {
 	var cacheq = query.trim().toLowerCase();
 	var index = 0;
 	if (animCache[cacheq]) {
@@ -23,6 +23,8 @@ exports.search = function (query, callback) {
 		}
 	}
 
+	waitCallback();
+	
 	var q = {
 		q: query,
 		cx: exports.config.apiSearchID,
@@ -91,5 +93,8 @@ exports.run = function(api, event) {
 		else {
 			api.sendMessage("Something went very wrong.", event.thread_id);
 		}
+	},
+	function() {
+		api.sendTyping(event.thread_id);
 	});
 };

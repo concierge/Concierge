@@ -96,6 +96,7 @@ exports.loadModule = function (module) {
             throw 'Could not require module \'' + module.name + '\'. Does it have a syntax error?';
         }
         m.config = config.loadModuleConfig(module, modulePath);
+		m.name = module.name;
         if (m.load) {
             m.load();
         }

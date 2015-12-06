@@ -13,7 +13,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-	return this.commandPrefix + 'runbot <jscode> : Runs JS code.';
+	return [[this.commandPrefix + 'runbot <jscode>','Runs JS code.']];
 };
 
 exports.wrapCode = function(message, prefix) {

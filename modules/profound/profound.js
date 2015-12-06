@@ -14,7 +14,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.help = function() {
-    return this.commandPrefix + 'profound : Calculates the meaning of life. You probably wouldn\'t understand';
+    return [[this.commandPrefix + 'profound','Calculates the meaning of life. You probably wouldn\'t understand']];
 };
 
 exports.fetch = function(callback) {

@@ -1,6 +1,10 @@
 ﻿/**
  * Sets up the console.
  *
+ * Code in here consists of nasty hacks to the console and process
+ * prototypes, done so that we have control over how the console
+ * is logged to.
+ *
  * Written By:
  * 		Matthew Knox
  *
@@ -9,9 +13,9 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-var colours = require('colors'),
+var colours = require.safe('colors'),
 	fs		= require('fs'),
-	strip	= require('stripcolorcodes'),
+	strip	= require.safe('stripcolorcodes'),
     info    = console.info,
     error   = console.error,
     warn    = console.warn,
@@ -53,8 +57,7 @@ console.debug = function (args) {
 
 console.critical = function(args) {
     if (debug) {
-        console.error(args);
-        console.trace();
+        console.error(args.stack);
     }
 };
 
