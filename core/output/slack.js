@@ -182,7 +182,6 @@ init = function(token, callback) {
 	function (error, response, body) {
 		var teamId = null,
 		slackTeams = exports.config.slack_teams,
-		i = 0,
 		team;
 
 		if (!slackTeams) {
@@ -268,29 +267,37 @@ generateUserMap = function(data) {
 connect = function(connectionDetails) {
 	var slackTeams = exports.config.slack_teams,
 	s;
+	console.log("connect");
 
 	if (connectionDetails) {
 		(function (connectionDetails) {
+			console.log(Object.keys(sockets));
 			s = new WebSocket(connectionDetails.url);
+			console.log(connectionDetails.url);
 			sockets[connectionDetails.team_id] = s;
+			console.log(Object.keys(sockets));
 			s.on('open', function() {
+				console.log("openned");
 				if (exports.debug) {
 					console.info("Connection to team: " + slackTeams[connectionDetails.team_id].team.name + " established");
 				}
 			}).on('message', function(data) {
+				console.log("got message");
 				eventReceived(JSON.parse(data), connectionDetails.team_id);
 			}).on('close', function(data) {
 				console.log("received close event");
 				if (exports.debug) {
 					console.info("Disconnected from team: " + slackTeams[connectionDetails.team_id].team.name);
 				}
-				if (numSocketsToShutDown > 0) {
-					numSocketsToShutDown--;
-					console.log("shutdown socket close");
-					return;
-				}
+				// if (numSocketsToShutDown > 0) {
+				// 	numSocketsToShutDown--;
+				// 	console.log("shutdown socket close");
+				// 	return;
+				// }
 				console.log("normal close");
-				init(slackTeams[connectionDetails.team_id].token, connect);
+				if (!shuttingDown) {
+					//init(slackTeams[connectionDetails.team_id].token, connect);
+				}
 			}).on('error', function(data) {
 				console.log("received error");
 				console.log(data);
@@ -486,18 +493,23 @@ recMessage = function(event, teamId) {
 
 closeSockets = function() {
 	console.log("closing sockets");
-	for (var socket in sockets) {
-		sockets[socket].terminate();
-	}
+	Object.keys(sockets).forEach(function (element, index) {
+		sockets[element].terminate();
+		//numSocketsToShutDown--;
+	});
+	sockets = {};
 	console.log("sockets closed");
 };
 
 exports.start = function (callback) {
 	var slackTokens = exports.config.slack_tokens,
-	connectionDetails = null;
+		connectionDetails = null;
 
+	shuttingDown = false;
 	eventReceivedCallback = callback;
+	numSocketsToShutDown = 0;
 
+	console.log("starting");
 	if (slackTokens) {
 		for (var i = 0; i < slackTokens.length; i++) {
 			init(slackTokens[i], connect);
@@ -520,7 +532,6 @@ exports.stop = function() {
 	console.log("start shutdown");
 	shuttingDown = true;
 	numSocketsToShutDown = Object.keys(sockets).length;
-	console.log(numSocketsToShutDown);
 	closeSockets();
 	deasync.loopWhile(function() {
 		return numSocketsToShutDown > 0;
