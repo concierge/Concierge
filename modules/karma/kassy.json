@@ -1,0 +1,5 @@
+﻿{
+  "name": "karma",
+  "version": 2.0,
+  "startup": "karma.js"
+}

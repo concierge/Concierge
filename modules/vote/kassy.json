@@ -1,0 +1,5 @@
+﻿{
+  "name": "vote",
+  "version": 2.0,
+  "startup": "vote.js"
+}

@@ -1,7 +1,7 @@
 var express = require('express'),
 bodyParser  = require("body-parser"),
 request = require('request'),
-shim = require("../shim.js"),
+shim = require.once("../shim.js"),
 app = null,
 server = null,
 platform = null,
@@ -162,6 +162,7 @@ exports.start = function (callback) {
 	app.use(bodyParser.urlencoded({ extended: true }));
 
 	platform = shim.createPlatformModule({
+		commandPrefix: exports.config.commandPrefix,
 		sendMessage: sendMessage,
 		sendFile: sendFile,
 		setTitle: renameChannel

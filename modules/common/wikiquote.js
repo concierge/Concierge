@@ -1,5 +1,4 @@
-var require_install = require('require-install'),
-  request = require_install('request');
+var request = require.safe('request');
 
 /**
  * This is a *very* heavily modified version of the library found here:
@@ -57,7 +56,7 @@ var require_install = require('require-install'),
       var result = JSON.parse(body);
         var sectionArray = [];
         var sections = result.parse.sections;
-        for(var s in sections) {
+        for(var s = 0; s < sections.length; s++) {
           var splitNum = sections[s].number.split('.');
           if(splitNum.length > 1 && splitNum[0] === "1") {
             sectionArray.push(sections[s].index);

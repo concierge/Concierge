@@ -1,0 +1,5 @@
+﻿{
+  "name": "insult",
+  "version": 2.0,
+  "startup": "insult.js"
+}
