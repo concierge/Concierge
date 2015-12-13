@@ -1,107 +1,77 @@
-/** Node.js server for a facebook bot (Kassy)
+/** Node.js server for a bot (Kassy)
  *
  * Herein lies the Node.js serverside script to tell node what to do to ensure
  * we get all the magical goodness that is:
- * 		(Karma + Sassy) * Facebook - Hipchat = Kassy
+ *         (Karma + Sassy) * Facebook - Hipchat = Kassy
+ * Note: it does waaaaaaay more than this now. It even runs on slack!
  *
  * Written By:
- * 		Matthew Knox
+ *         Matthew Knox
  *
  * Contributors:
- * 		Dion Woolley
- * 		Jay Harris
- * 		Matt Hartstonge
- * 		(Mainly strange people)
+ *         Dion Woolley
+ *         Jay Harris
+ *         Matt Hartstonge
+ *         (Others, mainly strange people)
  *
  * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-// Add useful prototypes
-if (typeof String.prototype.startsWith != 'function') {
-	String.prototype.startsWith = function (str){
-		return this.indexOf(str) === 0;
-	};
-}
-if (typeof String.prototype.toProperCase != 'function') {
-	String.prototype.toProperCase = function () {
-		return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
-	};
-}
-if (typeof String.prototype.endsWith != 'function') {
-	String.prototype.endsWith = function(suffix) {
-		return this.indexOf(suffix, this.length - suffix.length) !== -1;
-	};
-}
-if (typeof String.prototype.capitiliseFirst != 'function') {
-	String.prototype.capitiliseFirst = function () {
-		if (this.length >= 2) {
-			return this[0].toUpperCase() + this.substring(1);
-		}
-		return this;
-	};
-}
-if (!Array.prototype.includes) {
-	Array.prototype.includes = function(searchElement /*, fromIndex*/ ) {
-		'use strict';
-		var O = Object(this);
-		var len = parseInt(O.length) || 0;
-		if (len === 0) {
-			return false;
-		}
-		var n = parseInt(arguments[1]) || 0;
-		var k;
-		if (n >= 0) {
-			k = n;
-		} else {
-			k = len + n;
-			if (k < 0) {
-				k = 0;
-			}
-		}
-		var currentElement;
-		while (k < len) {
-			currentElement = O[k];
-			if (searchElement === currentElement ||
-				(searchElement !== searchElement && currentElement !== currentElement)) {
-				return true;
-			}
-			k++;
-		}
-		return false;
-	};
-}
+// Load NodeJS Modifications/Variables
+require('./core/require.js');
+require('./core/prototypes.js');
+require('./core/status.js');
 
-// Bootstrap platform
-var platform = require('./core/platform.js');
+var consolec = require('./core/unsafe/console.js'),
+    modesf = require('./core/modes.js'),
+    startup = require('./core/startup.js'),
+    modes = modesf.listModes(),
+    arguments = process.argv;
+
+arguments.splice(0, 2);
 
 // Determine if debug output is enabled
-var debug = false;
-if (process.argv[2] === 'debug') {
-	process.argv.splice(2, 1);
-	debug = true;
-	platform.debug = true;
+if (arguments[0] === 'debug') {
+    console.warn('Debug mode enabled.');
+    arguments.splice(0, 1);
+    consolec.setDebug(true);
 }
 
-// Get startup mode
-if (!process.argv[2]) {
-	process.argv.push('test');
+// Determine if logging output is enabled
+if (arguments[0] === 'log') {
+    console.warn('Logging mode enabled.');
+    arguments.splice(0, 1);
+    consolec.setLog(true);
 }
-process.argv[2] = process.argv[2].toLowerCase();
 
-// Start platform or fail
-platform.listModes(function(modes) {
-	try {
-		platform.setMode(modes[process.argv[2]]);
-	}
-	catch(e) {
-		if (debug) {
-			console.error(e);
-			console.trace();
-		}
-		console.error('Unknown mode \'' + process.argv[2] + '\'');
-		process.exit(-1);
-	}
-	platform.start();
+// Check startup modes
+for (var i = 0; i < arguments.length; i++) {
+    arguments[i] = arguments[i].toLowerCase();
+    if (!modes.includes(arguments[i])) {
+        console.error(('Unknown mode \'' + arguments[i] + '\''));
+        console.info('The modes avalible on your system are:');
+        for (var i = 0; i < modes.length; i++) {
+            console.info('\t- \'' + modes[i] + '\'');
+        }
+        process.exit(-2);
+    }
+}
+
+if (!arguments || arguments.length == 0) {
+    console.info('No mode specified, defaulting to \'test\'.');
+    arguments.push('test');
+}
+
+process.on('uncaughtException', function(err) {
+    if (console.isDebug()) {
+        console.error('CRITICAL ERROR WAS UNHANDLED:');
+    }
+    else {
+        console.error('An unhandled error occurred. Start as debug for details.');
+    }
+    console.critical(err);
 });
+
+startup.run(arguments);

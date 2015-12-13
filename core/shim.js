@@ -58,6 +58,15 @@ exports.createPlatformModule = function(platform) {
 		}
 	}
 	
+	if (!platform.commandPrefix) {
+		if (platform.config && platform.config.commandPrefix) {
+			platform.commandPrefix = platform.config.commandPrefix;
+		}
+		else {
+			platform.commandPrefix = '/';
+		}
+	}
+	
 	return platform;
 };
 

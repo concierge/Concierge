@@ -1,0 +1,5 @@
+﻿{
+  "name": "pickUp",
+  "version": 2.0,
+  "startup": "pickUp.js"
+}

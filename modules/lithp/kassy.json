@@ -1,0 +1,5 @@
+﻿{
+  "name": "lithp",
+  "version": 2.0,
+  "startup": "lithp.js"
+}
