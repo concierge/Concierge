@@ -168,12 +168,12 @@ exports.start = function (callback) {
 		setTitle: renameChannel
 	});
 
-	for (teamId in slackTeams) {
-		getUsers(slackTeams[teamId]);
+	for (var i = 0; i < slackTeams.length; i++) {
+		getUsers(slackTeams[i]);
 	}
 
 	app.post('/', function (req, res) {
-		var data = req.body,
+		var data = JSON.parse(req.body),
 		event = [],
 		message = data.text.trim(),
 		shimMessage = null;
