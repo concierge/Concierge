@@ -1,12 +1,12 @@
 var request = require('request'),
-shim = require('../shim.js'),
-WebSocket = require('ws'),
-deasync = require('deasync'),
-platform = null,
-sockets = [],
-eventReceivedCallback = null,
-numSocketsToShutDown = 0,
-shuttingDown = false,
+	shim = require.once('../shim.js'),
+	WebSocket = require('ws'),
+	deasync = require('deasync'),
+	platform = null,
+	sockets = [],
+	eventReceivedCallback = null,
+	numSocketsToShutDown = 0,
+	shuttingDown = false;
 
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -50,7 +50,7 @@ sendMessage = function(message, thread) {
 			console.warn('No slack team found!!!');
 		}
 	}
-},
+};
 
 getChannelIdAndTeamId = function(thread) {
 	var slackTeams = exports.config.slack_teams,
@@ -60,11 +60,11 @@ getChannelIdAndTeamId = function(thread) {
 	token = slackTeams[teamId].token;
 
 	return { "channel_id": channelId, "team_id": teamId, "token": token };
-},
+};
 
 createThreadId = function(channelId, teamId) {
 	return channelId + '\0' + teamId;
-}
+};
 
 sendFile = function(type, file, description, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -102,7 +102,7 @@ sendFile = function(type, file, description, thread) {
 			console.warn('No slack team found!!!');
 		}
 	}
-},
+};
 
 renameChannel = function(title, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -138,7 +138,7 @@ renameChannel = function(title, thread) {
 			console.warn('No slack team found!!!');
 		}
 	}
-},
+};
 
 sendTyping = function(thread) {
 	var slackTeams = exports.config.slack_teams,
@@ -146,11 +146,11 @@ sendTyping = function(thread) {
 	socket = sockets[teamInfo.team_id];
 
 	if (socket != null) {
-		var body = {
-			"id": slackTeams[teamInfo.team_id].event_id += 2347,
-			"type": "typing",
-			"channel": teamInfo.channel_id
-		};
+		var body = {};
+			body.id = slackTeams[teamInfo.team_id].event_id++;
+			body.type = "typing";
+			body.channel = teamInfo.channel_id;
+
 		console.log("typing");
 		console.log(JSON.stringify(body));
 		socket.send(JSON.stringify(body));
@@ -160,14 +160,14 @@ sendTyping = function(thread) {
 			console.warn('No socket available for given team id');
 		}
 	}
-},
+};
 
 replaceUserIdWithUserName = function(userName, message, match) {
 	if (userName) {
 		var index = message.indexOf(match);
 		return message.substr(0, index) + userName + message.substr(index + match.length);
 	}
-},
+};
 
 init = function(token, callback) {
 	var body = {
@@ -213,12 +213,12 @@ init = function(token, callback) {
 			callback(false);
 		}
 		else {
-			teamId = body.team.id
+			teamId = body.team.id;
 			slackTeams[teamId] = body;
 			team = slackTeams[teamId];
 			team.token = token;
 			team.event_id = 0;
-			team.lastMessageSinceConnection = false,
+			team.lastMessageSinceConnection = false;
 
 			//Generate user map
 			team.users = generateUserMap(body);
@@ -229,7 +229,7 @@ init = function(token, callback) {
 			callback({"team_id": teamId, "url": body.url});
 		}
 	});
-},
+};
 
 findSlackBot = function(body, slackTeam) {
 	for (var i = 0; i < body.users.length; i++) {
@@ -238,7 +238,7 @@ findSlackBot = function(body, slackTeam) {
 			break;
 		}
 	}
-},
+};
 
 generateChannelsMap = function(data) {
 	var channels = {};
@@ -254,7 +254,7 @@ generateChannelsMap = function(data) {
 	}
 
 	return channels;
-},
+};
 
 generateUserMap = function(data) {
 	var map = {};
@@ -262,7 +262,7 @@ generateUserMap = function(data) {
 		map[data.users[i].id] = data.users[i];
 	}
 	return map;
-},
+};
 
 connect = function(connectionDetails) {
 	var slackTeams = exports.config.slack_teams,
@@ -289,11 +289,11 @@ connect = function(connectionDetails) {
 				if (exports.debug) {
 					console.info("Disconnected from team: " + slackTeams[connectionDetails.team_id].team.name);
 				}
-				// if (numSocketsToShutDown > 0) {
-				// 	numSocketsToShutDown--;
-				// 	console.log("shutdown socket close");
-				// 	return;
-				// }
+				 //if (numSocketsToShutDown > 0) {
+				 //	numSocketsToShutDown--;
+				 //	console.log("shutdown socket close");
+				 //	return;
+				 //}
 				console.log("normal close");
 				if (!shuttingDown) {
 					//init(slackTeams[connectionDetails.team_id].token, connect);
@@ -307,7 +307,7 @@ connect = function(connectionDetails) {
 	else {
 		exports.start(eventReceivedCallback);
 	}
-},
+};
 
 openPrivateMessage = function(message, thread, senderId) {
 	var slackTeams = exports.config.slack_teams,
@@ -347,7 +347,7 @@ openPrivateMessage = function(message, thread, senderId) {
 			console.warn('No slack team found!!!');
 		}
 	}
-},
+};
 
 eventReceived = function(event, teamId) {
 	if (shuttingDown) return;
@@ -388,42 +388,43 @@ eventReceived = function(event, teamId) {
 		default:
 
 	}
-},
+};
 
 teamRename = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
 	slackTeam.name = event.name;
-},
+};
 
 userChange = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
 	slackTeam.users[event.user.id] = event.user;
-},
+};
 
 channelCreated = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
 	slackTeam.channels[event.channel.id] = event.channel;
-},
+};
 
 channelDeleted = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
 	removeHelper(slackTeam.channels, event.channel);
-},
+};
 
 channelRename = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId];
 	slackTeam.channels[event.channel.id].name = event.channel.name;
-},
+};
 
 removeHelper = function(object, key) {
 	delete object.key;
-},
+};
 
 recMessage = function(event, teamId) {
 	var slackTeam = exports.config.slack_teams[teamId],
-	userName,
-	id,
-	message = event.text;
+		userName,
+		id,
+		message = event.text,
+		shimMessage;
 
 	console.log("got message");
 	console.log(slackTeam.lastMessageSinceConnection);
@@ -443,9 +444,7 @@ recMessage = function(event, teamId) {
 	if (event.user!= slackTeam.bot_id) {
 		var matches = null,
 			lastMatchIndex = -1,
-			regex = /<@([^>\|]+)(\|[^>]+)?>:?/,
-			message = event.text,
-			matches;
+			regex = /<@([^>\|]+)(\|[^>]+)?>:?/;
 
 		if (slackTeam) {
 			matches = regex.exec(message);
@@ -489,21 +488,20 @@ recMessage = function(event, teamId) {
 		shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
 		eventReceivedCallback(platform, shimMessage);
 	}
-},
+};
 
 closeSockets = function() {
 	console.log("closing sockets");
 	Object.keys(sockets).forEach(function (element, index) {
 		sockets[element].terminate();
-		//numSocketsToShutDown--;
+		numSocketsToShutDown--;
 	});
 	sockets = {};
 	console.log("sockets closed");
 };
 
 exports.start = function (callback) {
-	var slackTokens = exports.config.slack_tokens,
-		connectionDetails = null;
+	var slackTokens = exports.config.slack_tokens;
 
 	shuttingDown = false;
 	eventReceivedCallback = callback;
@@ -520,7 +518,8 @@ exports.start = function (callback) {
 			sendFile: sendFile,
 			setTitle: renameChannel,
 			sendTyping: sendTyping,
-			sendPrivateMessage: openPrivateMessage
+			sendPrivateMessage: openPrivateMessage,
+			commandPrefix: exports.config.commandPrefix
 		});
 	}
 	else {

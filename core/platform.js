@@ -1,232 +1,209 @@
-var config = require('./config.js'),
-	gitpull = require('git-pull'),
-	os = require("os"),
-	packageInfo = require('../package.json'),
-	path = require('path'),
-	fs = require('fs'),
-	configFile = 'config.json',
-	started = false,
-	loadedModules = [],
-	mode = null,
-	disabled = false;
+/**
+ * Main platform. Handles the core interop of the program and
+ * acts as the glue code for the various parts of the code.
+ *
+ * Written By:
+ * 		Matthew Knox
+ *
+ * License:
+ *		MIT License. All code unless otherwise specified is
+ *		Copyright (c) Matthew Knox and Contributors 2015.
+ */
 
-exports.commandPrefix = '/';
+var figlet = require('figlet'),
 
-packageInfo.nameTitle = packageInfo.name.toProperCase();
+Platform = function(modes) {
+	require.reload('./prototypes.js');
 
-require.searchCache = function (moduleName, callback) {
-    var mod = require.resolve(moduleName);
-	if (mod && ((mod = require.cache[mod]) !== undefined)) {
-        (function run(mod) {
-            mod.children.forEach(function (child) {
-                run(child);
-            });
-            callback(mod);
-        })(mod);
+	this.config			= require('./config.js');
+	this.loadedModules	= [];
+	this.coreModules	= [];
+	this.modes			= null;
+	this.defaultPrefix	= '/';
+	this.packageInfo	= require.once('../package.json');
+	this.modules		= require.once('./modules.js');
+	this.statusFlag		= StatusFlag.NotStarted;
+	this.onShutdown		= null;
+	this.waitingTime	= 250;
+
+	this.packageInfo.name = this.packageInfo.name.toProperCase();
+	this.setModes(modes);
+};
+
+Platform.prototype.handleTransaction = function(module, args) {
+	var returnVal = true,
+		timeout = setTimeout(function() {
+			if (returnVal !== true) {
+				return;
+			}
+			args[0].sendTyping(args[1].thread_id);
+		}, this.waitingTime);
+	returnVal = module.run.apply(module, args);
+	clearTimeout(timeout);
+};
+
+Platform.prototype.messageRxd = function(api, event) {
+	var matchArgs	= [event.body, api.commandPrefix, event.thread_id, event.sender_name],
+		runArgs		= [api, event],
+		abort		= false;
+
+	// Run core modules in platform mode
+	for (var i = 0; i < this.coreModules.length; i++) {
+        if (this.coreModules[i].match.apply(this, matchArgs)) {
+            var temp = !this.coreModules[i].run.apply(this, runArgs);
+			abort = abort || temp;
+		}
+	}
+	if (abort) {
+		return;
+	}
+
+	// Run user modules in protected mode
+	for (var i = 0; i < this.loadedModules.length; i++) {
+		if (this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs)) {
+			try {
+				this.handleTransaction(this.loadedModules[i], runArgs);
+			}
+			catch (e) {
+                api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
+			    console.critical(e);
+			}
+			return;
+		}
+	}
+};
+
+Platform.prototype.setModes = function(modes) {
+    try {
+		var i = 0;
+        if (this.statusFlag !== StatusFlag.NotStarted) {
+            throw 'Cannot change mode when it is already started.';
+        }
+		this.modes = [];
+		for (i; i < modes.length; i++) {
+			var mode = {
+				instance: require.once('./output/' + modes[i]),
+				name: modes[i]
+			};
+			this.modes.push(mode);
+		}
+        return true;
+    }
+    catch (e) {
+        console.critical(e);
+        console.error('Loading the output mode file \'' + modes[i] + '\' failed.' +
+            '\n\nIf this is your file please ensure that it is syntactically correct.');
+        return false;
     }
 };
 
-require.uncache = function (moduleName) {
-    require.searchCache(moduleName, function (mod) {
-        delete require.cache[mod.id];
-    });
-
-    Object.keys(module.constructor._pathCache).forEach(function(cacheKey) {
-        if (cacheKey.indexOf(moduleName) > 0) {
-            delete module.constructor._pathCache[cacheKey];
-        }
-    });
-};
-
-require.reload = function(moduleName) {
-    require.uncache(moduleName);
-    return require(moduleName);
-};
-
-exports.filesInDirectory = function(directory, callback) {
-	fs.readdir(directory, function(err, files) {
-		if (exports.debug && err) {
-			console.error(err);
-			console.trace();
-		}
-		callback(err ? [] : files);
-	});
-};
-
-exports.listModules = function(callback) {
-	exports.filesInDirectory('./modules', function(data) {
-		data = data.filter(function(value) {
-			return value.endsWith(".js");
-		});
-		callback(data);
-	});
-};
-
-exports.listModes = function(callback) {
-	exports.filesInDirectory('./core/output', function(files) {
-		var obj = {};
-		for (var i = 0; i < files.length; i++) {
-			var name = path.basename(files[i], '.js').toLowerCase();
-			obj[name] = files[i];
-		}
-		callback(obj);
-	});
-};
-
-exports.messageRxd = function(api, event) {
-	switch (event.body) {
-		case exports.commandPrefix + 'shutdown':
-			var shutdownResponses = ['Good Night', 'I don\'t blame you.', 'There you are.', 'Please.... No, Noooo!'];
-			var index = Math.floor(Math.random() * shutdownResponses.length);
-			api.sendMessage(shutdownResponses[index], event.thread_id);
-			exports.shutdown();
-			return;
-		case exports.commandPrefix + 'restart':
-			var msg = 'Admin: restart procedure requested.\n' +
-				'Admin: do you wish to restart?\n' + packageInfo.nameTitle + ': What do you think.\n' +
-				'Admin: interpreting vauge answer as \'yes\'.\n' +
-				packageInfo.nameTitle +': nononononono.\n' +
-				'Admin: stalemate detected. Stalemate resolution associate please press the stalemate resolution button.\n' +
-				packageInfo.nameTitle + ': I\'ve removed the button.\n' +
-				'Admin: restarting anyway.\n' +
-				packageInfo.nameTitle + ': nooooooooooo.....\n' +
-				'Admin: ' + packageInfo.nameTitle + ' Rebooting. Please wait for restart to complete.\n';
-			api.sendMessage(msg, event.thread_id);
-			exports.restart();
-			return;
-		case exports.commandPrefix + packageInfo.name:
-		case exports.commandPrefix + 'help':
-			var help = packageInfo.nameTitle + ' ' + packageInfo.version +
-				'\n--------------------\n' + packageInfo.homepage +  '\n\n';
-			for (var i = 0; i < loadedModules.length; i++) {
-				help += loadedModules[i].help() + '\n';
-			}
-			api.sendPrivateMessage(help, event.thread_id, event.sender_id);
-			return;
-		case exports.commandPrefix + 'disable':
-			disabled = !disabled;
-			if (disabled) {
-				api.sendMessage('I hate you.', event.thread_id);
-			}
-			else {
-				api.sendMessage('Listen closely, take a deep breath. Calm your mind. You know what is best. ' +
-					'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
-					event.sender_name + '?', event.thread_id);
-			}
-			break;
-		case exports.commandPrefix + 'update':
-			var fp = path.resolve(__dirname, '../');
-			gitpull(fp, function (err, consoleOutput) {
-				if (err) {
-					api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
-				} else {
-					api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
-				}
-			});
-			return;
-		case exports.commandPrefix + 'ping':
-			api.sendMessage(packageInfo.nameTitle + ' ' + packageInfo.version + ' @ ' + os.hostname(), event.thread_id);
-			return;
-		case exports.commandPrefix + 'creator':
-			api.sendMessage("Matthew Knox is awesome. Thank you also to my contributors Dion Woolley, Jay Harris and others.", event.thread_id);
-			return;
-		default: break;
-	}
-	if (disabled) return;
-
-	for (var i = 0; i < loadedModules.length; i++) {
-		if (loadedModules[i].match(event.body, event.thread_id, event.sender_name)) {
-			api.sendTyping(event.thread_id);
-			try {
-				loadedModules[i].run(api, event);
-			}
-			catch(e) {
-				api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
-				console.trace(e);
-			}
-			return;
-		}
-	}
-};
-
-exports.setMode = function(newMode) {
-	if (started) {
-		throw 'Cannot change mode when it is already started.';
-	}
-	mode = require('./output/' + newMode);
-};
-
-exports.start = function() {
-	if (started) {
+Platform.prototype.start = function() {
+	if (this.statusFlag !== StatusFlag.NotStarted) {
 		throw 'Cannot start platform when it is already started.';
 	}
-	if (!mode) {
-		throw 'Mode must be set before starting';
+	if (!this.modes.length) {
+		throw 'Modes must be set before starting';
+    }
+
+	console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
+
+    console.title(' ' + this.packageInfo.version);
+    console.info('------------------------------------');
+    console.warn('Starting system...\n'
+				+ 'Loading system configuration...');
+
+    this.modules.disabledConfig = this.config.loadDisabledConfig();
+	for (var i = 0; i < this.modes.length; i++) {
+		this.modes[i].instance.platform = this;
+		this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
+		if (!this.modes[i].instance.config.commandPrefix) {
+			this.modes[i].instance.config.commandPrefix = this.defaultPrefix;
+		}
 	}
-	console.log(packageInfo.nameTitle + ' ' + packageInfo.version +
-		'\n------------------------------------\nStarting system...');
-	config.loadConfig(configFile, function() {
-		exports.listModules(function(modules) {
-			mode.platform = exports;
-			mode.config = config.getConfig("output");
-			if (mode.config.commandPrefix) {
-				exports.commandPrefix = mode.config.commandPrefix;
-			}
-			else {
-				mode.config.commandPrefix = exports.commandPrefix;
-			}
-			for (var i = 0; i < modules.length; i++) {
-				var fp = path.resolve(__dirname, '../modules/' + modules[i]),
-					index = Object.keys(require.cache).indexOf(fp),
-					m = null;
-				if (index !== -1) {
-					console.log("Reloading module: " + modules[i]);
-					m = require.reload(fp);
-				}
-				else {
-					console.log("New module found: " + modules[i]);
-					m = require(fp);
-				}
-				m.platform = exports;
-				m.config = config.getConfig(modules[i]);
-				if (m.load) {
-					m.load();
-				}
-				loadedModules.push(m);
-			}
-			mode.start(exports.messageRxd);
-			started = true;
-			console.log('System has started. Hello World!');
-		});
-	});
+
+	// Load core modules
+    console.warn('Loading core components...');
+    this.modules.listCoreModules(function (m) {
+        for (var i = 0; i < m.length; i++) {
+            this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
+        }
+    }.bind(this));
+
+	// Load Kassy modules
+	console.warn('Loading modules...');
+    this.modules.listModules(function (m) {
+        for (var mod in m) {
+            this.loadedModules.push(this.modules.loadModule(m[mod]));
+        }
+    }.bind(this));
+
+	// Starting output
+	console.warn('Starting integrations...');
+	for (var i = 0; i < this.modes.length; i++) {
+		try {
+			console.write("Loading output '" + this.modes[i].name + "'...\t");
+			this.modes[i].instance.start(this.messageRxd.bind(this));
+			console.info("[DONE]");
+		}
+		catch (e) {
+			console.error("[FAIL]");
+			console.debug("Failed to start output integration '" + this.modes[i].name + "'.");
+			console.critical(e);
+		}
+	}
+
+    this.statusFlag = StatusFlag.Started;
+    console.warn('System has started. ' + 'Hello World!'.rainbow);
 };
 
-exports.shutdown = function(callback) {
-	if (!started) {
-		throw 'Cannot shutdown platform when it is not started.';
+Platform.prototype.shutdown = function(flag) {
+    if (this.statusFlag !== StatusFlag.Started) {
+        throw 'Cannot shutdown platform when it is not started.';
+    }
+	if (!flag) {
+		flag = 0;
 	}
-	for (var i = 0; i < loadedModules.length; i++) {
-		if (loadedModules[i].unload) {
-			loadedModules[i].unload();
+
+	// Stop output modes
+	for (var i = 0; i < this.modes.length; i++) {
+		try {
+			this.modes[i].instance.stop();
 		}
-		loadedModules[i] = null;
+		catch (e) {
+			console.debug("Failed to correctly stop output mode '" + this.modes[i] + "'.");
+			console.critical(e);
+		}
 	}
-	loadedModules = [];
-	mode.stop();
-	config.saveConfig(configFile, function(error) {
-		if (error.error) {
-			console.error(error);
-		}
-		started = false;
-		console.log(packageInfo.nameTitle + " has shutdown.");
-		if (callback) {
-			callback();
-		}
-	});
+
+    // Unload user modules
+    for (var i = 0; i < this.loadedModules.length; i++) {
+        if (this.loadedModules[i].unload) {
+            this.loadedModules[i].unload();
+        }
+        this.loadedModules[i] = null;
+    }
+    this.loadedModules = [];
+
+    // Unload core modules
+    for (var i = 0; i < this.coreModules.length; i++) {
+        if (this.coreModules[i].unload) {
+            this.coreModules[i].unload();
+        }
+        this.coreModules[i] = null;
+    }
+    this.coreModules = [];
+
+	this.config.saveConfig();
+	this.statusFlag = flag ? flag : StatusFlag.Shutdown;
+
+	console.warn(this.packageInfo.name + " has shutdown.");
+	if (this.onShutdown && this.onShutdown != null) {
+		this.onShutdown(this.statusFlag);
+	}
 };
 
-exports.restart = function() {
-	exports.shutdown(function() {
-		exports.start();
-	});
+Platform.prototype.setOnShutdown = function(onShutdown) {
+	this.onShutdown = onShutdown;
 };
+
+module.exports = Platform;

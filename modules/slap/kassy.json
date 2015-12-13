@@ -1,0 +1,5 @@
+﻿{
+  "name": "slap",
+  "version": 2.0,
+  "startup": "slap.js"
+}

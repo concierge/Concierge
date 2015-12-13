@@ -1,18 +1,21 @@
 {
   "name": "kassy",
-  "version": "2.1.0",
-  "description": "Extensible chat bot.",
+  "version": "3.0.0",
+  "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
-    "body-parser": "*",
+    "colors": "^1.1.2",
+    "descrevit": "git+https://github.com/mrkno/descrevit.git",
     "facebook-chat-api": "1.0.2",
+    "figlet": "1.1.1",
     "git-pull": "*",
     "quarantine": "*",
     "redwrap": "*",
     "request": "*",
     "require-install": "*",
     "skyweb": "0.0.2",
-    "ws": "^0.8.0"
+    "ws": "^0.8.0",
+    "stripcolorcodes": "0.1.0"
   },
   "devDependencies": {},
   "scripts": {
@@ -28,5 +31,5 @@
   "bugs": {
     "url": "https://github.com/mrkno/Kassy/issues"
   },
-  "homepage": "https://github.com/mrkno/Kassy#readme"
+  "homepage": "https://github.com/mrkno/Kassy"
 }

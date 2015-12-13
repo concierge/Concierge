@@ -1,5 +1,5 @@
 var skyweb = require('skyweb'),
-	shim = require('../shim.js'),
+	shim = require.once('../shim.js'),
 	skype = null,
 	contacts = {},
 	platform = null,
@@ -14,7 +14,7 @@ findContactName = function(id) {
 	
 exports.start = function(callback) {
 	skype = new skyweb();
-		skype.login(exports.config.username, exports.config.password).then(function (account) {
+	skype.login(exports.config.username, exports.config.password).then(function (account) {
 		var scontacts = skype.contactsService.contacts;
 		for (var i = 0; i < scontacts.length; i++) {
 			var name = scontacts[i].display_name;
@@ -22,6 +22,7 @@ exports.start = function(callback) {
 		}
 		
 		var api = {
+			commandPrefix: exports.config.commandPrefix,
 			sendMessage: function(message, thread) {
 				skype.sendMessage(thread, message);
 			}

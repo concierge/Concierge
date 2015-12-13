@@ -59,6 +59,16 @@ exports.createPlatformModule = function(platform) {
 		}
 	}
 
+	if (!platform.commandPrefix) {
+		if (platform.config && platform.config.commandPrefix) {
+			platform.commandPrefix = platform.config.commandPrefix;
+		}
+		else {
+			platform.commandPrefix = '/';
+		}
+	}
+
+
 	if (!platform.sendPrivateMessage) {
 		platform.sendPrivateMessage = function(message, thread, senderId) {
 			platform.sendMessage(message, thread);
