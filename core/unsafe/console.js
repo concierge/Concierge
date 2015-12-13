@@ -6,31 +6,31 @@
  * is logged to.
  *
  * Written By:
- * 		Matthew Knox
+ *        Matthew Knox
  *
  * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2015.
  */
 
 var colours = require.safe('colors'),
-	fs		= require('fs'),
-	strip	= require.safe('stripcolorcodes'),
-    info    = console.info,
-    error   = console.error,
-    warn    = console.warn,
-	write	= process.stdout.write,
-	perr	= process.stderr.write,
-    debug   = false,
-	log		= false,
-	logStr	= null,
-	logFile	= 'kassy.log';
+    fs = require('fs'),
+    strip = require.safe('stripcolorcodes'),
+    info = console.info,
+    error = console.error,
+    warn = console.warn,
+    write = process.stdout.write,
+    perr = process.stderr.write,
+    debug = false,
+    log = false,
+    logStr = null,
+    logFile = 'kassy.log';
 
 colours.setTheme({
-    info:   'cyan',
-    warn:   'yellow',
-    error:  ['red', 'bold'],
-    title:  ['green', 'bold']
+    info: 'cyan',
+    warn: 'yellow',
+    error: ['red', 'bold'],
+    title: ['green', 'bold']
 });
 
 console.info = function (args) {
@@ -67,22 +67,22 @@ console.write = function (args) {
 
 process.on('exit', function () {
    if (log) {
-	   logStr.end();
+       logStr.end();
    }
 });
 
 process.stdout.write = function (data) {
-	write.apply(this, arguments);
-	if (log) {
-		logStr.write(strip(data));
-	}
+    write.apply(this, arguments);
+    if (log) {
+        logStr.write(strip(data));
+    }
 };
 
 process.stderr.write = function (data) {
-	perr.apply(this, arguments);
-	if (log) {
-		logStr.write(strip(data));
-	}
+    perr.apply(this, arguments);
+    if (log) {
+        logStr.write(strip(data));
+    }
 };
 
 exports.setDebug = function(enabled) {
@@ -90,20 +90,20 @@ exports.setDebug = function(enabled) {
 };
 
 exports.setLog = function(enabled) {
-	log = enabled;
-	if (enabled) {
-		try {
-			fs.unlinkSync(logFile);
-		}
-		catch (e){}	// ignore, probably doesn't exist
-		logStr = fs.createWriteStream(logFile, {flags: 'a'});
-	}
-	else {
-		if (logStr != null) {
-			logStr.end();
-		}
-		logStr = null;
-	}
+    log = enabled;
+    if (enabled) {
+        try {
+            fs.unlinkSync(logFile);
+        }
+        catch (e){}    // ignore, probably doesn't exist
+        logStr = fs.createWriteStream(logFile, {flags: 'a'});
+    }
+    else {
+        if (logStr != null) {
+            logStr.end();
+        }
+        logStr = null;
+    }
 };
 
 console.isDebug = function() {
