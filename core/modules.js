@@ -60,9 +60,9 @@ exports.listModules = function (callback) {
                 continue;
             }
             
-			if (exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
-				continue;
-			}
+            if (exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+                continue;
+            }
 			
             if (!kj.folderPath) {
                 kj.folderPath = folderPath;
@@ -93,10 +93,10 @@ exports.loadModule = function (module) {
                 m = require.once(startPath);
             }
         } catch (e) {
-            throw 'Could not require module \'' + module.name + '\'. Does it have a syntax error?';
+            throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
         }
         m.config = config.loadModuleConfig(module, modulePath);
-		m.name = module.name;
+        m.name = module.name;
         if (m.load) {
             m.load();
         }

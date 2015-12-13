@@ -9,14 +9,14 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-var fs              = require('fs'),
-    path            = require('path'),
-	modes			= require('./modes.js').listModes(),
-    modConfig       = null,
-    modConfigFile   = 'config.json',
-    sysConfig       = null,
-    sysConfigZones  = ['output', 'disabled'],
-    sysConfigFile   = 'config.json';
+var fs = require('fs'),
+    path = require('path'),
+    modes = require('./modes.js').listModes(),
+    modConfig = null,
+    modConfigFile = 'config.json',
+    sysConfig = null,
+    sysConfigZones = ['output', 'disabled'],
+    sysConfigFile = 'config.json';
 
 var loadConfig = function (location) {
     try {
@@ -60,16 +60,16 @@ exports.getConfig = function (m) {
     if (!isSystem && !sysConfig[m]) {
         return {};
     }
-	else if (!sysConfig[m]) {
+    else if (!sysConfig[m]) {
         sysConfig[m] = {};
     }
     
     if (!isSystem) {
         console.warn("\nConfiguration data for module '" + m + "' stored in deprecated location.\n" +
             "Configuration will be moved to module specific configuration file.");
-		var cfg = sysConfig[m];
-		delete sysConfig[m];
-		return cfg;
+        var cfg = sysConfig[m];
+        delete sysConfig[m];
+        return cfg;
     }
     return sysConfig[m];
 };
@@ -90,29 +90,29 @@ exports.loadModuleConfig = function (module, location, ignoreCache) {
     for (var name in deprecatedDataA) {
         configData[name] = deprecatedDataA[name];
     }
-	for (var name in deprecatedDataB) {
+    for (var name in deprecatedDataB) {
         configData[name] = deprecatedDataB[name];
     }
     
-	modConfig[module.name] = {
-		location: path.join(location, modConfigFile),
-		data: configData
-	};
+    modConfig[module.name] = {
+        location: path.join(location, modConfigFile),
+        data: configData
+    };
     return configData;
 };
 
 exports.loadOutputConfig = function (outputName) {
-	var config = exports.getConfig(sysConfigZones[0]);
-	if (!config[outputName]) {
-		config[outputName] = {};
-	}
+    var config = exports.getConfig(sysConfigZones[0]);
+    if (!config[outputName]) {
+        config[outputName] = {};
+    }
 	
-	for (var obj in config) {
-		if (modes.includes(obj)) continue;
-		if (!config[outputName][obj]) {
-			config[outputName][obj] = config[obj];
-		}
-	}
+    for (var obj in config) {
+        if (modes.includes(obj)) continue;
+        if (!config[outputName][obj]) {
+            config[outputName][obj] = config[obj];
+        }
+    }
     return config[outputName];
 };
 

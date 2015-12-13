@@ -1,5 +1,5 @@
 # Kassy
-(Karma + Sassy) * (Facebook + Slack) - Hipchat = Kassy
+(Karma + Sassy) * (Facebook + Slack + Skype + Hipchat) = Kassy
 
 <i>It does way more than this now...</i>
 
@@ -12,19 +12,20 @@ git clone https://github.com/mrkno/Kassy.git
 cd Kassy
 npm install
 ```
-<i>As of November 2015 `npm install` fails due to an error compiling the required dependency `require-install`. As this is the last dependency to install it is safe to install it manually into the `node_modules` directory after running the command.</i>
 
 ### Modes
 #### Facebook Integration
 Create a new file, `config.json` that has the following:
 ```
 {
-    "output": {
-        "username": "<facebookEmail>",
-        "password": "<facebookPassword>",
-        "testingName": "<testingName>",
-        "commandPrefix": "/"
-    }
+	"output": {
+		"facebook": {
+			"username": "<facebookEmail>",
+			"password": "<facebookPassword>",
+			"testingName": "<testingName>",
+			"commandPrefix": "/"
+		}
+	}
 }
 ```
 Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets.
@@ -36,13 +37,15 @@ Create a new file, `config.json` that has the following:
 ```
 {
     "output": {
-        "name": "Kassy",
-        "slack_tokens": [
-            <yourSlackTeamToken>
-            ....
-        ],
-        "port": "<portNumber>",
-        "commandPrefix": "!"
+        "slack": {
+            "name": "Kassy",
+            "slack_tokens": [
+                <yourSlackTeamToken>
+                ....
+            ],
+            "port": "<portNumber>",
+            "commandPrefix": "!"
+        }
     }
 }
 ```
@@ -58,12 +61,14 @@ To start in slack mode, run `node main.js slack`.
 Create a new file, `config.json` that has the following:
 ```
 {
-    "output": {
-        "username": "<skypeUsername/skypeEmail>",
-        "password": "<skypePassword>",
-        "commandPrefix": "!",
-        "conversations": ["<conversationID1>","<conversationID2",...]
-    }
+	"output": {
+		"skype": {
+			"username": "<skypeUsername/skypeEmail>",
+			"password": "<skypePassword>",
+			"commandPrefix": "!",
+			"conversations": ["<conversationID1>","<conversationID2",...]
+		}
+	}
 }
 ```
 Replace each of the angle bracketed strings (`<...>`) with the respective information written inside the brackets.
@@ -94,18 +99,22 @@ There are a number of special commands that will not be listed by help and canno
 - `/ping`. Responds with version and hostname of machine running the program.
 - `/creator`. Prints information about the creators of Kassy.
 
+### Debugging CLI Options
+There are two debugging related command line options that can be passed to Kassy. These must occur first and if both are used, be in the correct order for them to work.
+- `debug`. Turns on verbose logging for Kassy. Useful for finding exact cause of an issue.
+- `log`. Enables logging to a `kassy.log` file in the root of the project.
+
 ## Creating New Modules
 ### General Nodes
 #### File Locations
 
-- Modules should be created as their own `.js` file within the `modules` (<b>not `node_modules`</b>) subdirectory.
-- Modules that depend on other `.js` files should locate those files within a subdirectory of the `modules` directory.
+- Modules should be created as their folder within the `modules` (<b>not `node_modules`</b>) subdirectory.
+- Each module folder should contain a `kassy.json` file (see existing modules for examples).
 
 #### `require('module')`
 Any modules that depend on an `npm` package should include it using:
 ```
-var require_install = require('require-install'),
-    module = require_install('module');
+var module = require.safe('module');
 ```
 instead of:
 ```
@@ -130,10 +139,15 @@ Arguments:
 For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
 
 #### `exports.help()`
-This method should return a <b>non-newline terminated</b> string to be used with the `/kassy` command.
+This method should return an array of arrays containing help to be used with the `/kassy` command.
+
+Each sub-array should contain:
+- 1st Index: the command help is being provided for as a string. E.g. '/example'.
+- 2nd Index: a short description of what the command does as a string. E.g. 'Is an example command.'.
+- 3rd Index: (optional) a long description of what the command does as a string. E.g. 'Is an example command that can be used to do foo.'.
 
 Arguments:
-- <i>returns</i>. A non-newline terminated string. String.
+- <i>returns</i>. An array of arrays containing help. Array.
 
 For example, with a weather module you might return `'Gets the weather of your current location.'`.
 
@@ -217,6 +231,9 @@ Arguments:
 - `title`. The title to set. String.
 - `thread`. The thread to set it on. String.
 
+#### `commandPrefix`
+Is a static variable containing the command prefix that should be used for the platform.
+
 ### Event
 The `event` object contains the following fields:
 - `body`. The body of the message received. String.
@@ -226,6 +243,13 @@ The `event` object contains the following fields:
 
 ### Persistence
 Any data stored in `this.config` or `exports.config` within the scope of a module will automatically be persistent between restarts of the program, provided a safe shutdown and an error free startup.
+
+### Logging and Errors
+Any logging and errors should <b>NOT</b> be logged to the console using any methods other than:
+- `console.debug(str)` - logs `str` to the console if and only if debugging is enabled.
+- `console.critical(exception)`- logs the message and trace of an Exception (`exception`) to the console if and only if debugging is enabled.
+
+This is to prevent spamming users with information that is not relevant.
 
 ### Loading Modules
 New modules will be automatically detected and loaded after a restart of the application. This can be performed using the special `/restart` command.
