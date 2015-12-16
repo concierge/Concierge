@@ -129,14 +129,14 @@ sendTyping = function(thread) {
 	socket = sockets[teamInfo.team_id];
 
 	if (socket != null) {
-		var body = {};
-		body.id = slackTeams[teamInfo.team_id].event_id++;
-		body.type = "typing";
-		body.channel = teamInfo.channel_id;
-
-		console.log("typing");
-		console.log(JSON.stringify(body));
-		socket.send(JSON.stringify(body));
+		var body = {
+		'id' = slackTeams[teamInfo.team_id].event_id,
+		'type' = 'typing',
+		'channel' = teamInfo.channel_id;
+		};
+		body = JSON.stringify(body);
+		socket.send(body);
+		slackTeams[teamInfo.team_id].event_id++,
 	}
 	else {
 		console.debug('No socket available for given team id');
