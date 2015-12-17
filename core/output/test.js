@@ -10,8 +10,8 @@ exports.start = function(callback) {
 		sendMessage: function(message, thread) {
 			console.log(message);
 		}
-	})
-	
+	}),
+
 	rl = readline.createInterface({
 		input: process.stdin,
 		output: process.stdout

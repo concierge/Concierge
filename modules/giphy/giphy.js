@@ -34,7 +34,7 @@ exports.search = function (query, callback, waitCallback) {
 
     request.get({url: 'http://api.giphy.com/v1/gifs/search', qs: q}, function(error, response, body) {
         body = JSON.parse(body);
-        if (response.statusCode === 200 && body && body.images) {
+        if (response.statusCode === 200 && body && body.data) {
             var images = body.data;
             if (images && images.length > 0) {
                 var image = images[index].url;

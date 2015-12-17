@@ -1,22 +1,25 @@
-var express = require('express'),
-bodyParser  = require("body-parser"),
-request = require('request'),
-shim = require.once("../shim.js"),
-app = null,
-server = null,
+var request = require.safe('request'),
+shim = require.once('../shim.js'),
+WebSocket = require.safe('ws'),
+async = require.safe('async'),
+sleep = require.safe('sleep'),
 platform = null,
+sockets = [],
+eventReceivedCallback = null,
+numSocketsToShutDown = 0,
+shuttingDown = false,
 
 sendMessage = function(message, thread) {
-	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].slack_token;
+	var teamInfo = getChannelIdAndTeamId(thread);
 
-	if (slack_token != null) {
+	message.replace('<', '&lt');
+	message.replace('>', '&gt');
+	message.replace('&', '&amp');
+
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
-			"channel": thread_id,
+			"token": teamInfo.token,
+			"channel": teamInfo.channel_id,
 			"username": exports.config.name,
 			"link_names": 1,
 			"text": message,
@@ -30,27 +33,41 @@ sendMessage = function(message, thread) {
 			"qs": body
 		},
 		function (error, response, body) {
+			body = JSON.parse(body);
 			if (response.statusCode != 200) {
-				console.log('error: ' + response.statusCode);
+				console.debug('error: ' + response.statusCode);
+			}
+			else if (!body.ok) {
+				console.debug('Failed to send message to channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 			}
 		});
 	}
 	else {
-		console.log('No slack team found!!!');
+		console.debug('No slack team found!!!');
 	}
 },
 
-sendFile = function(type, file, description, thread) {
+getChannelIdAndTeamId = function(thread) {
 	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].slack_token;
+	thread_components = thread.split('\0', 2),
+	channelId = thread_components[0],
+	teamId = thread_components[1],
+	token = slackTeams[teamId].token;
 
-	if (slack_token != null) {
+	return { "channel_id": channelId, "team_id": teamId, "token": token };
+},
+
+createThreadId = function(channelId, teamId) {
+	return channelId + '\0' + teamId;
+},
+
+sendFile = function(type, file, description, thread) {
+	var teamInfo = getChannelIdAndTeamId(thread);
+
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
-			"channel": thread_id,
+			"token": teamInfo.token,
+			"channel": teamInfo.channel_id,
 			"file": file,
 			"filetype": type,
 			"title": description
@@ -62,27 +79,27 @@ sendFile = function(type, file, description, thread) {
 			"qs": body
 		},
 		function (error, response, body) {
+			body = JSON.parse(body);
 			if (response.statusCode != 200) {
-				console.log('error: ' + response.statusCode);
+				console.debug('error: ' + response.statusCode);
+			}
+			else if (!body.ok) {
+				console.debug('Failed send file to channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 			}
 		});
 	}
 	else {
-		console.log('No slack team found!!!');
+		console.debug('No slack team found!!!');
 	}
 },
 
 renameChannel = function(title, thread) {
-	var slackTeams = exports.config.slack_teams,
-	thread_components = thread.split('~', 2),
-	thread_id = thread_components[0],
-	thread_team_id = thread_components[1],
-	slack_token = slackTeams[thread_team_id].slack_token;
+	var teamInfo = getChannelIdAndTeamId(thread);
 
-	if (slack_token != null) {
+	if (teamInfo.token != null) {
 		var body = {
-			"token": slack_token,
-			"channel": thread_id,
+			"token": teamInfo.token,
+			"channel": teamInfo.channel_id,
 			"name": title
 		};
 
@@ -92,57 +109,38 @@ renameChannel = function(title, thread) {
 			"qs": body
 		},
 		function (error, response, body) {
+			body = JSON.parse(body);
 			if (response.statusCode != 200) {
-				console.log('error: ' + response.statusCode);
+				console.debug('error: ' + response.statusCode);
+			}
+			else if (!body.ok) {
+				console.debug('Failed to rename channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
 			}
 		});
 	}
 	else {
-		console.log('No slack team found!!!');
+		console.debug('No slack team found!!!');
 	}
 },
 
-getUsers = function(slackTeam) {
-	var body = {"token": slackTeam.slack_token},
-	userMap = [];
-	request({
-		"uri": 'https://slack.com/api/users.list',
-		"method": 'GET',
-		"qs": body
-	},
-	function (error, response, body) {
-		body = JSON.parse(body);
-		if (response.statusCode != 200 || body.ok == false) {
-			console.log('failed to get list of users');
-		}
-		else {
-			for (var i = 0; i < body.members.length; i++) {
-				userMap[body.members[i].id] = body.members[i].name
-			}
-			slackTeam.users = userMap;
-		}
-	});
-},
+sendTyping = function(thread) {
+	var slackTeams = exports.config.slack_teams,
+	teamInfo = getChannelIdAndTeamId(thread),
+	socket = sockets[teamInfo.team_id];
 
-lookUpUserAddToTeam = function(slackTeam, userId, match, message, callback) {
-	var body = {"token": slackTeam.slack_token, "user": userId},
-	userMap = [];
-	request({
-		"uri": 'https://slack.com/api/users.info',
-		"method": 'GET',
-		"qs": body
-	},
-	function (error, response, body) {
-		body = JSON.parse(body);
-		if (response.statusCode != 200) {
-			console.log('error: ' + response.statusCode + '\n' + error);
-			return message
-		}
-		else {
-			slackTeam.users[body.user.id] = body.user.name;
-			return callback(body.user.name, message, match);
-		}
-	});
+	if (socket != null) {
+		var body = {
+		'id': slackTeams[teamInfo.team_id].event_id,
+		'type':'typing',
+		'channel': teamInfo.channel_id
+		};
+		body = JSON.stringify(body);
+		socket.send(body);
+		slackTeams[teamInfo.team_id].event_id++;
+	}
+	else {
+		console.debug('No socket available for given team id');
+	}
 },
 
 replaceUserIdWithUserName = function(userName, message, match) {
@@ -150,84 +148,344 @@ replaceUserIdWithUserName = function(userName, message, match) {
 		var index = message.indexOf(match);
 		return message.substr(0, index) + userName + message.substr(index + match.length);
 	}
-};
+},
 
+init = function(token, callback) {
+	var body = {
+		"token": token,
+		mpim_aware: "true"
+	};
+	request({
+		"uri": 'https://slack.com/api/rtm.start',
+		"method": 'GET',
+		"qs": body
+	},
+	function (error, response, body) {
+		var teamId = null,
+		slackTeams = exports.config.slack_teams,
+		team;
 
+		if (!slackTeams) {
+			exports.config.slack_teams = {};
+			slackTeams = exports.config.slack_teams;
+		}
 
-exports.start = function (callback) {
-	var slackTeams = exports.config.slack_teams,
-	slack_token = null;
-	app = express();
-	app.use(bodyParser.json());
-	app.use(bodyParser.urlencoded({ extended: true }));
+		try {
+			body = JSON.parse(body);
+		}
+		catch(e) {
+			console.debug("failed to parse message: " + body);
+			console.critical(e);
+			callback(false);
+		}
 
-	platform = shim.createPlatformModule({
-		commandPrefix: exports.config.commandPrefix,
-		sendMessage: sendMessage,
-		sendFile: sendFile,
-		setTitle: renameChannel
+		if (response.statusCode != 200) {
+			console.debug('error: ' + response.statusCode);
+			callback(false);
+		}
+		else if (!body.ok) {
+			console.debug('Failed to connect to slack server with token: ' + token + ' error: ' + body.error);
+			callback(false);
+		}
+		else {
+			teamId = body.team.id;
+			slackTeams[teamId] = body;
+			team = slackTeams[teamId];
+			team.token = token;
+			team.event_id = 0;
+			team.lastMessageSinceConnection = false;
+
+			//Generate user map
+			team.users = generateUserMap(body);
+			team.allChannels = generateChannelsMap(body);
+
+			// find slackbot
+			findSlackBot(body, team);
+			callback({"team_id": teamId, "url": body.url});
+		}
 	});
+},
 
-	for (var i = 0; i < slackTeams.length; i++) {
-		getUsers(slackTeams[i]);
+findSlackBot = function(body, slackTeam) {
+	for (var i = 0; i < body.users.length; i++) {
+		if (body.users[i].name === 'slackbot') {
+			slackTeam.bot_id = body.users[i].id;
+			break;
+		}
+	}
+},
+
+generateChannelsMap = function(data) {
+	var channels = {};
+
+	for (var i = 0; i < data.channels.length; i++) {
+		channels[data.channels[i].id] = data.channels[i];
+	}
+	for (var j = 0; j < data.groups.length; j++) {
+		channels[data.groups[j].id] = data.groups[j];
+	}
+	for (var k = 0; k < data.ims.length; k++) {
+		channels[data.ims[k].id] = data.ims[k];
 	}
 
-	app.post('/', function (req, res) {
-		var data = JSON.parse(req.body),
-		event = [],
-		message = data.text.trim(),
-		shimMessage = null;
+	return channels;
+},
 
-		if (data.user_name != 'slackbot') {
-			// Check that the message sent contains a identifier
-			// TODO: need to check that regex is correct?
-			var matches = message.match(/<?@[^:>]+>:?/g);
-			if (matches != null) {
-				var slackTeams = exports.config.slack_teams,
-				userName,
-				id,
-				slackTeam = slackTeams[data.team_id];
+generateUserMap = function(data) {
+	var map = {};
+	for (var i = 0; i < data.users.length; i++) {
+		map[data.users[i].id] = data.users[i];
+	}
+	return map;
+},
 
-				if (slackTeam) {
+connect = function(connectionDetails) {
+	var slackTeams = exports.config.slack_teams,
+		socket;
+	console.debug("Connecting to socket");
 
-					for (var j = 0; j < matches.length; j++) {
-						// replace identifier with empty string
-						id = matches[j].replace(/[ :<>@]+/g, '');
+	if (connectionDetails) {
+		socket = new WebSocket(connectionDetails.url);
+		console.debug(connectionDetails.url);
+		sockets[connectionDetails.team_id] = socket;
+		socket.on('open', function() {
+			console.debug("Connection to team: " + slackTeams[connectionDetails.team_id].team.name + " established");
+		}).on('message', function(data) {
+			eventReceived(JSON.parse(data), connectionDetails.team_id);
+		}).on('close', function(data) {
+			console.debug("Disconnected from team: " + slackTeams[connectionDetails.team_id].team.name);
 
-						// find the user
-						userName = slackTeam.users[id];
-						if (!userName) {
-							// query slack to see if the user is in the team, they may have been added recently
-							message = lookUpUserAddToTeam(slackTeam, id, matches[j], message, replaceUserIdWithUserName);
-						}
-						else {
-							message = replaceUserIdWithUserName(userName, message, matches[j]);
-						}
+			if (numSocketsToShutDown > 0) {
+				numSocketsToShutDown--;
+				return;
+			}
+			if (!shuttingDown) {
+				init(slackTeams[connectionDetails.team_id].token, connect);
+			}
+		}).on('error', function(data) {
+			console.debug("received error:\n" + data);
+		});
+	}
+	else {
+		exports.start(eventReceivedCallback);
+	}
+},
+
+openPrivateMessage = function(message, thread, senderId) {
+	var slackTeams = exports.config.slack_teams,
+		teamInfo = getChannelIdAndTeamId(thread);
+
+	if (teamInfo.token != null) {
+		var body = {
+			"token": teamInfo.token,
+			"user": senderId
+		};
+
+		request({
+			"uri": 'https://slack.com/api/im.open',
+			"method": 'GET',
+			"qs": body
+		},
+		function (error, response, body) {
+			body = JSON.parse(body);
+			if (response.statusCode != 200) {
+				console.debug('error: ' + response.statusCode);
+			}
+			else if (!body.ok) {
+				console.debug('Failed to send message to user with id: ' + teamInfo.channel_id + ', error: ' + body.error);
+			}
+			else {
+				slackTeams[teamInfo.team_id].channels[body.channel] = {"channel": body.channel, "user": senderId};
+				sendMessage(message, createThreadId(body.channel.id, teamInfo.team_id));
+			}
+		});
+	}
+	else {
+		console.debug('No slack team found!!!');
+	}
+},
+
+eventReceived = function(event, teamId) {
+	if (shuttingDown) return;
+	switch (event.type) {
+		case 'message':
+			recMessage(event, teamId);
+			break;
+		case 'channel_created':
+			channelCreated(event, teamId);
+			break;
+		case 'channel_deleted':
+			channelDeleted(event, teamId);
+			break;
+		case 'channel_rename':
+			channelRename(event, teamId);
+			break;
+		case 'im_created':
+			channelCreated(event, teamId);
+			break;
+		case 'group_joined':
+			channelCreated(event, teamId);
+			break;
+		case 'group_close':
+			channelDeleted(event, teamId);
+			break;
+		case 'group_rename':
+			channelRename(event, teamId);
+			break;
+		case 'user_change':
+			userChange(event, teamId);
+			break;
+		case 'team_join':
+			userChange(event, teamId);
+			break;
+		case 'team_rename':
+			teamRename(event, teamId);
+			break;
+		default:
+			console.debug("Message of type" + event.type + "recieved not supported");
+			break;
+	}
+},
+
+teamRename = function(event, teamId) {
+	var slackTeam = exports.config.slack_teams[teamId];
+	slackTeam.name = event.name;
+},
+
+userChange = function(event, teamId) {
+	var slackTeam = exports.config.slack_teams[teamId];
+	slackTeam.users[event.user.id] = event.user;
+},
+
+channelCreated = function(event, teamId) {
+	var slackTeam = exports.config.slack_teams[teamId];
+	slackTeam.channels[event.channel.id] = event.channel;
+},
+
+channelDeleted = function(event, teamId) {
+	var slackTeam = exports.config.slack_teams[teamId];
+	removeHelper(slackTeam.channels, event.channel);
+},
+
+channelRename = function(event, teamId) {
+	var slackTeam = exports.config.slack_teams[teamId];
+	slackTeam.channels[event.channel.id].name = event.channel.name;
+},
+
+removeHelper = function(object, key) {
+	delete object.key;
+},
+
+recMessage = function(event, teamId) {
+	var slackTeam = exports.config.slack_teams[teamId],
+	userName,
+	id,
+	message = event.text,
+	shimMessage;
+
+	if (!slackTeam.lastMessageSinceConnection) {
+		slackTeam.lastMessageSinceConnection = true;
+		if (event.reply_to) {
+			//throw away this message
+			return;
+		}
+	}
+
+	if (event.user!= slackTeam.bot_id) {
+		var matches = null,
+		lastMatchIndex = -1,
+		regex = /<@([^>\|]+)(\|[^>]+)?>:?/;
+
+		if (slackTeam) {
+			matches = regex.exec(message);
+			while (matches !== null) {
+				if (lastMatchIndex === matches.index) {
+					console.debug("broken beyond belief. GLHF");
+					break;
+				}
+				lastMatchIndex = matches.index;
+				var match = matches[1];
+				if (match != null) {
+					userName = slackTeam.users[match].name;
+					if (!userName) {
+						// User not found, this shouldn't happen, but in case it does, Kassy doesn't know who you are so lets call you "Bob"
+						message = replaceUserIdWithUserName("Bob", message, matches[0]);
+						console.debug("User not found in team, with id: " + match);
+					}
+					else {
+						message = replaceUserIdWithUserName(userName, message, matches[0]);
 					}
 				}
-				else {
-					console.log('No slack team found matching: ' + data.team_id);
-				}
+				matches = regex.exec(message);
 			}
-
-			event.body = message;
-			event.threadID = data.channel_id + '~' + data.team_id;
-			event.senderID = data.user_id;
-			event.senderName = data.user_name;
-
-			shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
-			callback(platform, shimMessage);
 		}
-		res.sendStatus(200);
+		else {
+			console.debug('No slack team found matching: ' + teamId);
+		}
+
+		event.body = message;
+		event.threadID = createThreadId(event.channel, teamId);
+		event.senderID = event.user;
+		event.senderName = slackTeam.users[event.user].name;
+		shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
+		eventReceivedCallback(platform, shimMessage);
+	}
+},
+
+closeSockets = function() {
+	console.debug("closing sockets");
+	Object.keys(sockets).forEach(function (element, index) {
+		sockets[element].terminate();
 	});
-	server = app.listen(this.config.port);
+	sockets = {};
+},
+
+timeout = function(){
+	if (numSocketsToShutDown <= 0) {
+		sync.done();
+	}
+	else {
+		setTimeout(timeout, 1000);
+	}
+};
+
+exports.start = function (callback) {
+	var slackTokens = exports.config.slack_tokens;
+
+	shuttingDown = false;
+	eventReceivedCallback = callback;
+	numSocketsToShutDown = 0;
+
+	console.debug("Starting slack output module");
+	if (slackTokens) {
+		for (var i = 0; i < slackTokens.length; i++) {
+			init(slackTokens[i], connect);
+		}
+
+		platform = shim.createPlatformModule({
+			sendMessage: sendMessage,
+			sendFile: sendFile,
+			setTitle: renameChannel,
+			sendTyping: sendTyping,
+			sendPrivateMessage: openPrivateMessage,
+			commandPrefix: exports.config.commandPrefix
+		});
+	}
+	else {
+		console.debug("Whoops looks like you don't have the slack config set up correctly");
+	}
 };
 
 exports.stop = function() {
-	var slackTeams = exports.config.slack_teams;
-
-	server.close();
-	server = null;
-	app = null;
-	platform = null;
+	console.debug("start shutdown");
+	shuttingDown = true;
+	numSocketsToShutDown = Object.keys(sockets).length;
+	async.series([
+		closeSockets,
+		function(){
+			while (numSocketsToShutDown > 0) {
+				sleep.usleep(500000);
+			}
+		}
+	]);
 };

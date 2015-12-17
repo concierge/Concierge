@@ -24,10 +24,10 @@ exports.search = function (query, callback, waitCallback) {
 	}
 
 	waitCallback();
-	
+
 	var q = {
 		q: query,
-		cx: exports.config.apiSearchID,
+		cx: exports.config.apiSearchId,
 		searchType: 'image',
 		fileType: 'gif',
 		safe: 'high',
@@ -36,6 +36,7 @@ exports.search = function (query, callback, waitCallback) {
 
 	request.get({url: 'https://www.googleapis.com/customsearch/v1/', qs: q}, function(error, response, body) {
 		body = JSON.parse(body);
+		
 		if (response.statusCode === 200 && body && body.items) {
 			var images = body.items;
 			if (images && images.length > 0) {
@@ -65,26 +66,26 @@ exports.ensureExt = function (url) {
 		url += '#.png';
 	}
 	return url;
-}
+};
 
 exports.run = function(api, event) {
 	if (!exports.config.apiKey) {
 		api.sendMessage("My admin needs to give me a Google API key before anim will work.\nPlease set the value apiKey in config.json to a Google Custom Search API key.", event.thread_id);
 		return;
 	}
-	
-	if (!exports.config.apiSearchID) {
-		api.sendMessage("My admin needs to give me a Google API search ID before anim will work.\nPlease set the value apiSearchID in config.json to a Google Custom Search API search engine ID.", event.thread_id);
+
+	if (!exports.config.apiSearchId) {
+		api.sendMessage("My admin needs to give me a Google API search Id before anim will work.\nPlease set the value apiSearchId in config.json to a Google Custom Search API search engine Id.", event.thread_id);
 		return;
 	}
-	
+
 	var query = event.body.substr(6);
 	exports.search(query, function(image) {
 		if (image.error) {
 			api.sendMessage(image.error, event.thread_id);
 			return;
 		}
-		
+
 		var img = image.link;
 		if (img) {
 			var url = exports.ensureExt(img);

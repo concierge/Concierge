@@ -63,6 +63,6 @@ exports.run = function(api, event) {
 		help = longDescription.call(this, commands.join(' '), api.commandPrefix);
 	}
 	
-	api.sendMessage(help, event.thread_id);
+	api.sendPrivateMessage(help, event.thread_id, event.sender_id);
 	return false;
 };

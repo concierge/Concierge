@@ -1,20 +1,20 @@
 /**
- * Main platform. Handles the core interop of the program and
- * acts as the glue code for the various parts of the code.
- *
- * Written By:
- *         Matthew Knox
- *
- * License:
- *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2015.
- */
+* Main platform. Handles the core interop of the program and
+* acts as the glue code for the various parts of the code.
+*
+* Written By:
+*         Matthew Knox
+*
+* License:
+*        MIT License. All code unless otherwise specified is
+*        Copyright (c) Matthew Knox and Contributors 2015.
+*/
 
 var figlet = require('figlet'),
- 
+
 Platform = function(modes) {
     require.reload('./prototypes.js');
-    
+
     this.config = require('./config.js');
     this.loadedModules = [];
     this.coreModules = [];
@@ -90,8 +90,8 @@ Platform.prototype.setModes = function(modes) {
     }
     catch (e) {
         console.critical(e);
-        console.error('Loading the output mode file \'' + newMode + '\' failed.' +
-            '\n\nIf this is your file please ensure that it is syntatically correct.');
+        console.error('Loading the output mode file \'' + modes[i] + '\' failed.' +
+            '\n\nIf this is your file please ensure that it is syntactically correct.');
         return false;
     }
 };
@@ -105,7 +105,7 @@ Platform.prototype.start = function() {
     }
 
     console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
-    
+
     console.title(' ' + this.packageInfo.version);
     console.info('------------------------------------');
     console.warn('Starting system...\n'
@@ -119,10 +119,10 @@ Platform.prototype.start = function() {
             this.modes[i].instance.config.commandPrefix = this.defaultPrefix;
         }
     }
-    
+
     // Load core modules
     console.warn('Loading core components...');
-    this.modules.listCoreModules(function (m) {        
+    this.modules.listCoreModules(function (m) {
         for (var i = 0; i < m.length; i++) {
             this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
         }
@@ -135,7 +135,7 @@ Platform.prototype.start = function() {
             this.loadedModules.push(this.modules.loadModule(m[mod]));
         }
     }.bind(this));
-        
+
     // Starting output
     console.warn('Starting integrations...');
     for (var i = 0; i < this.modes.length; i++) {
@@ -150,7 +150,7 @@ Platform.prototype.start = function() {
             console.critical(e);
         }
     }
-    
+
     this.statusFlag = StatusFlag.Started;
     console.warn('System has started. ' + 'Hello World!'.rainbow);
 };
@@ -173,7 +173,7 @@ Platform.prototype.shutdown = function(flag) {
             console.critical(e);
         }
     }
-    
+
     // Unload user modules
     for (var i = 0; i < this.loadedModules.length; i++) {
         if (this.loadedModules[i].unload) {
@@ -194,7 +194,7 @@ Platform.prototype.shutdown = function(flag) {
 
     this.config.saveConfig();
     this.statusFlag = flag ? flag : StatusFlag.Shutdown;
-    
+
     console.warn(this.packageInfo.name + " has shutdown.");
     if (this.onShutdown && this.onShutdown != null) {
         this.onShutdown(this.statusFlag);

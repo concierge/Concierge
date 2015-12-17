@@ -50,13 +50,13 @@ console.title = function(args) {
 };
 
 console.debug = function (args) {
-    if (debug) {
+    if (debug && args) {
         console.warn(args);
     }
 };
 
 console.critical = function(args) {
-    if (debug) {
+    if (debug && args) {
         console.error(args.stack);
     }
 };
