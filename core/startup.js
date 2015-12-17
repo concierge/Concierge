@@ -21,7 +21,6 @@ var selectedModes        = null,
             var Platform = require.once('./platform.js'),
                 platform = new Platform(selectedModes);
             platform.setOnShutdown(checkShutdownCode);
-            console.log("Starting platform");
             platform.start();
         }
         catch(e) {

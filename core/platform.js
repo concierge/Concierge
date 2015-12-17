@@ -1,14 +1,14 @@
 /**
- * Main platform. Handles the core interop of the program and
- * acts as the glue code for the various parts of the code.
- *
- * Written By:
- *         Matthew Knox
- *
- * License:
- *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2015.
- */
+* Main platform. Handles the core interop of the program and
+* acts as the glue code for the various parts of the code.
+*
+* Written By:
+*         Matthew Knox
+*
+* License:
+*        MIT License. All code unless otherwise specified is
+*        Copyright (c) Matthew Knox and Contributors 2015.
+*/
 
 var figlet = require('figlet'),
 
@@ -75,16 +75,18 @@ Platform.prototype.messageRxd = function(api, event) {
 
 Platform.prototype.setModes = function(modes) {
     try {
-		var i = 0;
+        var i = 0;
         if (this.statusFlag !== StatusFlag.NotStarted) {
             throw 'Cannot change mode when it is already started.';
         }
         this.modes = [];
+        console.log(modes);
         for (var i = 0; i < modes.length; i++) {
             var mode = {
                 instance: require.once('./output/' + modes[i]),
                 name: modes[i]
             };
+            console.log(mode);
             this.modes.push(mode);
         }
         return true;
@@ -136,7 +138,7 @@ Platform.prototype.start = function() {
             this.loadedModules.push(this.modules.loadModule(m[mod]));
         }
     }.bind(this));
-        
+
     // Starting output
     console.warn('Starting integrations...');
     for (var i = 0; i < this.modes.length; i++) {

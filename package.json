@@ -4,6 +4,7 @@
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
+    "async": "*",
     "colors": "^1.1.2",
     "descrevit": "git+https://github.com/mrkno/descrevit.git",
     "facebook-chat-api": "1.0.2",
@@ -13,6 +14,7 @@
     "redwrap": "*",
     "request": "*",
     "require-install": "*",
+    "sleep": "*",
     "skyweb": "0.0.2",
     "ws": "^0.8.0",
     "stripcolorcodes": "0.1.0"
