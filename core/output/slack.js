@@ -342,6 +342,7 @@ eventReceived = function(event, teamId) {
 			teamRename(event, teamId);
 			break;
 		default:
+			console.debug("Message of type" + event.type + "recieved not supported")
 	}
 },
 

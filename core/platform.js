@@ -75,18 +75,15 @@ Platform.prototype.messageRxd = function(api, event) {
 
 Platform.prototype.setModes = function(modes) {
     try {
-        var i = 0;
         if (this.statusFlag !== StatusFlag.NotStarted) {
             throw 'Cannot change mode when it is already started.';
         }
         this.modes = [];
-        console.log(modes);
         for (var i = 0; i < modes.length; i++) {
             var mode = {
                 instance: require.once('./output/' + modes[i]),
                 name: modes[i]
             };
-            console.log(mode);
             this.modes.push(mode);
         }
         return true;

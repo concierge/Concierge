@@ -68,14 +68,11 @@ exports.createPlatformModule = function(platform) {
 		}
 	}
 
-
 	if (!platform.sendPrivateMessage) {
 		platform.sendPrivateMessage = function(message, thread, senderId) {
 			platform.sendMessage(message, thread);
 		}
 	}
-
-	return platform;
 };
 
 exports.createEvent = function(thread, senderId, senderName, message) {
