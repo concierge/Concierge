@@ -342,7 +342,8 @@ eventReceived = function(event, teamId) {
 			teamRename(event, teamId);
 			break;
 		default:
-			console.debug("Message of type" + event.type + "recieved not supported")
+			console.debug("Message of type" + event.type + "recieved not supported");
+			break;
 	}
 },
 
@@ -381,7 +382,6 @@ recMessage = function(event, teamId) {
 	id,
 	message = event.text,
 	shimMessage;
-
 
 	if (!slackTeam.lastMessageSinceConnection) {
 		slackTeam.lastMessageSinceConnection = true;

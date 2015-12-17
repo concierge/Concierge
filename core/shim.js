@@ -73,6 +73,8 @@ exports.createPlatformModule = function(platform) {
 			platform.sendMessage(message, thread);
 		}
 	}
+
+	return platform;
 };
 
 exports.createEvent = function(thread, senderId, senderName, message) {

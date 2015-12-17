@@ -185,6 +185,9 @@ Arguments:
 - `message`. The message to send. String.
 - `thread`. The thread to send it to. String.
 
+Returns:
+- `undefined`
+
 #### `sendPrivateMessage(message, thread, senderId)`
 Sends a message to an individual.
 
@@ -193,12 +196,18 @@ Arguments:
 - `thread`. The thread which the associated command which sends the private message. String.
 - `senderId`. The sender to send the message to. String.
 
+Returns:
+- `undefined`
+
 #### `sendUrl(url, thread)`
 Sends a url to the specified thread. If url linking is not supported, will behave like `sendMessage`.
 
 Arguments:
 - `url`. The url to send. String.
 - `thread`. The thread to send it to. String.
+
+Returns:
+- `undefined`
 
 #### `sendImage(type, image, description, thread)`
 Sends an image to the specified thread. If image is a URL it will behave like `sendUrl`, otherwise it will behave like `sendFile`.
@@ -209,6 +218,9 @@ Arguments:
 - `description`. The description to associate with the image. String
 - `thread`. The thread to send it to. String.
 
+Returns:
+- `undefined`
+
 #### `sendFile(type, file, description, thread)`
 Sends a file to the specified thread. If file is a URL it will behave like `sendUrl`, otherwise it will send directly.
 
@@ -218,11 +230,17 @@ Arguments:
 - `description`. The description to associate with the file. String
 - `thread`. The thread to send it to. String.
 
+Returns:
+- `undefined`
+
 #### `sendTyping(thread)`
 Sends a typing indicator to the specified thread. Will either time out or cancel when the next call to `api` occurs.
 
 Arguments:
 - `thread`. The thread to send it to. String.
+
+Returns:
+- `undefined`
 
 #### `setTitle(title, thread)`
 Sets the title of the specified thread.
@@ -230,6 +248,9 @@ Sets the title of the specified thread.
 Arguments:
 - `title`. The title to set. String.
 - `thread`. The thread to set it on. String.
+
+Returns:
+- `undefined`
 
 #### `commandPrefix`
 Is a static variable containing the command prefix that should be used for the platform.
