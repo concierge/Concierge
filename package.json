@@ -14,10 +14,11 @@
     "redwrap": "*",
     "request": "*",
     "require-install": "*",
-    "sleep": "*",
+    "rimraf": "^2.4.4",
     "skyweb": "0.0.2",
-    "ws": "^0.8.0",
-    "stripcolorcodes": "0.1.0"
+    "sleep": "*",
+    "stripcolorcodes": "0.1.0",
+    "ws": "^0.8.0"
   },
   "devDependencies": {},
   "scripts": {

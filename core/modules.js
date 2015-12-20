@@ -17,12 +17,12 @@ var fs              = require('fs'),
     modulesDir      = 'modules',
     descriptor      = 'kassy.json';
 
-exports.listCoreModules = function (callback) {
+exports.listCoreModules = function () {
     var data = files.filesInDirectory('./' + coreMoulesDir);
     data = data.filter(function (value) {
         return value.endsWith(".js");
     });
-    callback(data);
+    return data;
 };
 
 exports.loadCoreModule = function(platform, module) {
@@ -36,7 +36,7 @@ exports.loadCoreModule = function(platform, module) {
     return m;
 };
 
-exports.listModules = function (callback) {
+exports.listModules = function (disabled) {
     var data = files.filesInDirectory('./' + modulesDir),
         modules = {};
 
@@ -60,7 +60,7 @@ exports.listModules = function (callback) {
                 continue;
             }
             
-            if (exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+            if (disabled === true && exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
                 continue;
             }
 			
@@ -74,7 +74,7 @@ exports.listModules = function (callback) {
             continue;
         }
     }
-    callback(modules);
+    return modules;
 };
 
 exports.loadModule = function (module) {

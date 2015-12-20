@@ -122,19 +122,17 @@ Platform.prototype.start = function() {
 
     // Load core modules
     console.warn('Loading core components...');
-    this.modules.listCoreModules(function (m) {
-        for (var i = 0; i < m.length; i++) {
-            this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
-        }
-    }.bind(this));
+    var m = this.modules.listCoreModules();
+    for (var i = 0; i < m.length; i++) {
+        this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
+    }
 
     // Load Kassy modules
     console.warn('Loading modules...');
-    this.modules.listModules(function (m) {
-        for (var mod in m) {
-            this.loadedModules.push(this.modules.loadModule(m[mod]));
-        }
-    }.bind(this));
+    m = this.modules.listModules();
+    for (var mod in m) {
+        this.loadedModules.push(this.modules.loadModule(m[mod]));
+    }
 
     // Starting output
     console.warn('Starting integrations...');
