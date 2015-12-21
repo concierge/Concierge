@@ -36,6 +36,18 @@ exports.loadCoreModule = function(platform, module) {
     return m;
 };
 
+exports.verifyModuleDescriptior = function (kj, disabled) {
+	if (!kj.name || !kj.startup || !kj.version) {
+		return false;
+	}
+	
+	if (disabled === true && exports.disabledConfig
+		&& exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+		return false;
+	}
+	return true;
+};
+
 exports.listModules = function (disabled) {
     var data = files.filesInDirectory('./' + modulesDir),
         modules = {};
@@ -56,20 +68,16 @@ exports.listModules = function (disabled) {
             }
 
             var kj = require.once(p);            
-            if (!kj.name || !kj.startup) {
-                continue;
-            }
-            
-            if (disabled === true && exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
-                continue;
-            }
+            if (!exports.verifyModuleDescriptior(kj, disabled)) {
+				continue;
+			}
 			
             if (!kj.folderPath) {
                 kj.folderPath = folderPath;
             }
             modules[kj.name] = kj;
         } catch (e) {
-            console.critical(e);
+            //console.critical(e);
             console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
             continue;
         }
@@ -93,6 +101,7 @@ exports.loadModule = function (module) {
                 m = require.once(startPath);
             }
         } catch (e) {
+			console.critical(e);
             throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
         }
         m.config = config.loadModuleConfig(module, modulePath);

@@ -97,15 +97,22 @@ There are a number of special commands that will not be listed by help and canno
 - `/disable`. Toggles ignoring of commands - will not ignore special commands.
 - `/update`. Performs a git-pull on the repository this is contained within.
 - `/ping`. Responds with version and hostname of machine running the program.
+- `/uptime`. Shows uptime information for Kassy.
 - `/creator`. Prints information about the creators of Kassy.
+- `/kpm`. Package manager for Kassy.
 
 ### Debugging CLI Options
 There are two debugging related command line options that can be passed to Kassy. These must occur first and if both are used, be in the correct order for them to work.
 - `debug`. Turns on verbose logging for Kassy. Useful for finding exact cause of an issue.
 - `log`. Enables logging to a `kassy.log` file in the root of the project.
 
+### Kassy Package Manager
+Run `/kpm help [command]` for help with KPM. Also refer to the hello world example [here](https://github.com/mrkno/HelloKassy).
+
 ## Creating New Modules
 ### General Nodes
+For a "Hello World" example see [here](https://github.com/mrkno/HelloKassy). 
+
 #### File Locations
 
 - Modules should be created as their folder within the `modules` (<b>not `node_modules`</b>) subdirectory.

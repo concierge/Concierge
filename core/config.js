@@ -33,6 +33,19 @@ var saveIndividualConfig = function (location, data) {
     fs.writeFileSync(location, JSON.stringify(data, null, 4), 'utf8');
 };
 
+exports.saveModuleConfig = function(mod) {
+    try {
+        var m = modConfig[mod];
+        saveIndividualConfig(m.location, m.data);
+        delete modConfig[mod];
+        return true;
+    } catch (e) {
+        console.error('An error occured while saving the configuration file.');
+        console.critical(e);
+        return false;
+    }
+};
+
 exports.saveConfig = function () {
     try {
         saveIndividualConfig(sysConfigFile, sysConfig);

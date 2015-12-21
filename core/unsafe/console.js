@@ -57,7 +57,7 @@ console.debug = function (args) {
 
 console.critical = function(args) {
     if (debug && args) {
-        console.error(args.stack);
+        console.error(args.stack ? args.stack : args);
     }
 };
 
