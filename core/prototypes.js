@@ -8,6 +8,9 @@
  *		MIT License. All code unless otherwise specified is
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
+'use strict';
+require.once('babel-register');
+require.once('babel-polyfill');
 
 // string.startsWith
 if (typeof String.prototype.startsWith != 'function') {

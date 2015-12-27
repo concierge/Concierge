@@ -1,10 +1,14 @@
 {
   "name": "kassy",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
     "async": "*",
+    "babel-plugin-transform-strict-mode": "^6.3.13",
+    "babel-polyfill": "^6.3.14",
+    "babel-preset-es2015": "^6.3.13",
+    "babel-register": "^6.3.13",
     "colors": "^1.1.2",
     "descrevit": "git+https://github.com/mrkno/descrevit.git",
     "facebook-chat-api": "1.0.2",

@@ -9,7 +9,7 @@
  *		MIT License. All code unless otherwise specified is
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
-
+'use strict';
 var hook = require('./unsafe/hook.js');
 
 global.requireHook = function(req) {
