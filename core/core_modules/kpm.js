@@ -1,59 +1,59 @@
 var gitpull = require.safe('git-pull'),
-	gitclone = require.safe('git-clone'),
+    gitclone = require.safe('git-clone'),
     files = require.once('../files.js'),
     modules = require.once('../modules.js'),
     cfg = require.once('../config.js'),
     path = require('path'),
-	fs = require.safe('fs-extra'),
+    fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
-	tmp = require('tmp'),
+    tmp = require('tmp'),
     moduleCache = null,
     opts = {
-		help: {
-			run: function(args, api, event) {
-				if (args.length > 1) {
-					api.sendMessage('You can only show detailed help for one command at a time.', event.thread_id);
-					return;
-				}
-				
-				if (args.length === 1) {
-					if (!opts[args[0]] || args[0] === 'help') {
-						api.sendMessage('No such command to show help for.', event.thread_id);
-						return;
-					}
-					var msg = opts[args[0]].command + '\n--------------------\n' + opts[args[0]].detailedHelp;
-					api.sendMessage(msg, event.thread_id);
-				}
-				else {
-					var msg = '';
-					for (var opt in opts) {
-						if (opt === 'help') continue;
-						msg += opts[opt].command + '\n\t' + opts[opt].help + '\n';
-					}
-					api.sendMessage(msg, event.thread_id);
-				}
-			},
-			command: 'help [<command>]'
-		},
+        help: {
+            run: function(args, api, event) {
+                if (args.length > 1) {
+                    api.sendMessage('You can only show detailed help for one command at a time.', event.thread_id);
+                    return;
+                }
+                
+                if (args.length === 1) {
+                    if (!opts[args[0]] || args[0] === 'help') {
+                        api.sendMessage('No such command to show help for.', event.thread_id);
+                        return;
+                    }
+                    var msg = opts[args[0]].command + '\n--------------------\n' + opts[args[0]].detailedHelp;
+                    api.sendMessage(msg, event.thread_id);
+                }
+                else {
+                    var msg = '';
+                    for (var opt in opts) {
+                        if (opt === 'help') continue;
+                        msg += opts[opt].command + '\n\t' + opts[opt].help + '\n';
+                    }
+                    api.sendMessage(msg, event.thread_id);
+                }
+            },
+            command: 'help [<command>]'
+        },
         install: {
             run: function(args, api, event) {
-				if (args.length === 0) {
-					api.sendMessage('No modules provided to install!', event.thread_id);
-					return;
-				}
-				
-				for (var i = 0; i < args.length; i++) {
-					var url = args[i];
-					if (!url.startsWith('http') && !url.startsWith('ssh')) {
-						var spl = url.split('/');
-						if (spl.length != 2) {
-							api.sendMessage('Invalid github reference provided "' + url + '". Skipping...', event.thread_id);
-							continue;
-						}
-						url = 'https://github.com/' + url;
-					}
-					install.call(this, url, api, event);
-				}
+                if (args.length === 0) {
+                    api.sendMessage('No modules provided to install!', event.thread_id);
+                    return;
+                }
+                
+                for (var i = 0; i < args.length; i++) {
+                    var url = args[i];
+                    if (!url.startsWith('http') && !url.startsWith('ssh')) {
+                        var spl = url.split('/');
+                        if (spl.length != 2) {
+                            api.sendMessage('Invalid github reference provided "' + url + '". Skipping...', event.thread_id);
+                            continue;
+                        }
+                        url = 'https://github.com/' + url;
+                    }
+                    install.call(this, url, api, event);
+                }
             },
             command: 'install <gitUrl> [<gitUrl> [<gitUrl> [...]]]',
             help: 'Installs one or more modules from exising git repositories or github references.',
@@ -164,11 +164,11 @@ var gitpull = require.safe('git-pull'),
                     }
                     return true;
                 });
-				delete moduleCache[module.name]; 
+                delete moduleCache[module.name]; 
                 
                 // load new module copy
-				var m = require.once(path.join(module.folderPath, 'kassy.json'));
-				m.folderPath = module.folderPath;
+                var m = require.once(path.join(module.folderPath, 'kassy.json'));
+                m.folderPath = module.folderPath;
                 moduleCache[module.name] = m;
                 module = m;
                 this.loadedModules.push(modules.loadModule(module));
@@ -202,58 +202,58 @@ var gitpull = require.safe('git-pull'),
             }
         });
     },
-	install = function(url, api, event) {
-		api.sendMessage('Attempting to install module from "' + url + '"...', event.thread_id);
-		tmp.dir(function (err, dir, cleanupCallback) {
-			if (err) throw err;
-			
-			var cleanup = function(){
-				fs.emptyDir(dir, function (err) {
-					cleanupCallback(); // not a lot we can do about errors here.
-				});
-			}.bind(this);
-			
-			gitclone(url, dir, {}, function(err) {
-				try {
-					var kj = require.once(path.join(dir, 'kassy.json'));
-					if (this.loadedModules[kj.name] || getModuleList()[kj.name] || getModuleList()['kpm_' + kj.name]) {
-						api.sendMessage('Module with name or directory "' + kj.name + '" has already been installed.', event.thread_id);
-						cleanup();
-						return;
-					}
-					
-					if (!modules.verifyModuleDescriptior(kj)) {
-						api.sendMessage('The repository at "' + url + '" is not a valid Kassy module.', event.thread_id);
-						cleanup();
-						return;
-					}
-					
-					var instDir = path.resolve('./modules/kpm_' + kj.name);
-					fs.copy(dir, instDir, function (err) {
-						if (err) {
-							console.log(err);
-							console.debug(err);
-							api.sendMessage('An unknown error occurred while installing "' + kj.name + '".', event.thread_id);
-							cleanup();
-							return;
-						}
-						
-						kj.folderPath = instDir;
-						moduleCache[kj.name] = kj;
-						var m = modules.loadModule(kj);
-						this.loadedModules.push(m);
-						api.sendMessage('"' + kj.name + '" (' + kj.version + ') is now installed.', event.thread_id);
-						cleanup();
-					}.bind(this));
-				}
-				catch (e) {
-					console.critical(e);
-					api.sendMessage('Could not install module from "' + url + '".', event.thread_id);
-					cleanup();
-				}
-			}.bind(this));
-		}.bind(this));
-	};
+    install = function(url, api, event) {
+        api.sendMessage('Attempting to install module from "' + url + '"...', event.thread_id);
+        tmp.dir(function (err, dir, cleanupCallback) {
+            if (err) throw err;
+            
+            var cleanup = function(){
+                fs.emptyDir(dir, function (err) {
+                    cleanupCallback(); // not a lot we can do about errors here.
+                });
+            }.bind(this);
+            
+            gitclone(url, dir, {}, function(err) {
+                try {
+                    var kj = require.once(path.join(dir, 'kassy.json'));
+                    if (this.loadedModules[kj.name] || getModuleList()[kj.name] || getModuleList()['kpm_' + kj.name]) {
+                        api.sendMessage('Module with name or directory "' + kj.name + '" has already been installed.', event.thread_id);
+                        cleanup();
+                        return;
+                    }
+                    
+                    if (!modules.verifyModuleDescriptior(kj)) {
+                        api.sendMessage('The repository at "' + url + '" is not a valid Kassy module.', event.thread_id);
+                        cleanup();
+                        return;
+                    }
+                    
+                    var instDir = path.resolve('./modules/kpm_' + kj.name);
+                    fs.copy(dir, instDir, function (err) {
+                        if (err) {
+                            console.log(err);
+                            console.debug(err);
+                            api.sendMessage('An unknown error occurred while installing "' + kj.name + '".', event.thread_id);
+                            cleanup();
+                            return;
+                        }
+                        
+                        kj.folderPath = instDir;
+                        moduleCache[kj.name] = kj;
+                        var m = modules.loadModule(kj);
+                        this.loadedModules.push(m);
+                        api.sendMessage('"' + kj.name + '" (' + kj.version + ') is now installed.', event.thread_id);
+                        cleanup();
+                    }.bind(this));
+                }
+                catch (e) {
+                    console.critical(e);
+                    api.sendMessage('Could not install module from "' + url + '".', event.thread_id);
+                    cleanup();
+                }
+            }.bind(this));
+        }.bind(this));
+    };
 
 exports.match = function (text, commandPrefix) {
     console.log(commandPrefix);

@@ -69,15 +69,14 @@ exports.listModules = function (disabled) {
 
             var kj = require.once(p);            
             if (!exports.verifyModuleDescriptior(kj, disabled)) {
-				continue;
-			}
-			
+                continue;
+            }
+
             if (!kj.folderPath) {
                 kj.folderPath = folderPath;
             }
             modules[kj.name] = kj;
         } catch (e) {
-            //console.critical(e);
             console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
             continue;
         }
