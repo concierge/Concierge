@@ -45,7 +45,7 @@ exports.start = function(callback) {
 						});
 						break;
 					case "file":
-						api.sendMessage({body: image, attachment: fs.createReadStream(image)}, thread);
+						api.sendMessage({body: description, attachment: fs.createReadStream(image)}, thread);
 						break;
 					default:
 						api.sendMessage(description, thread);

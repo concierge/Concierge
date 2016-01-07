@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -14,7 +14,7 @@
     "git-pull": "*",
     "quarantine": "*",
     "redwrap": "*",
-    "request": "*",
+    "request": "2.54.0",
     "require-install": "*",
     "rimraf": "^2.4.4",
     "skyweb": "0.0.2",
