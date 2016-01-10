@@ -6,7 +6,7 @@ var gitpull = require.safe('git-pull'),
     path = require('path'),
     fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
-    tmp = require('tmp'),
+    tmp = require.safe('tmp'),
     moduleCache = null,
     opts = {
         help: {
