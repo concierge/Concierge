@@ -7,3 +7,4 @@ nohup.out
 Kassy.njsproj
 Kassy.sln
 obj/Debug/Kassy.njsproj.FileListAbsolute.txt
+modules/kpm_*

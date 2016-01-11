@@ -17,12 +17,12 @@ var fs              = require('fs'),
     modulesDir      = 'modules',
     descriptor      = 'kassy.json';
 
-exports.listCoreModules = function (callback) {
+exports.listCoreModules = function () {
     var data = files.filesInDirectory('./' + coreMoulesDir);
     data = data.filter(function (value) {
         return value.endsWith(".js");
     });
-    callback(data);
+    return data;
 };
 
 exports.loadCoreModule = function(platform, module) {
@@ -37,7 +37,19 @@ exports.loadCoreModule = function(platform, module) {
     return m;
 };
 
-exports.listModules = function (callback) {
+exports.verifyModuleDescriptior = function (kj, disabled) {
+	if (!kj.name || !kj.startup || !kj.version) {
+		return false;
+	}
+
+	if (disabled === true && exports.disabledConfig
+		&& exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+		return false;
+	}
+	return true;
+};
+
+exports.listModules = function (disabled) {
     var data = files.filesInDirectory('./' + modulesDir),
         modules = {};
 
@@ -56,26 +68,21 @@ exports.listModules = function (callback) {
                 continue;
             }
 
-            var kj = require.once(p);            
-            if (!kj.name || !kj.startup) {
+            var kj = require.once(p);
+            if (!exports.verifyModuleDescriptior(kj, disabled)) {
                 continue;
             }
-            
-            if (exports.disabledConfig && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
-                continue;
-            }
-			
+
             if (!kj.folderPath) {
                 kj.folderPath = folderPath;
             }
             modules[kj.name] = kj;
         } catch (e) {
-            console.critical(e);
             console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
             continue;
         }
     }
-    callback(modules);
+    return modules;
 };
 
 exports.loadModule = function (module) {
@@ -84,7 +91,7 @@ exports.loadModule = function (module) {
             startPath   = path.join(modulePath, module.startup),
             index       = Object.keys(require.cache).indexOf(startPath),
             m           = null;
-        
+
         try {
             if (index !== -1) {
                 console.write("Reloading module: '" + module.name + "'... " + (console.isDebug() ? "\n" : ""));
@@ -94,6 +101,7 @@ exports.loadModule = function (module) {
                 m = require.once(startPath);
             }
         } catch (e) {
+            console.critical(e);
             throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
         }
         m.config = config.loadModuleConfig(module, modulePath);
