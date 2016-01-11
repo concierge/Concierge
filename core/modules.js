@@ -41,7 +41,7 @@ exports.verifyModuleDescriptior = function (kj, disabled) {
 	if (!kj.name || !kj.startup || !kj.version) {
 		return false;
 	}
-	
+
 	if (disabled === true && exports.disabledConfig
 		&& exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
 		return false;
@@ -68,7 +68,7 @@ exports.listModules = function (disabled) {
                 continue;
             }
 
-            var kj = require.once(p);            
+            var kj = require.once(p);
             if (!exports.verifyModuleDescriptior(kj, disabled)) {
                 continue;
             }
@@ -91,7 +91,7 @@ exports.loadModule = function (module) {
             startPath   = path.join(modulePath, module.startup),
             index       = Object.keys(require.cache).indexOf(startPath),
             m           = null;
-        
+
         try {
             if (index !== -1) {
                 console.write("Reloading module: '" + module.name + "'... " + (console.isDebug() ? "\n" : ""));
@@ -101,7 +101,7 @@ exports.loadModule = function (module) {
                 m = require.once(startPath);
             }
         } catch (e) {
-			console.critical(e);
+            console.critical(e);
             throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
         }
         m.config = config.loadModuleConfig(module, modulePath);

@@ -15,7 +15,7 @@ var gitpull = require.safe('git-pull'),
                     api.sendMessage('You can only show detailed help for one command at a time.', event.thread_id);
                     return;
                 }
-                
+
                 if (args.length === 1) {
                     if (!opts[args[0]] || args[0] === 'help') {
                         api.sendMessage('No such command to show help for.', event.thread_id);
@@ -41,7 +41,7 @@ var gitpull = require.safe('git-pull'),
                     api.sendMessage('No modules provided to install!', event.thread_id);
                     return;
                 }
-                
+
                 for (var i = 0; i < args.length; i++) {
                     var url = args[i];
                     if (!url.startsWith('http') && !url.startsWith('ssh')) {
@@ -156,7 +156,6 @@ var gitpull = require.safe('git-pull'),
                 cfg.saveModuleConfig(module.name);
                 this.loadedModules = this.loadedModules.filter(function (value) {
                     if (value.name === module.name) {
-                        // TODO: save configuration
                         if (value.unload) {
                             value.unload();
                         }
@@ -164,8 +163,8 @@ var gitpull = require.safe('git-pull'),
                     }
                     return true;
                 });
-                delete moduleCache[module.name]; 
-                
+                delete moduleCache[module.name];
+
                 // load new module copy
                 var m = require.once(path.join(module.folderPath, 'kassy.json'));
                 m.folderPath = module.folderPath;
@@ -191,7 +190,7 @@ var gitpull = require.safe('git-pull'),
             }
             return true;
         });
-    
+
         delete moduleCache[module.name];
         rmdir(module.folderPath, function (error) {
             if (error) {
@@ -206,13 +205,13 @@ var gitpull = require.safe('git-pull'),
         api.sendMessage('Attempting to install module from "' + url + '"...', event.thread_id);
         tmp.dir(function (err, dir, cleanupCallback) {
             if (err) throw err;
-            
+
             var cleanup = function(){
                 fs.emptyDir(dir, function (err) {
                     cleanupCallback(); // not a lot we can do about errors here.
                 });
             }.bind(this);
-            
+
             gitclone(url, dir, {}, function(err) {
                 try {
                     var kj = require.once(path.join(dir, 'kassy.json'));
@@ -221,13 +220,13 @@ var gitpull = require.safe('git-pull'),
                         cleanup();
                         return;
                     }
-                    
+
                     if (!modules.verifyModuleDescriptior(kj)) {
                         api.sendMessage('The repository at "' + url + '" is not a valid Kassy module.', event.thread_id);
                         cleanup();
                         return;
                     }
-                    
+
                     var instDir = path.resolve('./modules/kpm_' + kj.name);
                     fs.copy(dir, instDir, function (err) {
                         if (err) {
@@ -237,7 +236,7 @@ var gitpull = require.safe('git-pull'),
                             cleanup();
                             return;
                         }
-                        
+
                         kj.folderPath = instDir;
                         moduleCache[kj.name] = kj;
                         var m = modules.loadModule(kj);
@@ -256,14 +255,13 @@ var gitpull = require.safe('git-pull'),
     };
 
 exports.match = function (text, commandPrefix) {
-    console.log(commandPrefix);
     return text.startsWith(commandPrefix + 'kpm');
 };
 
 exports.run = function (api, event) {
     var commands = event.body.split(' ');
-    var command = null;
-    if (commands.length < 2 || !opts[(command = commands[1].toLowerCase())]) {
+    var command = commands.length >= 2 ? commands[1].toLowerCase() : null;
+    if (command == null || !opts[command]) {
         var t = 'Invalid usage of Kassy Package Manager. Options are:\n';
         for (var opt in opts) {
             t += '\t- ' + opts[opt].command + '\n';
@@ -271,7 +269,7 @@ exports.run = function (api, event) {
         api.sendMessage(t, event.thread_id);
         return false;
     }
-    
+
     commands.splice(0, 2);
     opts[command].run.call(this, commands, api, event);
 
