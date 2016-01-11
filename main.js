@@ -18,6 +18,8 @@
  *        MIT License. All code unless otherwise specified is
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
+ 
+'use strict';
 
 // Load NodeJS Modifications/Variables
 require('./core/require.js');
@@ -28,29 +30,29 @@ var consolec = require('./core/unsafe/console.js'),
     modesf = require('./core/modes.js'),
     startup = require('./core/startup.js'),
     modes = modesf.listModes(),
-    arguments = process.argv;
+    args = process.argv;
 
-arguments.splice(0, 2);
+args.splice(0, 2);
 
 // Determine if debug output is enabled
-if (arguments[0] === 'debug') {
+if (args[0] === 'debug') {
     console.warn('Debug mode enabled.');
-    arguments.splice(0, 1);
+    args.splice(0, 1);
     consolec.setDebug(true);
 }
 
 // Determine if logging output is enabled
-if (arguments[0] === 'log') {
+if (args[0] === 'log') {
     console.warn('Logging mode enabled.');
-    arguments.splice(0, 1);
+    args.splice(0, 1);
     consolec.setLog(true);
 }
 
 // Check startup modes
-for (var i = 0; i < arguments.length; i++) {
-    arguments[i] = arguments[i].toLowerCase();
-    if (!modes.includes(arguments[i])) {
-        console.error(('Unknown mode \'' + arguments[i] + '\''));
+for (var i = 0; i < args.length; i++) {
+    args[i] = args[i].toLowerCase();
+    if (!modes.includes(args[i])) {
+        console.error('Unknown mode \'' + args[i] + '\'');
         console.info('The modes avalible on your system are:');
         for (var i = 0; i < modes.length; i++) {
             console.info('\t- \'' + modes[i] + '\'');
@@ -59,9 +61,9 @@ for (var i = 0; i < arguments.length; i++) {
     }
 }
 
-if (!arguments || arguments.length == 0) {
+if (!args || args.length == 0) {
     console.info('No mode specified, defaulting to \'test\'.');
-    arguments.push('test');
+    args.push('test');
 }
 
 process.on('uncaughtException', function(err) {
@@ -74,4 +76,4 @@ process.on('uncaughtException', function(err) {
     console.critical(err);
 });
 
-startup.run(arguments);
+startup.run(args);

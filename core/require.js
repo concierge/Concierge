@@ -9,8 +9,11 @@
  *		MIT License. All code unless otherwise specified is
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
+ 
+'use strict';
 
-var hook = require('./unsafe/hook.js');
+var hook = require('./unsafe/hook.js'),
+	preventCache = [];
 
 global.requireHook = function(req) {
     req.searchCache = function (moduleName, callback) {
@@ -29,7 +32,7 @@ global.requireHook = function(req) {
         req.searchCache(moduleName, function (mod) {
             delete req.cache[mod.id];
         });
-        
+
         Object.keys(module.constructor._pathCache).forEach(function (cacheKey) {
             if (cacheKey.indexOf(moduleName) > 0) {
                 delete module.constructor._pathCache[cacheKey];
@@ -41,10 +44,19 @@ global.requireHook = function(req) {
         req.uncache(moduleName);
         return req(moduleName);
     };
+
+    req.once = function (moduleName, preventRerequire) {
+    	if (preventCache.indexOf(moduleName) !== -1) {
+    		return;
+    	}
     
-    req.once = function (moduleName) {
         var mod = req(moduleName);
         req.uncache(moduleName);
+        
+        if (preventRerequire) {
+        	preventCache.push(moduleName);
+        }
+        
         return mod;
     };
 
@@ -52,5 +64,6 @@ global.requireHook = function(req) {
 };
 
 hook.setInjectionFunction(function() {
-	global.requireHook(require);
+	var __glob = global || GLOBAL;
+	__glob.requireHook(require);
 });
