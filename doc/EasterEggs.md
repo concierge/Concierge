@@ -26,7 +26,7 @@ YOUR's first sensations of hope and trepidation had instantly been overwhelmed b
 The alien program frowned briefly and consulted what appeared to be some species of clipboard which he was holding in his thin and spindly alien hand.
 "YOUR_NAME_HERE?" it said.
 YOUR nodded helplessly.
-"YOUR <i>_NAME_</i> HERE?" pursued the alien in a kind of efficient yap.
+"YOUR **_NAME_** HERE?" pursued the alien in a kind of efficient yap.
 "Er...er...yes...er...er," confirmed YOUR.
 "You're a jerk," repeated the alien, "a complete asshole."
 "Er..."
