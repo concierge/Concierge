@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {

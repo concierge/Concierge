@@ -240,8 +240,16 @@ var gitpull = require.safe('git-pull'),
                         kj.folderPath = instDir;
                         moduleCache[kj.name] = kj;
                         var m = modules.loadModule(kj);
-                        this.loadedModules.push(m);
-                        api.sendMessage('"' + kj.name + '" (' + kj.version + ') is now installed.', event.thread_id);
+						if (m !== null) {
+							this.loadedModules.push(m);
+	                        api.sendMessage('"' + kj.name + '" (' + kj.version + ') is now installed.', event.thread_id);
+						}
+						else {
+							api.sendMessage('"' + kj.name + '" (' + kj.version + ') could not be installed, it appears not to be a valid module (syntax error?).', event.thread_id);
+							fs.emptyDir(kj.folderPath, function (err) {
+			                    // just delete if we can, not a lot we can do about errors here.
+			                });
+						}
                         cleanup();
                     }.bind(this));
                 }

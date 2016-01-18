@@ -60,7 +60,17 @@ Platform.prototype.messageRxd = function(api, event) {
 
     // Run user modules in protected mode
     for (var i = 0; i < this.loadedModules.length; i++) {
-        if (this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs)) {
+    	var matchResult = false;
+    	try {
+    		matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
+    	}
+    	catch (e) {
+    		console.error('The module ' + this.loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
+    		console.critical(e);
+    		continue;
+    	}
+
+        if (matchResult) {
             try {
                 this.handleTransaction(this.loadedModules[i], runArgs);
             }
@@ -131,7 +141,10 @@ Platform.prototype.start = function() {
     console.warn('Loading modules...');
     m = this.modules.listModules();
     for (var mod in m) {
-        this.loadedModules.push(this.modules.loadModule(m[mod]));
+		var ld = this.modules.loadModule(m[mod]);
+		if (ld !== null) {
+			this.loadedModules.push(ld);
+		}
     }
 
     // Starting output
