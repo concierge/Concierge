@@ -176,7 +176,7 @@ The `event` object contains the following fields:
 - `sender_id`. The ID of the sender who sent the message. String.
 
 ### Persistence
-Any data stored in `this.config` or `exports.config` within the scope of a module will automatically be persistent between restarts of the program, provided a safe shutdown and an error free startup.
+Any data stored in `exports.config` within the scope of a module will automatically be persistent between restarts of the program, provided a safe shutdown and an error free startup. Note that data in this variable is not gaurenteed to be set before `load()` is called on your module.
 
 ### Logging and Errors
 Any logging and errors should <b>NOT</b> be logged to the console using any methods other than:
