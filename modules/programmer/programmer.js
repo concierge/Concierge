@@ -6,8 +6,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'programmer');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'programmer','Reactions of a programmer.']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'programmer','Reactions of a programmer.']];
 };
 
 exports.reaction = function(callback, waitCallback) {

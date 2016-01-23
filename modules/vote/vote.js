@@ -1,10 +1,10 @@
 var timer;
 
-exports.help = function() {
-	return [[this.commandPrefix + 'vote "<question>" <optionalTimeout> "<answer1>" "<answer2>"',
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'vote "<question>" <optionalTimeout> "<answer1>" "<answer2>"',
 			'Call a vote on a question.'],
-			[this.commandPrefix + 'vote cancel','cancel the current vote.'],
-			[this.commandPrefix + 'vote <number>','vote for an option.']];
+			[commandPrefix + 'vote cancel','cancel the current vote.'],
+			[commandPrefix + 'vote <number>','vote for an option.']];
 };
 
 exports.match = function(text, commandPrefix, thread, senderName, api) {

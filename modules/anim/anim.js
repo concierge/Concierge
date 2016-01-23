@@ -5,8 +5,8 @@ exports.match = function(text, commandPrefix) {
 	return text.startsWith(commandPrefix + 'anim');
 };
 
-exports.help = function() {
-	return [[this.commandPrefix + 'anim <query>','Searches for animated GIF.']];
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'anim <query>','Searches for animated GIF.']];
 };
 
 exports.search = function (query, callback, waitCallback) {

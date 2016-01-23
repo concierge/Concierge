@@ -5,12 +5,13 @@ shortSummary = function(prefix) {
 		+ this.packageInfo.version + '\n--------------------\n'
 		+ this.packageInfo.homepage +  '\n\n';
 
+	/* Deprecated */
 	var context = {
 		commandPrefix: prefix
 	};
 		
 	for (var i = 0; i < this.loadedModules.length; i++) {
-		var cmdHelp = this.loadedModules[i].help.call(context);
+		var cmdHelp = this.loadedModules[i].help.call(context, prefix);
 		for (var j = 0; j < cmdHelp.length; j++) {
 			help += '→ ' + cmdHelp[j][0] + '\n\t' + cmdHelp[j][1] + '\n';
 		}
@@ -35,7 +36,7 @@ longDescription = function(moduleName, prefix) {
 		context = {
 			commandPrefix: prefix
 		},
-		cmdHelp = module.help.call(context);
+		cmdHelp = module.help.call(context, prefix);
 		
 	for (var i = 0; i < cmdHelp.length; i++) {
 		var text = cmdHelp[i].length === 3 ? cmdHelp[i][2] : cmdHelp[i][1];

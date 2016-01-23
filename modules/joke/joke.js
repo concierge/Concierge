@@ -6,8 +6,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'joke');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'joke','A mixed bag of fun.']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'joke','A mixed bag of fun.']];
 };
 
 exports.joke = function(callback, waitCallback) {

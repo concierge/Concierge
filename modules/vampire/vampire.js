@@ -8,8 +8,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'vampire');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'vampire','Makes things sound like a vampire']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'vampire','Makes things sound like a vampire']];
 };
 
 exports.run = function(api, event) {

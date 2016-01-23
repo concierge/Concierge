@@ -13,8 +13,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'profound');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'profound','Calculates the meaning of life. You probably wouldn\'t understand']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'profound','Calculates the meaning of life. You probably wouldn\'t understand']];
 };
 
 exports.fetch = function(callback) {

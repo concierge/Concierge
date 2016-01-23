@@ -8,8 +8,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'lithp');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'lithp','Speaks with a lisp']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'lithp','Speaks with a lisp']];
 };
 
 exports.run = function(api, event) {

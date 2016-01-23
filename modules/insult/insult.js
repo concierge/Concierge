@@ -5,8 +5,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'insult');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'insult','Will almost certainly return profanity.']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'insult','Will almost certainly return profanity.']];
 };
 
 exports.insult = function(callback, waitCallback) {
