@@ -5,8 +5,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'pirate');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'pirate <message>','Translates your message into pirate speak.']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'pirate <message>','Translates your message into pirate speak.']];
 };
 
 exports.pirate = function (query, callback) {

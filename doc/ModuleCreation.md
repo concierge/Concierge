@@ -41,7 +41,7 @@ Arguments:
 
 For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
 
-#### `exports.help()`
+#### `exports.help(commandPrefix)`
 This method should return an array of arrays containing help to be used with the `/kassy` command.
 
 Each sub-array should contain:
@@ -50,7 +50,10 @@ Each sub-array should contain:
 - 3rd Index: (optional) a long description of what the command does as a string. E.g. 'Is an example command that can be used to do foo.'.
 
 Arguments:
+- 'commandPrefix'. The command prefix of the integration that received the message. String.
 - <i>returns</i>. An array of arrays containing help. Array.
+
+~~this.commandPrefix~~ __Deprecated__ available for backwards compatibility.
 
 For example, with a weather module you might return `[[commandPrefix + 'weather', 'Gets the weather of your current location.']]`.
 

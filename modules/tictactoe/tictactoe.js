@@ -174,10 +174,10 @@ exports.match = function(text, commandPrefix) {
         || text.startsWith(commandPrefix + 'surrender');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + "tictactoe <opponent's full name>","starts a new game against the specified opponent"],
-           [this.commandPrefix + "move <row><column>","places a piece at the specified row and column, if you are in a game"],
-           [this.commandPrefix + "surrender","gives up on a game"]];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + "tictactoe <opponent's full name>","starts a new game against the specified opponent"],
+           [commandPrefix + "move <row><column>","places a piece at the specified row and column, if you are in a game"],
+           [commandPrefix + "surrender","gives up on a game"]];
 };
 
 exports.run = function(api, event) {

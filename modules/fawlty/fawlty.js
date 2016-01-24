@@ -10,8 +10,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'fawlty');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'fawlty','Fixes fawlty code. Probably.']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'fawlty','Fixes fawlty code. Probably.']];
 };
 
 var quotes = [

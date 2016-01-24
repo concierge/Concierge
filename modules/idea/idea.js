@@ -4,8 +4,8 @@ exports.match = function(text, commandPrefix) {
     return text.startsWith(commandPrefix + 'idea');
 };
 
-exports.help = function() {
-    return [[this.commandPrefix + 'idea','Generates an idea for your next StartUp.']];
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'idea','Generates an idea for your next StartUp.']];
 };
 
 exports.idea = function (callback) {

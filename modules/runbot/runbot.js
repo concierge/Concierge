@@ -12,8 +12,8 @@ exports.match = function(text, commandPrefix) {
 	return text.startsWith(commandPrefix + 'runbot');
 };
 
-exports.help = function() {
-	return [[this.commandPrefix + 'runbot <jscode>','Runs JS code.']];
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'runbot <jscode>','Runs JS code.']];
 };
 
 exports.wrapCode = function(message, prefix) {
