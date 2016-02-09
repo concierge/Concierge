@@ -18,35 +18,25 @@
  *        MIT License. All code unless otherwise specified is
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
- 
+
 'use strict';
 
 // Load NodeJS Modifications/Variables
 require('./core/require.js');
 require('./core/prototypes.js');
 require('./core/status.js');
+require('./core/unsafe/console.js');
 
-var consolec = require('./core/unsafe/console.js'),
-    modesf = require('./core/modes.js'),
+var modesf = require('./core/modes.js'),
     startup = require('./core/startup.js'),
+		argp = require('./core/arguments.js'),
     modes = modesf.listModes(),
     args = process.argv;
 
 args.splice(0, 2);
 
-// Determine if debug output is enabled
-if (args[0] === 'debug') {
-    console.warn('Debug mode enabled.');
-    args.splice(0, 1);
-    consolec.setDebug(true);
-}
-
-// Determine if logging output is enabled
-if (args[0] === 'log') {
-    console.warn('Logging mode enabled.');
-    args.splice(0, 1);
-    consolec.setLog(true);
-}
+// Parse optional arguments
+argp.runArguments(args);
 
 // Check startup modes
 for (var i = 0; i < args.length; i++) {
