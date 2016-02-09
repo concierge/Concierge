@@ -25,6 +25,7 @@ Integrations are chat platforms that Kassy integrates into. The currently availa
 ### Documentation
 - [Special Commands](doc/SpecialCommands.md)
 - [Creating Modules](doc/ModuleCreation.md)
+- [Usage Example/Overview](https://github.com/mrkno/Kassy/issues/77#issuecomment-181676118)
 - Integrations
 	- [Creating Integrations](doc/IntegrationCreation.md)
 	- Existing Integrations
