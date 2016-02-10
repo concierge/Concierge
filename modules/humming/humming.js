@@ -7,6 +7,7 @@
  */
 
 var request = require('request');
+console.debug('line 10');
 
 /*
 * Paths
@@ -19,6 +20,7 @@ config.HUMMINGBIRD_SEARCH = "/search/anime/"
 exports.match = function(text, commandPrefix) {
     // The space makes sure the command is exact and not a mere prefix
     return text.startsWith(commandPrefix + 'humming ');
+    console.debug('line 23');
 };
 
 /*
