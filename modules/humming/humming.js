@@ -53,7 +53,8 @@ exports.run = function(api, event) {
 
 function parse(query){
     // testing
-    return JSON.stringify(query);
+    // return JSON.stringify(query);
+    return 'parser reached';
 }
 
 /**
