@@ -6,7 +6,7 @@
  * Date Written: 10/02/2016
  */
 
-var request = require('request');
+var request = require.safe('request');
 console.debug('line 10');
 
 /*
