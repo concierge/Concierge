@@ -38,6 +38,8 @@ exports.run = function(api, event) {
     if(event.body.startsWith("humming ")){
         query = event.body.substr(8);
         
+        console.debug('line 40');
+        
         search(query, function(error, response){
             // Callback calls the parser if no errors were registered
             if(error !== null){
@@ -47,8 +49,6 @@ exports.run = function(api, event) {
             }
         });
     }
-    
-	api.sendMessage(result, event.thread_id);
 };
 
 function parse(query){
@@ -69,6 +69,9 @@ function search(query, callback) {
              config.HUMMINGBIRD_SEARCH + "?query=" + 
              query // Fuzzy search supported by server
     }, function(err, res, body) {
+        
+        console.debug('line 73');
+        
         if(err) {
             if(res) {
                 callback("Request error: " + err + ", " + res.statusCode, body);
