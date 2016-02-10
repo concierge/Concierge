@@ -18,14 +18,14 @@ config.HUMMINGBIRD_SEARCH = "/search/anime/"
 
 exports.match = function(text, commandPrefix) {
     // The space makes sure the command is exact and not a mere prefix
-    return text.startsWith(commandPrefix + 'mal ');
+    return text.startsWith(commandPrefix + 'humming ');
 };
 
 /*
 	Method that provides help strings for use with this module.
 */
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'mal <query>','Searches Anime or Manga when you are too lazy to make a few clicks']];
+    return [[commandPrefix + 'humming <query>','Searches Anime or Manga when you are too lazy to make a few clicks']];
 };
 
 /*
@@ -35,8 +35,8 @@ exports.help = function(commandPrefix) {
 exports.run = function(api, event) {
     var result, query;
     // Check for command type
-    if(event.body.startsWith("mal ")){
-        query = event.body.substr(4);
+    if(event.body.startsWith("humming ")){
+        query = event.body.substr(8);
         
         search(query, function(error, response){
             // Callback calls the parser if no errors were registered
@@ -53,8 +53,8 @@ exports.run = function(api, event) {
 
 function parse(query){
     // testing
-    // return JSON.stringify(query);
-    return 'parser reached';
+    return JSON.stringify(query);
+    // return 'parser reached';
 }
 
 /**
