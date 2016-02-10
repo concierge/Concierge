@@ -1,0 +1,5 @@
+{
+  "name": "mal",
+  "version": 1.0,
+  "startup": "mal.js"
+}
