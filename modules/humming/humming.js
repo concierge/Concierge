@@ -53,7 +53,7 @@ exports.run = function(api, event) {
 
 function parse(query){
     // testing
-    return query;
+    return JSON.stringify(query);
 }
 
 /**
