@@ -1,5 +1,5 @@
 {
-  "name": "mal",
+  "name": "humming",
   "version": 1.0,
-  "startup": "mal.js"
+  "startup": "humming.js"
 }
