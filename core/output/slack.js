@@ -16,9 +16,9 @@ defaultPingResponseTimeout = 30000,
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
 
-	message.replace('<', '&lt');
-	message.replace('>', '&gt');
-	message.replace('&', '&amp');
+	message = message.replace(/</g, '&lt;');
+	message = message.replace(/>/g, '&gt;');
+	message = message.replace(/&/g, '&amp;');
 
 	if (teamInfo.token != null) {
 		var body = {
@@ -472,6 +472,10 @@ recMessage = function(event, teamId) {
 			console.debug('slack-> No slack team found matching: ' + teamId);
 		}
 
+		message = message.replace(/&lt;/g, '<');
+		message = message.replace(/&gt;/g, '>');
+		message = message.replace(/&amp;/g, '&');
+		
 		event.body = message;
 		event.threadID = createThreadId(event.channel, teamId);
 		event.senderID = event.user;
