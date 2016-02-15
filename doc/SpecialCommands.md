@@ -9,6 +9,9 @@ There are a number of special commands that will not be listed by help and canno
 - `/uptime`. Shows uptime information for Kassy.
 - `/creator`. Prints information about the creators of Kassy.
 - `/kpm`. Package manager for Kassy.
+- `/issue <title> <debugLevel>`. posts an issue to github.
+- `/issue <title> <description> <debugLevel>`. posts an issue to github with a description.
+    * debugLevel can be basic, detail or full, defaults to basic if not specified
 
 ## Kassy Package Manager
 Run `/kpm help [command]` for help with KPM. Also refer to the hello world example [here](https://github.com/mrkno/HelloKassy).
