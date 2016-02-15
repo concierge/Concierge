@@ -130,13 +130,12 @@ sendTyping = function(thread) {
 
 	if (socket != null) {
 		var body = {
-		'id': slackTeams[teamInfo.team_id].event_id,
+		'id': slackTeams[teamInfo.team_id].event_id++,
 		'type':'typing',
 		'channel': teamInfo.channel_id
 		};
 		body = JSON.stringify(body);
 		socket.send(body);
-		slackTeams[teamInfo.team_id].event_id++;
 	}
 	else {
 		console.debug('No socket available for given team id');
@@ -206,6 +205,68 @@ init = function(token, callback) {
 	});
 },
 
+startPingPongTimer = function(teamId) {
+	if (!Date.now) {
+    	Date.now = function() {
+			return new Date().getTime();
+		}
+	}
+
+	var team = exports.config.slack_teams[teamId],
+		messageId = ++team.ping_id;
+
+	if (!messageId) {
+		messageId = 0;
+		team.ping_id = messageId;
+	}
+
+	team.timeSincelastMessageRecieved = Date.now();
+	setTimeout(() => {
+		if (Date.now() - team.timeSincelastMessageRecieved >= 60000 && messageId === team.ping_id) {
+			console.debug('sending ping');
+			sendPing(teamId);
+		}
+	}, 60000);
+},
+
+sendPing = function(teamId) {
+	var socket = sockets[teamId],
+		slackTeams = exports.config.slack_teams,
+		team = slackTeams[teamId],
+		pongId = ++team.pong_id;
+
+	if (!pongId) {
+		pongId = 0;
+		team.pong_id = pongId;
+	}
+
+	if (socket != null) {
+		var body = {
+		'id': team.pong_id,
+		'type':'ping',
+		'timestamp': Date.now()
+		};
+		body = JSON.stringify(body);
+		socket.send(body);
+
+		setTimeout(() => {
+			if (team.pong_id === pongId) {
+				console.debug("terminating connection as socket failed to respond to ping request.")
+				sockets[teamId].terminate();
+			}
+		}, 30000);
+	}
+	else {
+		console.debug('No socket available for given team id');
+	}
+},
+
+pong = function(pong, teamId) {
+	console.debug("recieved pong");
+	exports.config.slack_teams[teamId].timeSincelastMessageRecieved = Date.now();
+	exports.config.slack_teams[teamId].pong_id++;
+}
+
 findSlackBot = function(body, slackTeam) {
 	for (var i = 0; i < body.users.length; i++) {
 		if (body.users[i].name === 'slackbot') {
@@ -251,6 +312,7 @@ connect = function(connectionDetails) {
 		socket.on('open', function() {
 			console.debug("Connection to team: " + slackTeams[connectionDetails.team_id].team.name + " established");
 		}).on('message', function(data) {
+			startPingPongTimer(connectionDetails.team_id);
 			eventReceived(JSON.parse(data), connectionDetails.team_id);
 		}).on('close', function(data) {
 			console.debug("Disconnected from team: " + slackTeams[connectionDetails.team_id].team.name);
@@ -340,6 +402,9 @@ eventReceived = function(event, teamId) {
 			break;
 		case 'team_rename':
 			teamRename(event, teamId);
+			break;
+		case 'pong':
+			pong(event, teamId);
 			break;
 		default:
 			console.debug("Message of type" + event.type + "recieved not supported");
