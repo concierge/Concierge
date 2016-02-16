@@ -226,9 +226,9 @@ sendPing = function(teamId) {
 
 	if (socket != null) {
 		var body = {
-		'id': team.pong_id,
-		'type':'ping',
-		'timestamp': Date.now()
+			'id': team.pong_id,
+			'type':'ping',
+			'timestamp': Date.now()
 		};
 		body = JSON.stringify(body);
 		socket.send(body);
@@ -475,7 +475,7 @@ recMessage = function(event, teamId) {
 		message = message.replace(/&lt;/g, '<');
 		message = message.replace(/&gt;/g, '>');
 		message = message.replace(/&amp;/g, '&');
-		
+
 		event.body = message;
 		event.threadID = createThreadId(event.channel, teamId);
 		event.senderID = event.user;
