@@ -8,10 +8,14 @@ sockets = [],
 eventReceivedCallback = null,
 numSocketsToShutDown = 0,
 shuttingDown = false,
+timeouts = [],
 /**
 * Wait time between ping and pong response, in milliseconds.
 */
 defaultPingResponseTimeout = 30000,
+messageQueue = {},
+inTransaction = {},
+waitingForFirstTransaction = {},
 
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
@@ -30,34 +34,54 @@ sendMessage = function(message, thread) {
 			"unfurl_links": true,
 			"icon_url": exports.config.icon
 		};
-		sendMessageWebAPI(body, 'https://slack.com/api/chat.postMessage', null);
+		addMessageToQueue(teamInfo.team_id, body, 'https://slack.com/api/chat.postMessage');
 	}
 	else {
 		console.debug('slack-> No slack team found!!!');
 	}
 },
 
-sendMessageWebAPI = function(body, uri, successCallback) {
-	request({
-		"uri": uri,
-		"method": 'GET',
-		"qs": body
-	},
-	function (error, response, body) {
-		body = JSON.parse(body);
-		if (response.statusCode != 200) {
-			console.debug('slack-> error: ' + response.statusCode);
-		}
-		else if (!body.ok) {
-			console.debug('slack-> Failed to send message to channel with id: ' + teamInfo.channel_id + ', error: ' + body.error);
-		}
-		else {
-			if (successCallback) {
-				successCallback(body);
-			}
-		}
-	});
+addMessageToQueue = (teamId, body, uri, callback) => {
+	waitingForFirstTransaction[teamId] = false;
+	if (!messageQueue[teamId]) {
+		messageQueue[teamId] = [];
+	}
+	messageQueue[teamId].push({"body": body, "uri": uri, "callback": callback});
+	sendMessageWebAPI(teamId);
 },
+
+sendMessageWebAPI = teamId => {
+	if (!inTransaction[teamId]) {
+		inTransaction[teamId] = false;
+	}
+	if (messageQueue[teamId].length >= 1 && !inTransaction[teamId]) {
+		inTransaction[teamId] = true;
+		let message = messageQueue[teamId].shift();
+		request({
+			"uri": message.uri,
+			"method": 'GET',
+			"qs": message.body
+		},
+		(error, response, body) => {
+			body = JSON.parse(body);
+			if (response.statusCode != 200) {
+				console.debug('slack-> error: ' + response.statusCode);
+				message.callback(true, null);
+			}
+			else if (!body.ok) {
+				console.debug('slack-> Failed to send message, error: ' + body.error);
+				message.callback(true, null);
+			}
+			else {
+				if (message.callback) {
+					message.callback(false, body);
+				}
+			}
+			inTransaction[teamId] = false;
+			sendMessageWebAPI(teamId);
+		});
+	}
+}
 
 getChannelIdAndTeamId = function(thread) {
 	var slackTeams = exports.config.slack_teams,
@@ -84,7 +108,7 @@ sendFile = function(type, file, description, thread) {
 			"filetype": type,
 			"title": description
 		};
-		sendMessageWebAPI(body, 'https://slack.com/api/files.upload', null);
+		addMessageToQueue(teamInfo.team_id, body, 'https://slack.com/api/files.upload');
 	}
 	else {
 		console.debug('slack-> No slack team found!!!');
@@ -100,26 +124,44 @@ renameChannel = function(title, thread) {
 			"channel": teamInfo.channel_id,
 			"name": title
 		};
-		sendMessageWebAPI(body, 'https://slack.com/api/channels.rename', null);
+		addMessageToQueue(teamInfo.team_id, body, 'https://slack.com/api/channels.rename');
 	}
 	else {
 		console.debug('slack-> No slack team found!!!');
 	}
 },
 
+getNextMessageId = teamId => {
+	return exports.config.slack_teams[teamId].event_id++;
+}
+
 sendTyping = function(thread) {
 	var slackTeams = exports.config.slack_teams,
-	teamInfo = getChannelIdAndTeamId(thread),
-	socket = sockets[teamInfo.team_id];
-
-	if (socket != null) {
-		var body = {
-			'id': slackTeams[teamInfo.team_id].event_id++,
+		teamInfo = getChannelIdAndTeamId(thread),
+		teamId = teamInfo.team_id,
+		body = {
 			'type':'typing',
 			'channel': teamInfo.channel_id
 		};
-		body = JSON.stringify(body);
-		socket.send(body);
+
+	body.id = getNextMessageId(teamId);
+	body = JSON.stringify(body);
+
+	console.debug("slack-> send typing indication");
+	sendSocketMessage(teamId, body);
+},
+
+sendSocketMessage = (teamId, body, callback) => {
+	let socket = sockets[teamId];
+	if (socket != null) {
+		socket.send(body, undefined, (response) => {
+			if(response) {
+				console.debug('slack-> Error on socket sending message, error: ' + response);
+			}
+			if (callback) {
+				callback(response);
+			}
+		});
 	}
 	else {
 		console.debug('slack-> No socket available for given team id');
@@ -175,7 +217,7 @@ init = function(token, callback) {
 			slackTeams[teamId] = body;
 			team = slackTeams[teamId];
 			team.token = token;
-			team.event_id = 0;
+			team.event_id = 1;
 			team.lastMessageSinceConnection = false;
 
 			//Generate user map
@@ -200,49 +242,45 @@ startPingPongTimer = function(teamId) {
 		messageId = ++team.ping_id;
 
 	if (!messageId) {
-		messageId = 0;
+		messageId = 1;
 		team.ping_id = messageId;
 	}
 
 	team.timeSincelastMessageRecieved = Date.now();
-	setTimeout(() => {
-		if (Date.now() - team.timeSincelastMessageRecieved >= 60000 && messageId === team.ping_id) {
+	let timeout = setTimeout(() => {
+		if (Date.now() - team.timeSincelastMessageRecieved >= 60000 && messageId === team.ping_id && !shuttingDown) {
 			console.debug('slack-> sending ping');
 			sendPing(teamId);
 		}
 	}, 60000);
+	timeouts.push(timeout);
 },
 
-sendPing = function(teamId) {
-	var socket = sockets[teamId],
-		slackTeams = exports.config.slack_teams,
+sendPing = teamId => {
+	let slackTeams = exports.config.slack_teams,
 		team = slackTeams[teamId],
 		pongId = ++team.pong_id;
 
 	if (!pongId) {
-		pongId = 0;
+		pongId = 1;
 		team.pong_id = pongId;
 	}
 
-	if (socket != null) {
-		var body = {
-			'id': team.pong_id,
-			'type':'ping',
-			'timestamp': Date.now()
-		};
-		body = JSON.stringify(body);
-		socket.send(body);
+	let body = {
+		'id': team.pong_id,
+		'type':'ping',
+		'timestamp': Date.now()
+	};
+	body = JSON.stringify(body);
+	sendSocketMessage(teamId, body);
 
-		setTimeout(() => {
-			if (team.pong_id === pongId) {
-				console.debug("slack-> terminating connection as socket failed to respond to ping request.");
-				sockets[teamId].terminate();
-			}
-		}, defaultPingResponseTimeout);
-	}
-	else {
-		console.debug('slack-> No socket available for given team id');
-	}
+	let timeout = setTimeout(() => {
+		if (team.pong_id === pongId) {
+			console.debug("slack-> terminating connection as socket failed to respond to ping request.");
+			sockets[teamId].terminate();
+		}
+	}, defaultPingResponseTimeout);
+	timeouts.push(timeout);
 },
 
 pong = function(pong, teamId) {
@@ -493,6 +531,14 @@ closeSockets = function() {
 	sockets = {};
 },
 
+clearTimeouts = () => {
+	for (let i = 0; i < timeouts.lenght; i++) {
+		if (timeout[i]) {
+			clearTimeout(timeouts[i]);
+		}
+	}
+}
+
 timeout = function(){
 	if (numSocketsToShutDown <= 0) {
 		sync.done();
@@ -534,6 +580,7 @@ exports.stop = function() {
 	shuttingDown = true;
 	numSocketsToShutDown = Object.keys(sockets).length;
 	async.series([
+		clearTimeouts,
 		closeSockets,
 		function(){
 			while (numSocketsToShutDown > 0) {
