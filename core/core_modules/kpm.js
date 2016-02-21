@@ -7,6 +7,7 @@ var gitpull = require.safe('git-pull'),
     fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
     tmp = require.safe('tmp'),
+    sanitize = require.safe('sanitize-filename'),
     moduleCache = null,
     opts = {
         help: {
@@ -210,13 +211,25 @@ var gitpull = require.safe('git-pull'),
                 fs.emptyDir(dir, function (err) {
                     cleanupCallback(); // not a lot we can do about errors here.
                 });
-            }.bind(this);
+            }.bind(this),
+                isWin = /^win/.test(process.platform);
 
             gitclone(url, dir, {}, function(err) {
                 try {
                     var kj = require.once(path.join(dir, 'kassy.json'));
-                    if (this.loadedModules[kj.name] || getModuleList()[kj.name] || getModuleList()['kpm_' + kj.name]) {
+                    kj.volitileName = kj.name;
+                    kj.name = sanitize(kj.name);
+                    if (this.loadedModules[kj.name] || this.loadedModules[kj.volitileName] || getModuleList()[kj.name] || getModuleList()[kj.volitileName] || getModuleList()['kpm_' + kj.name] || getModuleList()['kpm_' + kj.volitileName]) {
                         api.sendMessage('Module with name or directory "' + kj.name + '" has already been installed.', event.thread_id);
+                        cleanup();
+                        return;
+                    }
+
+                    /*
+                    Backward compatibility for oldermodules installed on existing unix based systems.
+                    */
+                    if (!isWin && (this.loadedModules[kj.volitileName] || getModuleList()[kj.volitileName] || getModuleList()['kpm_' + kj.volitileName])) {
+                        api.sendMessage('Module with name or directory "' + kj.volitileName + '" has already been installed.', event.thread_id);
                         cleanup();
                         return;
                     }
