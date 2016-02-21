@@ -24,7 +24,33 @@ var colours = require.safe('colors'),
     debug = false,
     log = false,
     logStr = null,
-    logFile = 'kassy.log';
+    logFile = 'kassy.log',
+
+    /*
+    Credit to an answer to this thread https://stackoverflow.com/questions/7357734/how-do-i-get-the-time-of-day-in-javascript-node-js
+    */
+    getDateTime = function() {
+        var date = new Date();
+
+        var hour = date.getHours();
+        hour = (hour < 10 ? "0" : "") + hour;
+
+        var min  = date.getMinutes();
+        min = (min < 10 ? "0" : "") + min;
+
+        var sec  = date.getSeconds();
+        sec = (sec < 10 ? "0" : "") + sec;
+
+        var year = date.getFullYear();
+
+        var month = date.getMonth() + 1;
+        month = (month < 10 ? "0" : "") + month;
+
+        var day  = date.getDate();
+        day = (day < 10 ? "0" : "") + day;
+
+        return year + ":" + month + ":" + day + ":" + hour + ":" + min + ":" + sec + " ";
+    }
 
 colours.setTheme({
     info: 'cyan',
@@ -38,11 +64,21 @@ console.info = function (args) {
 };
 
 console.error = function (args) {
-    error(args.error);
+    if (debug) {
+        error(getDateTime() + args.error);
+    }
+    else {
+        error(args.error);
+    }
 };
 
 console.warn = function (args) {
-    warn(args.warn);
+    if (debug) {
+        warn(getDateTime() + args.warn);
+    }
+    else {
+        warn(args.warn);
+    }
 };
 
 console.title = function(args) {
