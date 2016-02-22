@@ -208,28 +208,18 @@ var gitpull = require.safe('git-pull'),
             if (err) throw err;
 
             var cleanup = function(){
-                fs.emptyDir(dir, function (err) {
-                    cleanupCallback(); // not a lot we can do about errors here.
-                });
-            }.bind(this),
-                isWin = /^win/.test(process.platform);
+                    fs.emptyDir(dir, function (err) {
+                        cleanupCallback(); // not a lot we can do about errors here.
+                    });
+                }.bind(this);
 
             gitclone(url, dir, {}, function(err) {
                 try {
-                    var kj = require.once(path.join(dir, 'kassy.json'));
-                    kj.volitileName = kj.name;
-                    kj.name = sanitize(kj.name);
-                    if (this.loadedModules[kj.name] || this.loadedModules[kj.volitileName] || getModuleList()[kj.name] || getModuleList()[kj.volitileName] || getModuleList()['kpm_' + kj.name] || getModuleList()['kpm_' + kj.volitileName]) {
+                    var kj = require.once(path.join(dir, 'kassy.json')),
+                        moduleList = getModuleList();
+                    kj.safeName = sanitize(kj.name);
+                    if (this.loadedModules[kj.name] || moduleList[kj.name] || moduleList['kpm_' + kj.name]) {
                         api.sendMessage('Module with name or directory "' + kj.name + '" has already been installed.', event.thread_id);
-                        cleanup();
-                        return;
-                    }
-
-                    /*
-                    Backward compatibility for oldermodules installed on existing unix based systems.
-                    */
-                    if (!isWin && (this.loadedModules[kj.volitileName] || getModuleList()[kj.volitileName] || getModuleList()['kpm_' + kj.volitileName])) {
-                        api.sendMessage('Module with name or directory "' + kj.volitileName + '" has already been installed.', event.thread_id);
                         cleanup();
                         return;
                     }
@@ -240,10 +230,9 @@ var gitpull = require.safe('git-pull'),
                         return;
                     }
 
-                    var instDir = path.resolve('./modules/kpm_' + kj.name);
+                    var instDir = path.resolve('./modules/kpm_' + kj.safeName);
                     fs.copy(dir, instDir, function (err) {
                         if (err) {
-                            console.log(err);
                             console.debug(err);
                             api.sendMessage('An unknown error occurred while installing "' + kj.name + '".', event.thread_id);
                             cleanup();
