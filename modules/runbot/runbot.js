@@ -1,5 +1,10 @@
 var Sandbox = require.safe("sandbox"),
-	sandbox = new Sandbox();
+	sandbox = new Sandbox(),
+	
+runCode = function(prefix, data, output) {
+	var code = data.substr(prefix.length + 6);
+	sandbox.run(code, output);
+};
 
 exports.match = function(text, commandPrefix) {
 	return text.startsWith(commandPrefix + 'runbot');
@@ -9,13 +14,8 @@ exports.help = function(commandPrefix) {
 	return [[commandPrefix + 'runbot <jscode>','Runs JS code.']];
 };
 
-exports.code = function(prefix, data, output) {
-	var code = data.substr(prefix.length + 6);
-	sandbox.run(code, output);
-};
-
 exports.run = function(api, event) {
-	exports.code(api.commandPrefix, event.body, function(output) {
+	runCode(api.commandPrefix, event.body, function(output) {
 		var out = '';
 
 		if (output.console.length > 0) {
