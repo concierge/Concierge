@@ -60,7 +60,7 @@ global.requireHook = function(req) {
         return mod;
     };
 
-    req.safe = require("require-install");
+    req.safe = require("./install.js").requireOrInstall;
 };
 
 hook.setInjectionFunction(function() {
