@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "3.1.2",
+  "version": "3.1.5",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -20,6 +20,7 @@
     "request": "2.54.0",
     "require-install": "*",
     "rimraf": "^2.4.4",
+    "sanitize-filename": "^1.5.3",
     "skyweb": "0.0.2",
     "sleep": "*",
     "stripcolorcodes": "0.1.0",

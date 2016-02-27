@@ -7,6 +7,7 @@ var gitpull = require.safe('git-pull'),
     fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
     tmp = require.safe('tmp'),
+    sanitize = require.safe('sanitize-filename'),
     moduleCache = null,
     opts = {
         help: {
@@ -207,15 +208,17 @@ var gitpull = require.safe('git-pull'),
             if (err) throw err;
 
             var cleanup = function(){
-                fs.emptyDir(dir, function (err) {
-                    cleanupCallback(); // not a lot we can do about errors here.
-                });
-            }.bind(this);
+                    fs.emptyDir(dir, function (err) {
+                        cleanupCallback(); // not a lot we can do about errors here.
+                    });
+                }.bind(this);
 
             gitclone(url, dir, {}, function(err) {
                 try {
-                    var kj = require.once(path.join(dir, 'kassy.json'));
-                    if (this.loadedModules[kj.name] || getModuleList()[kj.name] || getModuleList()['kpm_' + kj.name]) {
+                    var kj = require.once(path.join(dir, 'kassy.json')),
+                        moduleList = getModuleList();
+                    kj.safeName = sanitize(kj.name);
+                    if (this.loadedModules[kj.name] || moduleList[kj.name] || moduleList['kpm_' + kj.name]) {
                         api.sendMessage('Module with name or directory "' + kj.name + '" has already been installed.', event.thread_id);
                         cleanup();
                         return;
@@ -227,10 +230,9 @@ var gitpull = require.safe('git-pull'),
                         return;
                     }
 
-                    var instDir = path.resolve('./modules/kpm_' + kj.name);
+                    var instDir = path.resolve('./modules/kpm_' + kj.safeName);
                     fs.copy(dir, instDir, function (err) {
                         if (err) {
-                            console.log(err);
                             console.debug(err);
                             api.sendMessage('An unknown error occurred while installing "' + kj.name + '".', event.thread_id);
                             cleanup();
