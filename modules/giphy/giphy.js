@@ -45,7 +45,7 @@ exports.search = function (query, callback, waitCallback) {
                         length: images.length
                     };
                 }
-                callback(image);
+                callback({url: image});
             }
             else {
                 callback({error:'No images found.'});
@@ -71,11 +71,20 @@ exports.run = function(api, event) {
         return;
     }
 
-    var query = event.body.substr(6);
+    var query = event.body.substr(5);
+
+    if(!query || query.length == 0) {
+        api.sendMessage("Of course, I'll look for an empty string!", event.thread_id);
+        return;
+    }
+
     exports.search(query, function(image) {
-            if (image) {
-                var url = exports.ensureExt(image);
+            if (image.hasOwnProperty('url')) {
+                var url = exports.ensureExt(image.url);
                 api.sendImage("url", url, "I found this:", event.thread_id);
+            }
+            else if(image.hasOwnProperty('error')) {
+                api.sendMessage(image.error, event.thread_id);
             }
             else {
                 api.sendMessage("Something went very wrong.", event.thread_id);
