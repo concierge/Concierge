@@ -71,7 +71,13 @@ exports.run = function(api, event) {
         return;
     }
 
-    var query = event.body.substr(6);
+    var query = event.body.substr(5);
+
+    if(!query || query.length == 0) {
+        api.sendMessage("Of course, I'll look for an empty string!", event.thread_id);
+        return;
+    }
+
     exports.search(query, function(image) {
             if (image) {
                 var url = exports.ensureExt(image);
