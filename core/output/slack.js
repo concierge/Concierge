@@ -20,10 +20,6 @@ waitingForFirstTransaction = {},
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
 
-	message = message.replace(/</g, '&lt;');
-	message = message.replace(/>/g, '&gt;');
-	message = message.replace(/&/g, '&amp;');
-
 	if (teamInfo.token != null) {
 		var body = {
 			"token": teamInfo.token,
