@@ -1,6 +1,6 @@
 exports.createPlatformModule = function(platform) {
 	if (!platform.sendMessage) {
-		platform.sendMessage = function(message, thread) {
+		platform.sendMessage = function() {
 			throw 'What kind of shit platform is this that doesn\'t even support sending messages?';
 		};
 	}
@@ -69,7 +69,7 @@ exports.createPlatformModule = function(platform) {
 	}
 
 	if (!platform.sendPrivateMessage) {
-		platform.sendPrivateMessage = function(message, thread, senderId) {
+		platform.sendPrivateMessage = function(message, thread) {
 			platform.sendMessage(message, thread);
 		}
 	}
