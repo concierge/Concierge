@@ -1,7 +1,7 @@
 exports.createPlatformModule = function(platform) {
 	if (!platform.sendMessage) {
 		platform.sendMessage = function(message, thread) {
-			throw "What kind of shit platform is this that doesn't even support sending messages?";
+			throw 'What kind of shit platform is this that doesn\'t even support sending messages?';
 		};
 	}
 
@@ -14,16 +14,16 @@ exports.createPlatformModule = function(platform) {
 	if (!platform.sendImage) {
 		platform.sendImage = function(type, image, description, thread) {
 			switch(type) {
-				case "url": // fallback to sending a url
+				case 'url': // fallback to sending a url
 					platform.sendMessage(description, thread);
 					platform.sendUrl(image, thread);
 					break;
-				case "file": // fallback to sending a file
+				case 'file': // fallback to sending a file
 					platform.sendFile(image, thread);
 					break;
 				default: // fallback to sending a message
 					platform.sendMessage(description, thread);
-					platform.sendMessage("I also have something to send you but cant seem to do so...", thread);
+					platform.sendMessage('I also have something to send you but cant seem to do so...', thread);
 					break;
 			}
 		};
@@ -33,14 +33,14 @@ exports.createPlatformModule = function(platform) {
 		platform.sendFile = function(type, file, description, thread) {
 			platform.sendMessage(description, thread);
 			switch(type) {
-				case "url": // fallback to sending a url
+				case 'url': // fallback to sending a url
 					platform.sendUrl(file, thread);
 					break;
-				case "file": // fallback to sending a message
-					platform.sendMessage("I have a file to send you but cant seem to do so...", thread);
+				case 'file': // fallback to sending a message
+					platform.sendMessage('I have a file to send you but cant seem to do so...', thread);
 					break;
 				default: // fallback to sending a message
-					platform.sendMessage("I have something to send you but cant seem to do so...", thread);
+					platform.sendMessage('I have something to send you but cant seem to do so...', thread);
 					break;
 			}
 		}
@@ -49,13 +49,13 @@ exports.createPlatformModule = function(platform) {
 	if (!platform.sendTyping) {
 		platform.sendTyping = function(thread) {
 			//TODO fix me
-			platform.sendMessage("Working on it...", thread); // fallback to sending a message
+			platform.sendMessage('Working on it...', thread); // fallback to sending a message
 		}
 	}
 
 	if (!platform.setTitle) {
 		platform.setTitle = function(title, thread) { // fallback to sending a message
-			platform.sendMessage("If I could set the title of this chat I would set it to \"" + title + "\"", thread);
+			platform.sendMessage('If I could set the title of this chat I would set it to "' + title + '"', thread);
 		}
 	}
 
