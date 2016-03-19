@@ -22,6 +22,7 @@ Platform = function(modes) {
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
     this.modules = require.once('./modules.js');
+    this.modules.platform = this;
     this.statusFlag = StatusFlag.NotStarted;
     this.onShutdown = null;
     this.waitingTime = 250;
