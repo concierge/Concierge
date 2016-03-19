@@ -8,6 +8,7 @@ var git = require.once('../git'),
 	updatePeriod = defaultUpdatePeriod,
 	failedUpdateAttempts = 0,
 	currentSHA = null,
+	shutdown = null,
 
 	checkForHash = function() {
 		git.getSHAOfRemoteMaster(function(err, consoleOutput) {
@@ -41,7 +42,7 @@ var git = require.once('../git'),
 				}
 
 				if (checkForHash()) {
-					exports.platform.shutdown(StatusFlag.ShutdownShouldRestart);
+					shutdown(StatusFlag.ShutdownShouldRestart);
 				}
 
 				setUpdateTimer();
@@ -55,6 +56,7 @@ exports.match = function(text, commandPrefix) {
 
 exports.load = function() {
 	var isEnabled = this.config.getConfig('update').autoUpdateEnabled,
+		shutdown = this.shutdown,
 		branchName;
 
 	git.getCurrentBranchName(function (err, consoleOutput) {
@@ -87,6 +89,7 @@ exports.unload = function() {
 	if (timeout) {
 		clearTimeout(timeout);
 	}
+	shutdown = null;
 };
 
 exports.run = function(api, event) {

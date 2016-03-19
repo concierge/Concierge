@@ -27,5 +27,5 @@ exports.getSHAOfRemoteMaster = function(callback) {
 };
 
 exports.getCurrentBranchName = function(callback) {
-    command(['symbolic-ref' '--short' 'HEAD'], callback);
+    command(['symbolic-ref', '--short', 'HEAD'], callback);
 };
