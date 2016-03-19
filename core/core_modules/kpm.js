@@ -1,7 +1,6 @@
 var gitpull = require.safe('git-pull'),
     gitclone = require.safe('git-clone'),
     files = require.once('../files.js'),
-    modules = require.once('../modules.js'),
     cfg = require.once('../config.js'),
     path = require('path'),
     fs = require.safe('fs-extra'),
@@ -110,7 +109,7 @@ var gitpull = require.safe('git-pull'),
 
     getModuleList = function(cacheOverride) {
         if (cacheOverride === true || moduleCache === null) {
-            var mods = modules.listModules(true);
+            var mods = exports.platform.moduleLoader.listModules(true);
             for (var m in mods) {
                 var s = mods[m].folderPath.split(path.sep);
                 if (!s[s.length - 1].startsWith('kpm_')) {
@@ -171,7 +170,7 @@ var gitpull = require.safe('git-pull'),
                 m.folderPath = module.folderPath;
                 moduleCache[module.name] = m;
                 module = m;
-                this.loadedModules.push(modules.loadModule(module));
+                this.loadedModules.push(exports.platform.moduleLoader.loadModule(module));
 
                 api.sendMessage('"' + module.name + '" is now at version ' + module.version + '.', event.thread_id);
             }
@@ -224,7 +223,7 @@ var gitpull = require.safe('git-pull'),
                         return;
                     }
 
-                    if (!modules.verifyModuleDescriptior(kj)) {
+                    if (!exports.platform.moduleLoader.verifyModuleDescriptior(kj)) {
                         api.sendMessage('The repository at "' + url + '" is not a valid Kassy module.', event.thread_id);
                         cleanup();
                         return;
@@ -241,7 +240,7 @@ var gitpull = require.safe('git-pull'),
 
                         kj.folderPath = instDir;
                         moduleCache[kj.name] = kj;
-                        var m = modules.loadModule(kj);
+                        var m = exports.platform.moduleLoader.loadModule(kj);
 						if (m !== null) {
 							this.loadedModules.push(m);
 	                        api.sendMessage('"' + kj.name + '" (' + kj.version + ') is now installed.', event.thread_id);

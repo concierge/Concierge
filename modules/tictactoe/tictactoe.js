@@ -1,4 +1,4 @@
-/** 
+/**
  * Hopefully plays TicTacToe
  *
  * Written By: Jay Harris
@@ -34,7 +34,7 @@ function removeGame(game) {
 }
 
 /**
- * Finds a game given a player and a thread id. 
+ * Finds a game given a player and a thread id.
  * Returns undefined if no games are found
 */
 function findGame(thread, player) {
@@ -50,7 +50,7 @@ function findGame(thread, player) {
         if (game.noughts === player || game.crosses === player) {
             return game;
         }
-    } 
+    }
 }
 
 /**
@@ -148,7 +148,7 @@ function checkWin(game, player) {
         if (row[0] === piece && row[1] === piece && row[2] === piece) {
             return player;
         }
-    }   
+    }
 
     //Check columns
     for (var i = 0; i < 3; ++i) {
@@ -230,7 +230,6 @@ exports.run = function(api, event) {
             api.sendMessage("Um. Is that even a coordinate?");
         }
 
-        console.log(move);
         var y = mapToCoord(move.substr(0, 1)),
             x = mapToCoord(move.substr(1, 1));
 
@@ -272,7 +271,7 @@ exports.run = function(api, event) {
         }
 
         removeGame(game);
-        
+
         api.sendMessage(event.sender_name.trim() + " surrenders! " + (event.sender_name.trim() !== game.noughts ? game.noughts : game.crosses) + " wins!");
     }
 };
