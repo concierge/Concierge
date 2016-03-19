@@ -67,7 +67,7 @@ exports.load = function() {
 
 	// Only allow auto update to be run on the master branch.
 	// By default auto update is enabled but can be turned off in the config.
-	if (branchName == 'master' && (isEnabled || isEnabled === undefined)) {
+	if (branchName === 'master' && (isEnabled || isEnabled === undefined)) {
 		var configUpdatePeriod = this.config.getConfig('update').autoUpdatePeriod;
 		if (configUpdatePeriod) {
 			updatePeriod = configUpdatePeriod;
