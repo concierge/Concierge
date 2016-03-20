@@ -1,4 +1,4 @@
-var git = require.once('../git'),
+var git = require.once('../git.js'),
 	/**
 	Default update period in milliseconds.
 	Once per day.

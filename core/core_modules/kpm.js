@@ -1,4 +1,4 @@
-var git = require.once('../git'),
+var git = require.once('../git.js'),
     files = require.once('../files.js'),
     modules = require.once('../modules.js'),
     cfg = require.once('../config.js'),
