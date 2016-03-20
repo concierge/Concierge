@@ -32,7 +32,7 @@ exports.loadCoreModule = function(platform, module) {
     m.platform = exports;
     m.name = module;
     if (m.load) {
-        m.load();
+        m.load.apply(platform);
     }
     return m;
 };
