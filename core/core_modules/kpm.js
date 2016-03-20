@@ -1,4 +1,4 @@
-var gitpull = require.safe('git-pull'),
+var git = require.once('../git'),
     gitclone = require.safe('git-clone'),
     files = require.once('../files.js'),
     modules = require.once('../modules.js'),
@@ -148,7 +148,7 @@ var gitpull = require.safe('git-pull'),
 
     update = function (module, api, event) {
         api.sendMessage('Updating "' + module.name + '" (' + module.version + ')...', event.thread_id);
-        gitpull(module.folderPath, function (err, consoleOutput) {
+        git.pull(module.folderPath, function (err, consoleOutput) {
             if (err) {
                 api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
             } else {
