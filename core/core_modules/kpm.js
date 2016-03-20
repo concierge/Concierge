@@ -1,5 +1,4 @@
 var git = require.once('../git'),
-    gitclone = require.safe('git-clone'),
     files = require.once('../files.js'),
     modules = require.once('../modules.js'),
     cfg = require.once('../config.js'),
@@ -213,7 +212,7 @@ var git = require.once('../git'),
                     });
                 }.bind(this);
 
-            gitclone(url, dir, {}, function(err) {
+            git.clone(url, dir, function(err, consoleOutput) {
                 try {
                     var kj = require.once(path.join(dir, 'kassy.json')),
                         moduleList = getModuleList();

@@ -36,3 +36,7 @@ exports.getSHAOfRemoteMaster = function(callback) {
 exports.getCurrentBranchName = function(callback) {
     command(['symbolic-ref', '--short', 'HEAD'], callback);
 };
+
+exports.clone = function(url, dir, callback) {
+    command(['clone', url, dir], callback);
+};
