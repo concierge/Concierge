@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "3.1.5",
+  "version": "3.1.6b",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -11,7 +11,7 @@
     "babel-register": "^6.3.13",
     "colors": "^1.1.2",
     "deasync": "^0.1.4",
-    "facebook-chat-api": "1.0.6",
+    "facebook-chat-api": "1.0.8",
     "figlet": "1.1.1",
     "fs-extra": "^0.26.3",
     "git-clone": "^0.1.0",

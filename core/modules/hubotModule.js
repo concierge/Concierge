@@ -20,7 +20,7 @@ var fs              = require('fs'),
 CoffeeScript.register();
 
 exports.listModules = function (disabled) {
-    var data = files.filesInDirectory('./' + modulesDir),
+    /*var data = files.filesInDirectory('./' + modulesDir),
         modules = {};
 
     for (var i = 0; i < data.length; i++) {
@@ -91,21 +91,21 @@ exports.listModules = function (disabled) {
         mod.startup = path.join(dir, mod.startup);
         modules[mod.name] = mod;
     }
-    return modules;
+    return modules;*/
 };
 
 exports.loadModule = function (module) {
-    var script: require.once(module.startup);
+    /*var script: require.once(module.startup);
     var hubotShim = {
 
     };
-    return hubotShim;
+    return hubotShim;*/
 };
 
 exports.verifyModule = function (location, disabled) {
 
 };
-
+/*
 {
 /*# Public: Adds a custom Listener with the provided matcher, options, and
   # callback
@@ -118,7 +118,7 @@ exports.verifyModule = function (location, disabled) {
   # callback - A Function that is called with a Response object if the
   #            matcher function returns true.
   #
-  # Returns nothing.*/
+  # Returns nothing.* /
   listen: function(matcher, options, callback) {
 
   };
@@ -131,7 +131,7 @@ exports.verifyModule = function (location, disabled) {
   #            (optional).
   # callback - A Function that is called with a Response object.
   #
-  # Returns nothing.*/
+  # Returns nothing.* /
   hear: function(regex, options, callback) {
 
   };
@@ -145,7 +145,7 @@ exports.verifyModule = function (location, disabled) {
   #            (optional).
   # callback - A Function that is called with a Response object.
   #
-  # Returns nothing.*/
+  # Returns nothing.* /
   respond: function(regex, options, callback) {
 
   };
@@ -155,7 +155,7 @@ exports.verifyModule = function (location, disabled) {
   #
   # regex - A RegExp for the message part that follows the robot's name/alias
   #
-  # Returns RegExp.*/
+  # Returns RegExp.* /
   respondPattern: function(regex) {
 
   };
@@ -606,3 +606,4 @@ exports.verifyModule = function (location, disabled) {
   parseVersion:
   http: (url, options)
   extend: (obj, sources...)
+*/
