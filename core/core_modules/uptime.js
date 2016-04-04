@@ -30,3 +30,7 @@ exports.run = function(api, event) {
 exports.load = function() {
     startTime = new Date();
 };
+
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'uptime','Shows how long the platform has been alive']];
+};

@@ -18,3 +18,8 @@ exports.run = function(api, event) {
 	}
 	return false;
 };
+
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'disable','Disables the platform']];
+};
+

@@ -284,3 +284,8 @@ exports.run = function (api, event) {
 
     return false;
 };
+
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'kpm','Kassy Package Manager, for installing external kpm modules', 'For detailed help on specific kpm commands run ' + commandPrefix + 'kpm help']];
+};
+

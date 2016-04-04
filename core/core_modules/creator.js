@@ -14,3 +14,7 @@ exports.run = function(api, event) {
 	api.sendMessage(creators.join('\n'), event.thread_id);
 	return false;
 };
+
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'creator','Lists contributors to this platform']];
+};

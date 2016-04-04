@@ -102,3 +102,7 @@ exports.run = function(api, event) {
 	});
 	return false;
 };
+
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'update','Updates the platform to the latest version on master']];
+};

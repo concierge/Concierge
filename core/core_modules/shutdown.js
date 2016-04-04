@@ -10,3 +10,7 @@ exports.run = function(api, event) {
   this.shutdown();
   return false;
 };
+
+exports.help = function(commandPrefix) {
+  return [[commandPrefix + 'shutdown','Shuts down the platform']];
+};
