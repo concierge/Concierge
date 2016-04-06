@@ -73,10 +73,10 @@ sendMessageWebAPI = function (teamId) {
 	            } else if (message.callback) {
 	                message.callback(false, body);
 	            }
-            inTransaction[teamId] = false;
-            // Wait until message is sent before trying to send another message.
-            sendMessageWebAPI(teamId);
-	        });
+	            inTransaction[teamId] = false;
+	            // Wait until message is sent before trying to send another message.
+	            sendMessageWebAPI(teamId);
+	    	});
 	}
 }
 
