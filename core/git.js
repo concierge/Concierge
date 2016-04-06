@@ -21,7 +21,7 @@ exports.pull = function(callback) {
     command(['pull'], callback);
 };
 
-exports.pull = function(path, callback) {
+exports.pullWithPath = function(path, callback) {
     commandWithPath(path, ['pull'], callback);
 };
 

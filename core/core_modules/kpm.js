@@ -147,7 +147,7 @@ var git = require.once('../git.js'),
 
     update = function (module, api, event) {
         api.sendMessage('Updating "' + module.name + '" (' + module.version + ')...', event.thread_id);
-        git.pull(module.folderPath, function (err, consoleOutput) {
+        git.pullWithPath(module.folderPath, function (err, consoleOutput) {
             if (err) {
                 api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
             } else {
