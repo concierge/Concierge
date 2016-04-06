@@ -46,36 +46,35 @@ addMessageToQueue = (teamId, body, uri, callback) => {
 	sendMessageWebAPI(teamId);
 },
 
-sendMessageWebAPI = teamId => {
-	if (!inTransaction[teamId]) {
+sendMessageWebAPI = function (teamId) {
+	// Initialise for team
+	if (inTransaction[teamId] === null || inTransaction[teamId] === undefined) {
 		inTransaction[teamId] = false;
-	}
+    }
+
 	if (messageQueue[teamId].length >= 1 && !inTransaction[teamId]) {
-		inTransaction[teamId] = true;
-		let message = messageQueue[teamId].shift();
-		request({
-			"uri": message.uri,
-			"method": 'GET',
-			"qs": message.body
-		},
-		(error, response, body) => {
-			body = JSON.parse(body);
-			if (response.statusCode != 200) {
-				console.debug('slack-> error: ' + response.statusCode);
-				message.callback(true, null);
-			}
-			else if (!body.ok) {
-				console.debug('slack-> Failed to send message, error: ' + body.error);
-				message.callback(true, null);
-			}
-			else {
-				if (message.callback) {
-					message.callback(false, body);
-				}
-			}
-			inTransaction[teamId] = false;
-			sendMessageWebAPI(teamId);
-		});
+	    inTransaction[teamId] = true;
+	    var message = messageQueue[teamId].shift();
+	    request({
+	            "uri": message.uri,
+	            "method": 'GET',
+	            "qs": message.body
+	        },
+	        function (error, response, body) {
+	            body = JSON.parse(body);
+	            if (error) {
+	                console.debug('slack-> error: ' + error);
+	                message.callback(true, null);
+	            } else if (!body.ok) {
+	                console.debug('slack-> Failed to send message, error: ' + body.error);
+	                message.callback(true, null);
+	            } else if (message.callback) {
+	                message.callback(false, body);
+	            }
+            inTransaction[teamId] = false;
+            // Wait until message is sent before trying to send another message.
+            sendMessageWebAPI(teamId);
+	        });
 	}
 }
 
