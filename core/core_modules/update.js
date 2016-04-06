@@ -41,6 +41,14 @@ var git = require.once('../git.js'),
 					setUpdateTimer();
 					return;
 				}
+                
+                try {
+                    install.update();
+                }
+			    catch (e) {
+                    console.critical(e);
+                    api.sendMessage('Periodic auto update of NPM packages failed. Manual NPM intervention will be required.', event.thread_id);
+                }
 
 				if (checkForHash()) {
 					shutdown(StatusFlag.ShutdownShouldRestart);
