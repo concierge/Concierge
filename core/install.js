@@ -15,6 +15,7 @@ var npm = require('npm'),
 	
 load({loglevel: "silent"});
 var inst = deasync(npm.commands.install),
+upd = deasync(npm.commands.update),
 
 install = function(name) {
 	console.info('Installing "' + name + '" from npm.');
@@ -33,4 +34,8 @@ exports.requireOrInstall = function(name) {
 	}
 	install(name);
 	return require(name);
+};
+
+exports.update = function() {
+	upd([]);
 };
