@@ -4,11 +4,11 @@ difference = function (dateFrom, dateTo) {
     // http://stackoverflow.com/questions/17732897/difference-between-two-dates-in-years-months-days-in-javascript
     var diff = { TotalMs: dateTo - dateFrom };
     diff.Days = Math.floor(diff.TotalMs / 86400000);
-    
+
     var remHrs = diff.TotalMs % 86400000;
     var remMin = remHrs % 3600000;
     var remS = remMin % 60000;
-    
+
     diff.Hours = Math.floor(remHrs / 3600000);
     diff.Minutes = Math.floor(remMin / 60000);
     diff.Seconds = Math.floor(remS / 1000);
@@ -32,5 +32,5 @@ exports.load = function() {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'uptime','Shows how long the platform has been alive']];
+    return [[commandPrefix + 'uptime','Shows how long the platform has been alive', 'Displays to the nearest second and days.']];
 };

@@ -12,5 +12,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-  return [[commandPrefix + 'shutdown','Shuts down the platform']];
+  return [[commandPrefix + 'shutdown','Shuts down the platform', 'The platform may take up to 30 seconds to shutdown fully, this is dependant on output modules.']];
 };

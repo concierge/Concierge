@@ -18,5 +18,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'restart','Restarts the platform']];
+	return [[commandPrefix + 'restart','Restarts the platform', 'If restart fails manual intervention may be required.']];
 };

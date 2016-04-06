@@ -104,5 +104,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'update','Updates the platform to the latest version on master']];
+	return [[commandPrefix + 'update','Updates the platform to the latest version on master', 'Also update npm dependencies, periodic automatic updates are enabled by default.']];
 };
