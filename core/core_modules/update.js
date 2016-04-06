@@ -1,4 +1,5 @@
 var git = require.once('../git.js'),
+	install = require('../install.js'),
 	/**
 	Default update period in milliseconds.
 	Once per day.
@@ -92,12 +93,22 @@ exports.unload = function() {
 	shutdown = null;
 };
 
-exports.run = function(api, event) {
+exports.run = function (api, event) {
+    api.sendMessage('Updating from git...', event.thread_id);
 	git.pull(function(err, consoleOutput) {
-		if (err) {
+        if (err) {
+            console.critical(e);
 			api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
 		} else {
-			api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
+			api.sendMessage('Updating installed NPM packages...', event.thread_id);
+			try {
+				install.update();
+				api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
+			}
+			catch (e) {
+				console.critical(e);
+				api.sendMessage('Update succeeded but NPM package update failed. Manual intervention is probably required.', event.thread_id);
+			}
 		}
 	});
 	return false;
