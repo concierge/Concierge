@@ -7,7 +7,7 @@ constructHelpMessage = function(help, modules, context, prefix) {
 			help += '→ ' + cmdHelp[j][0] + '\n\t' + cmdHelp[j][1] + '\n';
 		}
 	}
-	return help
+	return help;
 },
 
 checkIfModuleExists = function(modules, moduleName) {
