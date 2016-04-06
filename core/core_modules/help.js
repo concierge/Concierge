@@ -83,5 +83,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'help','this', 'prints a short summary of all available commands'], [this.commandPrefix + 'help <query>', 'prints help for a specific module']];
+	return [[commandPrefix + 'help','displays this help', 'prints a short summary of all available commands'], [this.commandPrefix + 'help <query>', 'prints help for a specific module']];
 };
