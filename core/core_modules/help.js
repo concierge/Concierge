@@ -1,5 +1,21 @@
 var figlet = require.safe('figlet'),
 
+constructHelpMessage = function(help, modules, context, prefix) {
+	for (var i = 0; i < modules.length; i++) {
+		var cmdHelp = modules[i].help.call(context, prefix);
+		for (var j = 0; j < cmdHelp.length; j++) {
+			help += '→ ' + cmdHelp[j][0] + '\n\t' + cmdHelp[j][1] + '\n';
+		}
+	}
+	return help;
+},
+
+checkIfModuleExists = function(modules, moduleName) {
+	return modules.find(function(element, index, array) {
+		return element.name === moduleName;
+	});
+},
+
 shortSummary = function(prefix) {
 	var help = figlet.textSync(this.packageInfo.name.toProperCase()) + '\n '
 		+ this.packageInfo.version + '\n--------------------\n'
@@ -9,20 +25,18 @@ shortSummary = function(prefix) {
 	var context = {
 		commandPrefix: prefix
 	};
-		
-	for (var i = 0; i < this.loadedModules.length; i++) {
-		var cmdHelp = this.loadedModules[i].help.call(context, prefix);
-		for (var j = 0; j < cmdHelp.length; j++) {
-			help += '→ ' + cmdHelp[j][0] + '\n\t' + cmdHelp[j][1] + '\n';
-		}
-	}
-	return help;
+
+	help = constructHelpMessage(help, this.coreModules, context, prefix);
+	return constructHelpMessage(help, this.loadedModules, context, prefix);
 },
 
 longDescription = function(moduleName, prefix) {
-	var module = this.loadedModules.find(function(element, index, array) {
-		return element.name === moduleName;
-	});
+	var module = checkIfModuleExists(this.coreModules, moduleName);
+
+	if (!module || module.length === 0) {
+		// Check loaded modules, as commnd not in core modules
+		module = checkIfModuleExists(this.loadedModules, moduleName);
+	}
 	
 	if (!module || module.length === 0) {
 		return 'Cannot provide help on module that was not found. Has it been disabled?';
@@ -66,4 +80,8 @@ exports.run = function(api, event) {
 	
 	api.sendPrivateMessage(help, event.thread_id, event.sender_id);
 	return false;
+};
+
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'help','displays this help', 'prints a short summary of all available commands'], [this.commandPrefix + 'help <query>', 'prints help for a specific module']];
 };

@@ -18,3 +18,7 @@ exports.run = function(api, event) {
 	}
 	return false;
 };
+
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'disable','Disables the platform', 'Stops the platform from responding to messages it receives.\nTo renable send the disable command again']];
+};
