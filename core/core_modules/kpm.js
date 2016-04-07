@@ -75,8 +75,8 @@ var git = require.once('../git.js'),
                 }
             },
             command: 'install <gitUrl> [<gitUrl> [<gitUrl> [...]]]',
-            help: 'Installs one or more modules from exising git repositories or github references.',
-            detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
+            help: 'Installs one or more modules from exising git repositories, the lookup table or github references.',
+            detailedHelp: 'Installs one or more modules from existing git repositories, the lookup table or github references if ones of the same name do not already exist.'
         },
 
         uninstall: {
