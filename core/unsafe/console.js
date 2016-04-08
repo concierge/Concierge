@@ -19,6 +19,7 @@ var colours = require.safe('colors'),
     info = console.info,
     error = console.error,
     warn = console.warn,
+    logg = console.log,
     write = process.stdout.write,
     perr = process.stderr.write,
     debug = false,
@@ -43,37 +44,39 @@ var getTimestampString = function() {
 	return time;
 },
 
-getLogMessage = function(data) {
+getOutputString = function(data) {
 	if (timestamp) {
 		var time = getTimestampString(),
 			spl = data.split('\n');
 		if (lastNewline) {
-			spl[0] = '\n' + spl[0];
+            time = '\n' + time;
+		    lastNewline = false;
 		}
 		for (var i = 1; i < spl.length; i++) {
 			if (strip(spl[i]).length > 0) {
 				spl[i] = '             ' + spl[i];
-				lastNewline = i === spl.length - 1;
 			}
-			else {
-				lastNewline = false;
-			}
-		}
-		data = time + spl.join('\n');
+        }
+        process.stdout.write(time);
+		data = spl.join('\n');
 	}
 	return data;
 };
 
 console.info = function (args) {
-    info(args.info);
+    info(getOutputString(args.info));
 };
 
 console.error = function (args) {
-    error(args.error);
+    error(getOutputString(args.error));
 };
 
 console.warn = function (args) {
-    warn(args.warn);
+    warn(getOutputString(args.warn));
+};
+
+console.log = function (args) {
+    logg(getOutputString(args));
 };
 
 console.title = function(args) {
@@ -93,19 +96,25 @@ console.critical = function(args) {
 };
 
 console.write = function (args) {
-    process.stdout.write(args.info);
+    process.stdout.write(getOutputString(args.info));
+    if (!args.endsWith('\n')) {
+        lastNewline = true;
+    }
 };
 
 process.on('exit', function () {
-   if (log) {
-       var dt = new Date();
-       logStr.write('~ Log terminated at ' + dt.toISOString() + ' ~\n');
-       logStr.end();
-   }
+    var dt = new Date();
+    if (timestamp) {
+        console.info('~ Terminated at ' + dt.toISOString() + ' ~');
+    }
+
+    if (log) {
+        logStr.write('~ Log terminated at ' + dt.toISOString() + ' ~\n');
+        logStr.end();
+    }
 });
 
 process.stdout.write = function (data) {
-	data = getLogMessage(data);
     write.apply(this, arguments);
     if (log) {
         logStr.write(data);
@@ -113,7 +122,6 @@ process.stdout.write = function (data) {
 };
 
 process.stderr.write = function (data) {
-		data = getLogMessage(data);
     perr.apply(this, arguments);
     if (log) {
         logStr.write(data);
@@ -132,9 +140,9 @@ exports.setLog = function(enabled) {
         }
         catch (e){}    // ignore, probably doesn't exist
         logStr = fs.createWriteStream(logFile, {flags: 'a'});
-				var dt = new Date();
-				startupTime = dt.getTime() / 1000;
-				logStr.write('~ Log started at ' + dt.toISOString() + ' ~\n');
+        var dt = new Date();
+        startupTime = dt.getTime() / 1000;
+        logStr.write('~ Log started at ' + dt.toISOString() + ' ~\n');
     }
     else {
         if (logStr != null) {
@@ -146,6 +154,10 @@ exports.setLog = function(enabled) {
 
 exports.setTimestamp = function (enabled) {
     timestamp = enabled;
+    if (timestamp) {
+        var dt = new Date();
+        console.info('~ Started at ' + dt.toISOString() + ' ~');
+    }
 };
 
 console.isDebug = function() {

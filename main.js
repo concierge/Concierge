@@ -29,7 +29,7 @@ require('./core/unsafe/console.js');
 
 var modesf = require('./core/modes.js'),
     startup = require('./core/startup.js'),
-		argp = require('./core/arguments.js'),
+    argp = require('./core/arguments.js'),
     modes = modesf.listModes(),
     args = process.argv;
 
