@@ -26,9 +26,9 @@ var colours = require.safe('colors'),
     log = false,
     logStr = null,
     logFile = 'kassy.log',
-		timestamp = false,
+    timestamp = false,
     startupTime = (new Date().getTime() / 1000),
-		lastNewline = false;
+    lastNewline = false;
 
 colours.setTheme({
     info: 'cyan',
@@ -49,15 +49,15 @@ getOutputString = function(data) {
 		var time = getTimestampString(),
 			spl = data.split('\n');
 		if (lastNewline) {
-            time = '\n' + time;
-		    lastNewline = false;
+			time = '\n' + time;
+			lastNewline = false;
 		}
 		for (var i = 1; i < spl.length; i++) {
 			if (strip(spl[i]).length > 0) {
 				spl[i] = '             ' + spl[i];
 			}
-        }
-        process.stdout.write(time);
+		}
+		process.stdout.write(time);
 		data = spl.join('\n');
 	}
 	return data;

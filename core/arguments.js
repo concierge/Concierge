@@ -5,7 +5,7 @@ var consolec = require('./unsafe/console.js'),
 			short: '-d',
 			run: function() {
 				console.warn('Debug mode enabled.');
-		    consolec.setDebug(true);
+				consolec.setDebug(true);
 			}
 		},
 		{
@@ -13,7 +13,7 @@ var consolec = require('./unsafe/console.js'),
 			short: '-l',
 			run: function() {
 				console.warn('Logging mode enabled.');
-		    consolec.setLog(true);
+				consolec.setLog(true);
 			}
 		},
 		{
