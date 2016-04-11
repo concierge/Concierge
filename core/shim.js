@@ -85,3 +85,15 @@ exports.createEvent = function(thread, senderId, senderName, message) {
 		body: message
 	};
 };
+
+var isMatch = function (cmd) {
+    return this.arguments[0] === this.commandPrefix + cmd;
+};
+
+exports.createEventHelpers = function(event) {
+    event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);
+    for (var i = 0; i < event.arguments.length; i++) {
+        event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
+    }
+    event.isMatch = isMatch;
+};

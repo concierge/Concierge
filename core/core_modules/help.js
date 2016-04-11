@@ -67,7 +67,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.run = function(api, event) {
-	var commands = event.body.split(' '),
+	var commands = event.arguments,
 		help = null;
 		
 	if (commands.length === 1) {

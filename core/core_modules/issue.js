@@ -111,9 +111,10 @@ ifStringNotEmpty = function(str) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'issue "<title>" <debugLevel>', "posts an issue to github"],
-        [commandPrefix + 'issue "<title>" "<description>" <debugLevel>', "posts an issue to github with a description"],
-        ['debugLevel can be basic, detail or full', 'defaults to basic if not specified']];
+    return [
+        [commandPrefix + 'issue "<title>" <debugLevel>', 'Posts an issue to Github.', 'Posts an issue to Github. DebugLevel can be basic, detail or full, defaults to basic if notspecified.'],
+        [commandPrefix + 'issue "<title>" "<description>" <debugLevel>', 'Posts an issue to Github with a description.', 'Posts an issue to Github with a description. DebugLevel can be basic, detail or full, defaults to basic if not specified.']
+    ];
 };
 
 exports.match = function(text, commandPrefix) {
@@ -121,12 +122,12 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.run = function(api, event) {
-    var input = event.body.split('"'),
+    var input = event.arguments,
         title = null,
         description = null,
         debugLevel = 'basic';
-
-    if (input.length !== 3 && input.length !== 5) {
+    
+    if (input.length !== 3 && input.length !== 4) {
         var helpMessage = '',
             helpMessages = exports.help(api.commandPrefix);
         for (var j = 0; j < helpMessages.length; j++) {
@@ -136,18 +137,18 @@ exports.run = function(api, event) {
         return;
     }
 
-    if (input.length === 5) {
+    if (input.length === 4) {
         title = input[1];
-        description = input[3];
-        if (ifStringNotEmpty(input[4])) {
-            debugLevel = input[4].trim();
+        description = input[2];
+        if (ifStringNotEmpty(input[3])) {
+            debugLevel = input[3];
         }
     }
 
     if (input.length === 3) {
         title = input[1];
         if (ifStringNotEmpty(input[2])) {
-            debugLevel = input[2].trim();
+            debugLevel = input[2];
         }
     }
     submitRequest.call(this, title, description, debugLevel, function(result) {

@@ -10,7 +10,7 @@ exports.help = function(commandPrefix) {
 
 exports.parseKarmaChange = function(message) {
 	var karma = 0, name = "";
-	for (var i = message.length - 2; i != -1; i--) {
+	for (var i = message.length - 2; i !== -1; i--) {
 		switch(message[i]){
 			case '+': karma++; break;
 			case '-': karma--; break;

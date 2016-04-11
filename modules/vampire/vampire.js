@@ -4,13 +4,6 @@
  * Written By: James Fairbairn
  * Date Written: 29/07/2015
  */
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'vampire');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'vampire','Makes things sound like a vampire']];
-};
 
 exports.run = function(api, event) {
     var text = event.body.substring(9);

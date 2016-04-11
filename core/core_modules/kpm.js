@@ -268,7 +268,7 @@ exports.match = function (text, commandPrefix) {
 };
 
 exports.run = function (api, event) {
-    var commands = event.body.split(' ');
+    var commands = event.arguments;
     var command = commands.length >= 2 ? commands[1].toLowerCase() : null;
     if (command == null || !opts[command]) {
         var t = 'Invalid usage of Kassy Package Manager. Options are:\n';

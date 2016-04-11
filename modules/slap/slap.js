@@ -4,17 +4,6 @@
  * Date Written: 21/07/2015
  */
 
-// Define the 'regex' command matching criteria boolean
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'slap');
-};
-
-// Give users help if they can't slaps
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'slap <infidel>','Slaps an annoying infidel - descriptively!']];
-};
-
-
 // The main slapper
 exports.slap = function(sender_name, infidel){
     var adjectives = [

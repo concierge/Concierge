@@ -174,18 +174,12 @@ exports.match = function(text, commandPrefix) {
         || text.startsWith(commandPrefix + 'surrender');
 };
 
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + "tictactoe <opponent's full name>","starts a new game against the specified opponent"],
-           [commandPrefix + "move <row><column>","places a piece at the specified row and column, if you are in a game"],
-           [commandPrefix + "surrender","gives up on a game"]];
-};
-
 exports.run = function(api, event) {
-    "use strict"
+    "use strict";
     var command = event.body,
         commandPrefix = api.commandPrefix;
 
-    //If we are creating a new game
+    // If we are creating a new game
     if (command.startsWith(commandPrefix + "tictactoe")) {
         var split = command.split('"');
 
