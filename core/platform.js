@@ -22,7 +22,7 @@ Platform = function(modes) {
     this.modes = null;
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
-    this.modules = require.once('./modules.js');
+    this.modulesLoader = require.once('./modules/modules.js');
     this.statusFlag = StatusFlag.NotStarted;
     this.onShutdown = null;
     this.waitingTime = 250;
@@ -124,7 +124,7 @@ Platform.prototype.start = function() {
     console.warn('Starting system...\n'
                 + 'Loading system configuration...');
 
-    this.modules.disabledConfig = this.config.loadDisabledConfig();
+    this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
     for (var i = 0; i < this.modes.length; i++) {
         this.modes[i].instance.platform = this;
         this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
@@ -135,19 +135,21 @@ Platform.prototype.start = function() {
 
     // Load core modules
     console.warn('Loading core components...');
-    var m = this.modules.listCoreModules();
+	var coreLoader = require.once('./modules/core.js');
+	coreLoader.platform = this;
+    var m = coreLoader.listCoreModules();
     for (var i = 0; i < m.length; i++) {
-        this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
+        this.coreModules.push(coreLoader.loadCoreModule(this, m[i]));
     }
 
     // Load Kassy modules
     console.warn('Loading modules...');
-    m = this.modules.listModules();
+    m = this.modulesLoader.listModules();
     for (var mod in m) {
-		var ld = this.modules.loadModule(m[mod]);
-		if (ld !== null) {
-			this.loadedModules.push(ld);
-		}
+        var ld = this.modulesLoader.loadModule(m[mod]);
+        if (ld && ld !== null) {
+            this.loadedModules.push(ld);
+        }
     }
 
     // Starting output

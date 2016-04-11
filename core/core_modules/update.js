@@ -65,8 +65,9 @@ exports.match = function(text, commandPrefix) {
 
 exports.load = function() {
 	var isEnabled = this.config.getConfig('update').autoUpdateEnabled,
-		shutdown = this.shutdown,
-		branchName;
+        branchName;
+
+    shutdown = this.shutdown;
 
 	git.getCurrentBranchName(function (err, consoleOutput) {
 		if (err) {
@@ -105,7 +106,7 @@ exports.run = function (api, event) {
     api.sendMessage('Updating from git...', event.thread_id);
 	git.pull(function(err, consoleOutput) {
         if (err) {
-            console.critical(e);
+            console.critical(err);
 			api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
 		} else {
 			api.sendMessage('Updating installed NPM packages...', event.thread_id);
