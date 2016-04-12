@@ -1,6 +1,6 @@
 ﻿{
   "name": "vote",
-  "version": 2.0,
+  "version": 2.1,
   "startup": "vote.js",
   "command": "vote",
   "help": [

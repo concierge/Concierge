@@ -1,6 +1,6 @@
 ﻿{
   "name": "pickUp",
-  "version": 2.0,
+  "version": 2.1,
   "startup": "pickUp.js",
   "command": "pickup",
   "help": [

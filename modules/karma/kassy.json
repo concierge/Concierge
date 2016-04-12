@@ -1,6 +1,6 @@
 ﻿{
   "name": "karma",
-  "version": 2.0,
+  "version": 2.1,
   "startup": "karma.js",
   "help": [
     [ "<text>++", "Increases <text>'s karma." ],

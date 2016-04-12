@@ -1,6 +1,6 @@
 ﻿{
   "name": "8Ball",
-  "version": 2.0,
+  "version": 2.1,
   "startup": "8Ball.js",
   "command": "8ball",
   "help": [

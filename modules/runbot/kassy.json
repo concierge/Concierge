@@ -1,6 +1,6 @@
 ﻿{
   "name": "runbot",
-  "version": 2.0,
+  "version": 2.1,
   "startup": "runbot.js",
   "command": "runbot",
   "help": [
