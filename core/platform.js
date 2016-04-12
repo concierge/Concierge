@@ -44,7 +44,7 @@ Platform.prototype.handleTransaction = function(module, args) {
 };
 
 Platform.prototype.messageRxd = function(api, event) {
-    var matchArgs = [event.body, api.commandPrefix, event.thread_id, event.sender_name],
+    var matchArgs = [event, api.commandPrefix],
         runArgs = [api, event],
         abort = false;
 

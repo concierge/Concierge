@@ -86,14 +86,13 @@ exports.createEvent = function(thread, senderId, senderName, message) {
 	};
 };
 
-var isMatch = function (cmd) {
-    return this.arguments[0] === this.commandPrefix + cmd;
-};
-
 exports.createEventHelpers = function(event) {
     event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);
+    if (event.arguments === null) {
+        event.arguments = [''];
+    }
+    event.arguments_body = event.body.substr(event.arguments[0].length + 1);
     for (var i = 0; i < event.arguments.length; i++) {
         event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
     }
-    event.isMatch = isMatch;
 };
