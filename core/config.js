@@ -36,7 +36,16 @@ var saveIndividualConfig = function (location, data) {
 exports.saveModuleConfig = function(mod) {
     try {
         var m = modConfig[mod];
-        saveIndividualConfig(m.location, m.data);
+        var exists = false;
+        try {
+            fs.statSync(m.location);
+            exists = true;
+        } catch (e) { } // fs.existsSync is deprecated for some unknown reason
+
+        // don't bother saving if there is no config to overwrite and no config to save
+        if (Object.keys(m).length !== 0 || exists) {
+            saveIndividualConfig(m.location, m.data);
+        }
         delete modConfig[mod];
         return true;
     } catch (e) {
