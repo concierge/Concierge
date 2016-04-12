@@ -6,14 +6,6 @@
  */
 var request = require.safe('request');
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'fawlty');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'fawlty','Fixes fawlty code. Probably.']];
-};
-
 var quotes = [
     'Sybil Fawlty: [on the phone] I know... I know... I know... Oh, I know!\nBasil Fawlty: Then why is she telling you?',
     'Basil Fawlty: [about Sybil\'s laugh] Sounds like somebody machine-gunning a seal.',

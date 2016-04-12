@@ -59,16 +59,14 @@ longDescription = function(moduleName, prefix) {
 	return help;
 };
 
-exports.match = function(text, commandPrefix) {
-	return text === commandPrefix + this.packageInfo.name
-		|| text === commandPrefix + 'help'
-		|| (text.startsWith(commandPrefix + this.packageInfo.name + ' '))
-		|| text.startsWith(commandPrefix + 'help ');
+exports.match = function(event, commandPrefix) {
+    return event.arguments[0] === commandPrefix + this.packageInfo.name
+        || event.arguments[0] === commandPrefix + 'help';
 };
 
 exports.run = function(api, event) {
 	var commands = event.arguments,
-		help = null;
+		help;
 		
 	if (commands.length === 1) {
 		help = shortSummary.call(this, api.commandPrefix);

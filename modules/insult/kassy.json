@@ -1,5 +1,9 @@
 ﻿{
   "name": "insult",
   "version": 2.0,
-  "startup": "insult.js"
+  "startup": "insult.js",
+  "command": "insult",
+  "help": [
+    [ "{{commandPrefix}}insult", "Will almost certainly return profanity." ]
+  ]
 }

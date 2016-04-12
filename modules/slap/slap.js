@@ -33,8 +33,8 @@ exports.slap = function(sender_name, infidel){
 
 // Make the slapper work for it's money
 exports.run = function(api, event) {
-    // Strip the command and obtain the query
-    var query = event.body.substr(5 + api.commandPrefix.length);
+    // Obtain the query
+    var query = event.arguments_body;
 
     // get the feels
     var result = exports.slap(event.sender_name.trim(), query);

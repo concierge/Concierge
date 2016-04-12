@@ -168,10 +168,10 @@ function checkWin(game, player) {
     }
 }
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'tictactoe')
-        || text.startsWith(commandPrefix + 'move')
-        || text.startsWith(commandPrefix + 'surrender');
+exports.match = function (event, commandPrefix) {
+    return event.arguments[0] === commandPrefix + 'tictactoe'
+        || event.arguments[0] === commandPrefix + 'move'
+        || event.arguments[0] === commandPrefix + 'surrender';
 };
 
 exports.run = function(api, event) {

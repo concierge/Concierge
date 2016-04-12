@@ -1,5 +1,9 @@
 ﻿{
   "name": "programmer",
   "version": 2.0,
-  "startup": "programmer.js"
+  "startup": "programmer.js",
+  "command": "programmer",
+  "help": [
+    [ "{{commandPrefix}}programmer", "Reactions of a programmer." ]
+  ]
 }

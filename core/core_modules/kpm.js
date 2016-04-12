@@ -262,8 +262,8 @@ var git = require.once('../git.js'),
         }.bind(this));
     };
 
-exports.match = function (text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'kpm');
+exports.match = function (event, commandPrefix) {
+    return event.arguments[0] === commandPrefix + 'kpm';
 };
 
 exports.run = function (api, event) {

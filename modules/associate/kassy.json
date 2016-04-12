@@ -1,5 +1,8 @@
 ﻿{
   "name": "associate",
   "version": 2.0,
-  "startup": "associate.js"
+  "startup": "associate.js",
+  "help": [
+    [ "{{commandPrefix}}associate \"<hook>\" \"<text>\" or clear", "Associate and disassociate a phrase with another." ]
+  ]
 }

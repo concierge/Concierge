@@ -6,7 +6,7 @@
  */
 
 exports.run = function(api, event) {
-    var text = event.body.substring(9);
+    var text = event.arguments_body;
     if (text.trim() === "") {
         api.sendMessage("I can't efen fampirise zat", event.thread_id);
         return;

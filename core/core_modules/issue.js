@@ -9,8 +9,7 @@
  *		Copyright (c) Dion Woolley and Contributors 2016.
  */
 
-var command = "issue",
-    githubAPI = "https://api.github.com/repos/mrkno/Kassy/issues",
+var githubAPI = "https://api.github.com/repos/mrkno/Kassy/issues",
     token = 'MjBlNGU3YzM0Mjk5MDI2MzI1Y2M4MDUyODBjZGE4YzAwYmQ0YjYzZQ==',
     request = require.safe('request'),
     fs = require('fs'),
@@ -117,8 +116,8 @@ exports.help = function(commandPrefix) {
     ];
 };
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + command);
+exports.match = function(event, commandPrefix) {
+    return event.arguments[0] === commandPrefix + 'issue';
 };
 
 exports.run = function(api, event) {

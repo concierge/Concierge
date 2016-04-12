@@ -80,14 +80,61 @@ exports.listModules = function (disabled) {
     return modules;
 };
 
+var createHelp = function(module) {
+    return function(commandPrefix) {
+        var h = [];
+        for (var i = 0; i < module.help.length; i++) {
+            var l = [];
+            for (var j = 0; j < module.help[i].length; j++) {
+                l.push(module.help[i][j].replace(/{{commandPrefix}}/g, commandPrefix));
+            }
+            h.push(l);
+        }
+        return h;
+    };
+},
+
+createMatcher = function(module) {
+    return function(event, commandPrefix) {
+        return event.arguments[0] === commandPrefix + module.command;
+    };
+},
+
+createHistoricalMatcher = function(matcher) {
+    return function(event, commandPrefix) {
+        return matcher(event.body, commandPrefix);
+    };
+},
+    
+getFunctionParameterNames = function (func) {
+    // http://stackoverflow.com/questions/9091838/get-function-parameter-names-for-interface-purposes
+    var f = func.toString();
+    return f.match(/\(.*?\)/)[0].replace(/[()]/gi, '').replace(/\s/gi, '').split(',');
+};
+
 exports.loadModule = function (module) {
     var modulePath  = module.folderPath,
         startPath   = path.join(modulePath, module.startup),
-        index       = Object.keys(require.cache).indexOf(startPath),
         m           = null;
 
     try {
         m = require.once(startPath);
+        if (!m.help) {
+            if (!module.help) {
+                throw 'A module must provide basic help.';
+            }
+            m.help = createHelp(module);
+        }
+
+        if (!m.match) {
+            if (!module.command) {
+                throw 'A module must provide a match function or command.';
+            }
+            m.match = createMatcher(module);
+        }
+        else if (getFunctionParameterNames(m.match)[0] === 'text') {
+            m.match = createHistoricalMatcher(m.match);
+        }
     }
     catch (e) {
         console.critical(e);

@@ -2,14 +2,6 @@ var reddit = require('./../common/reddit.js'),
     request = require.safe('request'),
     results = [];
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'pickup');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'pickup','Relationship advice.']];
-};
-
 exports.joke = function(callback, waitCallback) {
     // If we have no stored pickups, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {

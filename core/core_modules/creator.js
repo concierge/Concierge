@@ -1,5 +1,5 @@
-exports.match = function(text, commandPrefix) {
-	return text === commandPrefix + 'creator';
+exports.match = function(event, commandPrefix) {
+	return event.body === commandPrefix + 'creator';
 };
 
 exports.run = function(api, event) {

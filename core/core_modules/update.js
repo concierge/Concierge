@@ -59,8 +59,8 @@ var git = require.once('../git.js'),
 		}, updatePeriod);
 	};
 
-exports.match = function(text, commandPrefix) {
-	return text === commandPrefix + 'update';
+exports.match = function(event, commandPrefix) {
+	return event.body === commandPrefix + 'update';
 };
 
 exports.load = function() {
