@@ -52,9 +52,9 @@ exports.loadModule = function (module) {
 exports.verifyModule = function (path, disabled) {
     var mod = null;
     for (var i = 0; i < loaders.length; i++) {
-        var t = loaders[i].verifyModule(path, disabled);
-        if (t && t != null) {
-            t.__loaderUID = i;
+        mod = loaders[i].verifyModule(path, disabled);
+        if (mod) {
+            mod.__loaderUID = i;
             break;
         }
     }
