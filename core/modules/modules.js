@@ -11,7 +11,7 @@
 
 var fs              = require('fs'),
     path            = require('path'),
-	loaders			= [require.once('./kassyModule.js')],
+	loaders			= [require.once('./kassyModule.js'), require.once('./hubotModule.js')],
     files           = require.once('./../files.js'),
     config          = require('./../config.js'),
     modulesDir      = 'modules',

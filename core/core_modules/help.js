@@ -1,8 +1,8 @@
 var figlet = require.safe('figlet'),
 
-constructHelpMessage = function(help, modules, context, prefix) {
+constructHelpMessage = function(help, modules, prefix) {
 	for (var i = 0; i < modules.length; i++) {
-		var cmdHelp = modules[i].help.call(context, prefix);
+		var cmdHelp = modules[i].help(prefix);
 		for (var j = 0; j < cmdHelp.length; j++) {
 			help += '→ ' + cmdHelp[j][0] + '\n\t' + cmdHelp[j][1] + '\n';
 		}
@@ -21,13 +21,8 @@ shortSummary = function(prefix) {
 		+ this.packageInfo.version + '\n--------------------\n'
 		+ this.packageInfo.homepage +  '\n\n';
 
-	/* Deprecated */
-	var context = {
-		commandPrefix: prefix
-	};
-
-	help = constructHelpMessage(help, this.coreModules, context, prefix);
-	return constructHelpMessage(help, this.loadedModules, context, prefix);
+	help = constructHelpMessage(help, this.coreModules, prefix);
+	return constructHelpMessage(help, this.loadedModules, prefix);
 },
 
 longDescription = function(moduleName, prefix) {
@@ -47,10 +42,7 @@ longDescription = function(moduleName, prefix) {
 	}
 
 	var help = '',
-		context = {
-			commandPrefix: prefix
-		},
-		cmdHelp = module.help.call(context, prefix);
+		cmdHelp = module.help(prefix);
 		
 	for (var i = 0; i < cmdHelp.length; i++) {
 		var text = cmdHelp[i].length === 3 ? cmdHelp[i][2] : cmdHelp[i][1];
@@ -81,5 +73,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'help','displays this help', 'prints a short summary of all available commands'], [this.commandPrefix + 'help <query>', 'prints help for a specific module']];
+	return [[commandPrefix + 'help','displays this help', 'prints a short summary of all available commands'], [commandPrefix + 'help <query>', 'prints help for a specific module']];
 };

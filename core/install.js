@@ -23,9 +23,9 @@ install = function(name) {
 	console.info('Installation complete.');
 };
 
-exports.requireOrInstall = function(name) {
+exports.requireOrInstall = function(req, name) {
 	try {
-		return require(name);
+		return req(name);
 	}
 	catch(e) {
 		if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
@@ -33,7 +33,7 @@ exports.requireOrInstall = function(name) {
 		}
 	}
 	install(name);
-	return require(name);
+	return req(name);
 };
 
 exports.update = function() {
