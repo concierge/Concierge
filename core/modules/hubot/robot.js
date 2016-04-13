@@ -125,7 +125,8 @@ Robot.prototype.help = function (commandPrefix) {
 Robot.prototype.logger = {
     error: console.error,
     warning: console.warn,
-    info: console.info
+    info: console.info,
+    debug: console.debug
 };
 
 module.exports = Robot;

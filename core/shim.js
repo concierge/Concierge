@@ -58,6 +58,12 @@ exports.createPlatformModule = function(platform) {
 			platform.sendMessage('If I could set the title of this chat I would set it to "' + title + '"', thread);
 		}
 	}
+    
+    if (!platform.sendPrivateMessage) {
+        platform.sendPrivateMessage = function (message, thread) {
+            platform.sendMessage(message, thread);
+        }
+    }
 
 	if (!platform.commandPrefix) {
 		if (platform.config && platform.config.commandPrefix) {
@@ -68,25 +74,16 @@ exports.createPlatformModule = function(platform) {
 		}
 	}
 
-	if (!platform.sendPrivateMessage) {
-		platform.sendPrivateMessage = function(message, thread) {
-			platform.sendMessage(message, thread);
-		}
-	}
-
 	return platform;
 };
 
 exports.createEvent = function(thread, senderId, senderName, message) {
-	return {
+	var event = {
 		thread_id: thread,
 		sender_id: senderId,
 		sender_name: senderName,
 		body: message
-	};
-};
-
-exports.createEventHelpers = function(event) {
+    };
     event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);
     if (event.arguments === null) {
         event.arguments = [''];
@@ -95,4 +92,5 @@ exports.createEventHelpers = function(event) {
     for (var i = 0; i < event.arguments.length; i++) {
         event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
     }
+    return event;
 };

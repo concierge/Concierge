@@ -10,8 +10,7 @@
 *        Copyright (c) Matthew Knox and Contributors 2015.
 */
 
-var figlet = require('figlet'),
-    shim = require.once('./shim.js'),
+var figlet = require('figlet');
 
 Platform = function(modes) {
     require.reload('./prototypes.js');
@@ -47,8 +46,6 @@ Platform.prototype.messageRxd = function(api, event) {
     var matchArgs = [event, api.commandPrefix],
         runArgs = [api, event],
         abort = false;
-
-    shim.createEventHelpers(event);
 
     // Run core modules in platform mode
     for (var i = 0; i < this.coreModules.length; i++) {

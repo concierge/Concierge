@@ -1,8 +1,8 @@
 ﻿var Message = function (event, prefix) {
     this.event = event;
     this.prefix = prefix;
-    
-    this.message = this;
+
+    this.room = event.thread_id;
     this.text = event.body;
     this.user = {
         name: event.sender_name,
