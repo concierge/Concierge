@@ -1,15 +1,16 @@
 ﻿var Message = require.once('./message.js'),
-    Responder = require.once('./responder.js');
+    Responder = require.once('./responder.js'),
+    fs = require('fs'),
+    path = require('path');
 
 var Robot = function(Instance, descriptor, config) {
     this.name = descriptor.name;
     this._help = descriptor.help;
+    this.folderPath = descriptor.folderPath;
 
     this.listeners = [];
     this.catchAllListeners = [];
-    this.receiveMiddlewares = [];
-    this.listenerMiddlewares = [];
-    this.responseMiddlewares = [];
+    this.instances = [];
 
     this.brain = {
         on: function(event, callback) {
@@ -21,7 +22,85 @@ var Robot = function(Instance, descriptor, config) {
         data: config
     };
 
-    this.instance = new Instance(this);
+    this.instances.push(new Instance(this));
+};
+
+Robot.generateHubotJson = function (folderPath, scriptLocation) {
+    var hubotDocumentationSections = [
+            'description',
+            'dependencies',
+            'configuration',
+            'commands',
+            'notes',
+            'author',
+            'authors',
+            'examples',
+            'tags',
+            'urls'
+        ],
+        mod = path.join(folderPath, scriptLocation),
+        body = fs.readFileSync(mod, 'utf-8'),
+        scriptDocumentation = { name: path.basename(mod).replace(/\.(coffee|js)$/, '') },
+        currentSection = null,
+        ref = body.split("\n"),
+        commands = [];
+
+    for (var i = 0; i < ref.length; i++) {
+        var line = ref[i];
+        if (line[0] !== '#' && line.substr(0, 2) !== '//') {
+            break;
+        }
+        var cleanedLine = line.replace(/^(#|\/\/)\s?/, "").trim();
+        if (cleanedLine.length === 0 || cleanedLine.toLowerCase() === 'none') {
+            continue;
+        }
+
+        var nextSection = cleanedLine.toLowerCase().replace(':', '');
+        if (hubotDocumentationSections.indexOf(nextSection) >= 0) {
+            currentSection = nextSection;
+            scriptDocumentation[currentSection] = [];
+        } else if (currentSection) {
+            scriptDocumentation[currentSection].push(cleanedLine.trim());
+            if (currentSection === 'commands') {
+                commands.push(cleanedLine.trim());
+            }
+        }
+    }
+
+    var help = [];
+    if (scriptDocumentation.commands) {
+        for (var i = 0; i < scriptDocumentation.commands.length; i++) {
+            var spl = scriptDocumentation.commands[i].match(/(?:[^-]|(?:--[^ ]))+/g);
+            if (spl[0].startsWith('hubot ')) {
+                spl[0] = '{{commandPrefix}}' + spl[0].substr(6);
+            }
+            for (var j = 0; j < spl.length; j++) {
+                spl[j] = spl[j].trim();
+            }
+            if (spl.length === 1) {
+                spl.push('Does what the command says.');
+            }
+            help.push(spl);
+        }
+    }
+
+    if (help.length === 0) {
+        help.push([scriptDocumentation.name, "Does something. The unhelpful author didn't specify what."]);
+    }
+
+    return {
+        name: scriptDocumentation.name,
+        startup: scriptLocation,
+        version: 1.0,
+        dependencies: scriptDocumentation.dependencies,
+        configuration: scriptDocumentation.configuration,
+        notes: scriptDocumentation.notes,
+        authors: scriptDocumentation.authors || scriptDocumentation.author,
+        examples: scriptDocumentation.examples,
+        tags: scriptDocumentation.tags,
+        urls: scriptDocumentation.urls,
+        help: help
+    };
 };
 
 Robot.prototype.run = function (api, event) {
@@ -60,7 +139,10 @@ Robot.prototype.match = function (event, commandPrefix) {
                 event.__robotCallbackListeners = [];
                 event.__robotCallbackMessage = msg;
             }
-            this.catchAllListeners[i](msg);
+            event.__robotCallbackListeners.push({
+                callback: this.catchAllListeners[i],
+                match: null
+            });
         }
     }
     
@@ -98,17 +180,7 @@ Robot.prototype.catchAll = function (callback) {
     this.listeners.push(callback);
 };
 
-Robot.prototype.receiveMiddleware = function (middleware) {
-    this.receiveMiddlewares.push(middleware);
-};
-
-Robot.prototype.listenerMiddleware = function (middleware) {
-    this.listenerMiddlewares.push(middleware);
-};
-
-Robot.prototype.responseMiddleware = function (middleware) {
-    this.responseMiddlewares.push(middleware);
-};
+Robot.prototype.ignoreHelpContext = true;
 
 Robot.prototype.help = function (commandPrefix) {
     var h = [];
@@ -127,6 +199,21 @@ Robot.prototype.logger = {
     warning: console.warn,
     info: console.info,
     debug: console.debug
+};
+
+Robot.prototype.loadFile = function (scriptsPath, script) {
+    if (!script) {
+        script = scriptsPath;
+        scriptsPath = this.folderPath;
+    }
+
+    var p = path.join(scriptsPath, script),
+        Instance = require.once(p);
+    if (this.instances.length === 1) {
+        var hj = Robot.generateHubotJson(scriptsPath, script);
+        this._help = hj.help;
+    }
+    this.instances.push(new Instance(this));
 };
 
 module.exports = Robot;

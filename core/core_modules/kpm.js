@@ -39,24 +39,36 @@ var git = require.once('../git.js'),
         install: {
             run: function(args, api, event) {
                 if (args.length === 0) {
-                    api.sendMessage('No modules provided to install!', event.thread_id);
+                    api.sendMessage('Nothing provided to install!', event.thread_id);
                     return;
                 }
 
                 for (var i = 0; i < args.length; i++) {
                     var url = args[i];
-                    if (!url.startsWith('http') && !url.startsWith('ssh')) {
-                        var spl = url.split('/');
-                        if (spl.length !== 2) {
-                            api.sendMessage('Invalid github reference provided "' + url + '". Skipping...', event.thread_id);
-                            continue;
-                        }
-                        url = 'https://github.com/' + url;
+                    if (url.startsWith('ssh') || url.endsWith('.git')) {
+                        gitInstall.call(this, url, api, event);
+                        continue;
                     }
-                    install.call(this, url, api, event);
+                    else if (url.startsWith('http') && (url.endsWith('.coffee') || url.endsWith('.js'))) {
+                        scriptInstall.call(this, url, api, event);
+                        continue;
+                    }
+
+                    var spl = url.split('/');
+                    if (spl.length === 1) {
+                        // todo: kpm table lookup
+                        api.sendMessage('KPM table has not yet been implemented. Skipping...', event.thread_id);
+                    }
+                    else if (spl.length === 2) {
+                        url = 'https://github.com/' + url.trim();
+                        gitInstall.call(this, url, api, event);
+                    }
+                    else {
+                        api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                    }
                 }
             },
-            command: 'install <gitUrl> [<gitUrl> [<gitUrl> [...]]]',
+            command: 'install <url|ref> [<url|ref> [<url|ref> [...]]]',
             help: 'Installs one or more modules from exising git repositories or github references.',
             detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
         },
@@ -105,27 +117,6 @@ var git = require.once('../git.js'),
             command: 'list',
             help: 'Lists all installed modules (except preinstalled ones).',
             detailedHelp: 'Lists all modules that have been installed using Kassy Package Manager.'
-        },
-
-        "hubot-install": {
-            run: function (args, api, event) {
-                if (args.length === 0) {
-                    api.sendMessage('No scripts provided to install!', event.thread_id);
-                    return;
-                }
-
-                for (var i = 0; i < args.length; i++) {
-                    var url = args[i];
-                    if (!url.startsWith('http') || !(url.endsWith('.coffee') || url.endsWith('.js'))) {
-                        api.sendMessage('Invalid script URL provided "' + url + '". Skipping...', event.thread_id);
-                        continue;
-                    }
-                    hubotInstall.call(this, url, api, event);
-                }
-            },
-            command: 'hubot-install <scriptUrl> [<scriptUrl> [<scriptUrl> [...]]]',
-            help: 'Installs one or more hubot scripts (unverified) and attempts to load them.',
-            detailedHelp: 'Installs one or more hubot scripts (does not verify if they are valid) from a url, and attempts to load them into the bot.'
         }
     },
 
@@ -175,26 +166,23 @@ var git = require.once('../git.js'),
             } else {
                 api.sendMessage('Restarting module "' + module.name + '"...');
                 // unload the current version
-                cfg.saveModuleConfig(module.name);
                 this.loadedModules = this.loadedModules.filter(function (value) {
-                    if (value.name === module.name) {
-                        if (value.unload) {
-                            value.unload();
-                        }
-                        return false;
-                    }
-                    return true;
+                    if (value.name !== module.name) return true;
+                    exports.platform.modulesLoader.unloadModule(value);
+                    return false;
                 });
                 delete moduleCache[module.name];
 
                 // load new module copy
-                var m = require.once(path.join(module.folderPath, 'kassy.json'));
-                m.folderPath = module.folderPath;
-                moduleCache[module.name] = m;
-                module = m;
-                this.loadedModules.push(exports.platform.modulesLoader.loadModule(module));
-
-                api.sendMessage('"' + module.name + '" is now at version ' + module.version + '.', event.thread_id);
+                var descriptor = exports.platform.modulesLoader.verifyModule(module.folderPath),
+                    m = exports.platform.modulesLoader.loadModule(descriptor);
+                if (m !== null) {
+                    moduleCache[descriptor.name] = descriptor;
+                    exports.platform.loadedModules.push(m);
+                    api.sendMessage('"' + module.name + '" is now at version ' + module.version + '.', event.thread_id);
+                } else {
+                    api.sendMessage('Loading updated "' + module.name + '" failed. Manual intervention will be required.', event.thread_id);
+                }
             }
         }.bind(this));
     },
@@ -202,15 +190,10 @@ var git = require.once('../git.js'),
     uninstall = function(module, api, event) {
         api.sendMessage('Unloading module "' + module.name + '"...', event.thread_id);
         // unload the current version
-        cfg.saveModuleConfig(module.name);
         this.loadedModules = this.loadedModules.filter(function (value) {
-            if (value.name === module.name) {
-                if (value.unload) {
-                    value.unload();
-                }
-                return false;
-            }
-            return true;
+            if (value.name !== module.name) return true;
+            exports.platform.modulesLoader.unloadModule(value);
+            return false;
         });
 
         delete moduleCache[module.name];
@@ -272,15 +255,16 @@ var git = require.once('../git.js'),
             cleanup();
         }
     },
-    install = function(url, api, event) {
+
+    gitInstall = function(url, api, event) {
         api.sendMessage('Attempting to install module from "' + url + '"...', event.thread_id);
         tmp.dir(function (err, dir, cleanupCallback) {
             if (err) throw err;
             var cleanup = function(){
-                    fs.emptyDir(dir, function () {
-                        cleanupCallback(); // not a lot we can do about errors here.
-                    });
-                }.bind(this);
+                fs.emptyDir(dir, function () {
+                    cleanupCallback(); // not a lot we can do about errors here.
+                });
+            }.bind(this);
 
             git.clone(url, dir, function (err1) {
                 if (err1) {
@@ -294,7 +278,8 @@ var git = require.once('../git.js'),
             });
         }.bind(this));
     },
-    hubotInstall = function (url, api, event) {
+
+    scriptInstall = function (url, api, event) {
         api.sendMessage('Attempting to install script from "' + url + '"...', event.thread_id);
         tmp.dir(function(err, dir, cleanupCallback) {
             if (err) throw err;

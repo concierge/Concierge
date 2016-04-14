@@ -1,8 +1,10 @@
 var figlet = require.safe('figlet'),
 
-constructHelpMessage = function(help, modules, prefix) {
-	for (var i = 0; i < modules.length; i++) {
-		var cmdHelp = modules[i].help(prefix);
+constructHelpMessage = function (help, modules, context) {
+    for (var i = 0; i < modules.length; i++) {
+        var cmdHelp = modules[i].ignoreHelpContext
+            ? modules[i].help(context.commandPrefix)
+            : modules[i].help.call(context, context.commandPrefix);
 		for (var j = 0; j < cmdHelp.length; j++) {
 			help += '→ ' + cmdHelp[j][0] + '\n\t' + cmdHelp[j][1] + '\n';
 		}
@@ -11,21 +13,21 @@ constructHelpMessage = function(help, modules, prefix) {
 },
 
 checkIfModuleExists = function(modules, moduleName) {
-	return modules.find(function(element, index, array) {
+	return modules.find(function(element) {
 		return element.name === moduleName;
 	});
 },
 
-shortSummary = function(prefix) {
+shortSummary = function(context) {
 	var help = figlet.textSync(this.packageInfo.name.toProperCase()) + '\n '
 		+ this.packageInfo.version + '\n--------------------\n'
 		+ this.packageInfo.homepage +  '\n\n';
 
-	help = constructHelpMessage(help, this.coreModules, prefix);
-	return constructHelpMessage(help, this.loadedModules, prefix);
+	help = constructHelpMessage(help, this.coreModules, context);
+    return constructHelpMessage(help, this.loadedModules, context);
 },
 
-longDescription = function(moduleName, prefix) {
+longDescription = function(moduleName, context) {
 	var module = checkIfModuleExists(this.coreModules, moduleName);
 
 	if (!module || module.length === 0) {
@@ -42,7 +44,9 @@ longDescription = function(moduleName, prefix) {
 	}
 
 	var help = '',
-		cmdHelp = module.help(prefix);
+        cmdHelp = module.ignoreHelpContext
+            ? module.help(context.commandPrefix)
+            : module.help.call(context, context.commandPrefix);
 		
 	for (var i = 0; i < cmdHelp.length; i++) {
 		var text = cmdHelp[i].length === 3 ? cmdHelp[i][2] : cmdHelp[i][1];
@@ -57,15 +61,18 @@ exports.match = function(event, commandPrefix) {
 };
 
 exports.run = function(api, event) {
-	var commands = event.arguments,
+    var commands = event.arguments,
+        context = {
+            commandPrefix: api.commandPrefix
+        },
 		help;
 		
 	if (commands.length === 1) {
-		help = shortSummary.call(this, api.commandPrefix);
+		help = shortSummary.call(this, context);
 	}
 	else {
 		commands.splice(0, 1);
-		help = longDescription.call(this, commands.join(' '), api.commandPrefix);
+		help = longDescription.call(this, commands.join(' '), context);
 	}
 	
 	api.sendPrivateMessage(help, event.thread_id, event.sender_id);

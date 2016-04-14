@@ -22,6 +22,8 @@ Platform = function(modes) {
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
     this.modulesLoader = require.once('./modules/modules.js');
+    this.coreLoader = require.once('./modules/core.js');
+    this.coreLoader.platform = this;
     this.statusFlag = StatusFlag.NotStarted;
     this.onShutdown = null;
     this.waitingTime = 250;
@@ -60,7 +62,7 @@ Platform.prototype.messageRxd = function(api, event) {
 
     // Run user modules in protected mode
     for (var i = 0; i < this.loadedModules.length; i++) {
-    	var matchResult = false;
+    	var matchResult;
     	try {
     		matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
     	}
@@ -132,11 +134,9 @@ Platform.prototype.start = function() {
 
     // Load core modules
     console.warn('Loading core components...');
-	var coreLoader = require.once('./modules/core.js');
-	coreLoader.platform = this;
-    var m = coreLoader.listCoreModules();
+    var m = this.coreLoader.listCoreModules();
     for (var i = 0; i < m.length; i++) {
-        this.coreModules.push(coreLoader.loadCoreModule(this, m[i]));
+        this.coreModules.push(this.coreLoader.loadCoreModule(this, m[i]));
     }
 
     // Load Kassy modules
@@ -188,24 +188,18 @@ Platform.prototype.shutdown = function(flag) {
     }
 
     // Unload user modules
-    for (var i = 0; i < this.loadedModules.length; i++) {
-        if (this.loadedModules[i].unload) {
-            this.loadedModules[i].unload();
-        }
-        this.loadedModules[i] = null;
+    while (this.loadedModules.length > 0) {
+        this.modulesLoader.unloadModule(this.loadedModules[0]);
+        this.loadedModules.splice(0, 1);
     }
-    this.loadedModules = [];
-
+    
     // Unload core modules
-    for (var i = 0; i < this.coreModules.length; i++) {
-        if (this.coreModules[i].unload) {
-            this.coreModules[i].unload();
-        }
-        this.coreModules[i] = null;
+    while (this.coreModules.length > 0) {
+        this.coreLoader.unloadCoreModule(this.coreModules[0]);
+        this.coreModules.splice(0, 1);
     }
-    this.coreModules = [];
 
-    this.config.saveConfig();
+    this.config.saveSystemConfig();
     this.statusFlag = flag ? flag : StatusFlag.Shutdown;
 
     console.warn(this.packageInfo.name + " has shutdown.");

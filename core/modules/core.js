@@ -26,9 +26,23 @@ exports.loadCoreModule = function(platform, module) {
         index = Object.keys(require.cache).indexOf(fp),
         m = index !== -1 ? require.reload(fp) : require.once(fp);
     m.platform = exports.platform;
-    m.name = module;
+    m.name = module.split('.')[0];
     if (m.load) {
         m.load.call(platform);
     }
     return m;
+};
+
+exports.unloadCoreModule = function(mod) {
+    try {
+        console.debug('Unloading core module "' + mod.name + '".');
+        if (mod.unload) {
+            mod.unload();
+        }
+    }
+    catch (e) {
+        console.error('Unloading core module "' + mod.name + '" failed.');
+        console.critical(e);
+    }
+    return null;
 };

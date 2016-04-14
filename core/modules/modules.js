@@ -60,3 +60,18 @@ exports.verifyModule = function (path, disabled) {
     }
     return mod;
 };
+
+exports.unloadModule = function(mod) {
+    try {
+        console.debug('Unloading module "' + mod.name + '".');
+        if (mod.unload) {
+            mod.unload();
+        }
+        config.saveModuleConfig(mod.name);
+    }
+    catch (e) {
+        console.error('Unloading module "' + mod.name + '" failed.');
+        console.critical(e);
+    }
+    return null;
+};

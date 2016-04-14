@@ -15,6 +15,7 @@ var fs = require('fs'),
     config = require('./../config.js'),
     modulesDir = 'modules',
     descriptor = 'hubot.json',
+    pkg = 'package.json',
     Robot = require.once('./hubot/robot.js'),
     coffeescriptLoaded = false;
 
@@ -30,118 +31,39 @@ var verifyModuleDescriptior = function (hj, disabled) {
     return true;
 };
 
-var generateHubotJson = function(folderPath, scriptLocation) {
-    var indexOf = [].indexOf || function(item) {
-            for (var i = 0, l = this.length; i < l; i++) {
-                if (i in this && this[i] === item)
-                    return i;
-            }
-            return -1;
-        },
-        hubotDocumentationSections = [
-            'description',
-            'dependencies',
-            'configuration',
-            'commands',
-            'notes',
-            'author',
-            'authors',
-            'examples',
-            'tags',
-            'urls'
-        ],
-        mod = path.join(folderPath, scriptLocation),
-        body = fs.readFileSync(mod, 'utf-8'),
-        scriptDocumentation = { name: path.basename(mod).replace(/\.(coffee|js)$/, '') },
-        currentSection = null,
-        ref = body.split("\n"),
-        commands = [];
-    
-    for (var i = 0, len = ref.length; i < len; i++) {
-        var line = ref[i];
-        if (!(line[0] === '#' || line.substr(0, 2) === '//')) {
-            break;
-        }
-        var cleanedLine = line.replace(/^(#|\/\/)\s?/, "").trim();
-        if (cleanedLine.length === 0 || cleanedLine.toLowerCase() === 'none') {
-            continue;
-        }
-        
-        var nextSection = cleanedLine.toLowerCase().replace(':', '');
-        if (indexOf.call(hubotDocumentationSections, nextSection) >= 0) {
-            currentSection = nextSection;
-            scriptDocumentation[currentSection] = [];
-        } else {
-            if (currentSection) {
-                scriptDocumentation[currentSection].push(cleanedLine.trim());
-                if (currentSection === 'commands') {
-                    commands.push(cleanedLine.trim());
-                }
-            }
-        }
-    }
-
-    var help = [];
-    for (var i = 0; i < scriptDocumentation.commands.length; i++) {
-        var spl = scriptDocumentation.commands[i].match(/(?:[^-]|(?:--[^ ]))+/g);
-        if (spl[0].startsWith('hubot ')) {
-            spl[0] = '{{commandPrefix}}' + spl[0].substr(6);
-        }
-        for (var j = 0; j < spl.length; j++) {
-            spl[j] = spl[j].trim();
-        }
-        if (spl.length === 1) {
-            spl.push('Does what the command says.');
-        }
-        help.push(spl);
-    }
-    
-    if (help.length === 0) {
-        help.push([scriptDocumentation.name, 'Does something. The unhelpful author didn\'t specify what.']);
-    }
-
-    return {
-        name: scriptDocumentation.name,
-        startup: scriptLocation,
-        version: 1.0,
-        dependencies: scriptDocumentation.dependencies,
-        configuration: scriptDocumentation.configuration,
-        notes: scriptDocumentation.notes,
-        authors: scriptDocumentation.authors || scriptDocumentation.author,
-        examples: scriptDocumentation.examples,
-        tags: scriptDocumentation.tags,
-        urls: scriptDocumentation.urls,
-        help: help
-    };
-};
-
 exports.verifyModule = function (location, disabled) {
     var stat = fs.statSync(location);
     if (!stat.isDirectory()) {
-        return;
+        return null;
     }
     
     var folderPath = path.resolve(location),
-        p = path.join(folderPath, './' + descriptor);
+        desc = path.join(folderPath, './' + descriptor),
+        pack = path.join(folderPath, './' + pkg),
+        hj;
+
     try {
-        stat = fs.statSync(p);
+        fs.statSync(desc);
+        hj = require.once(desc);
     }
     catch (e) {
-        stat = null;
-    }
-
-    var hj;
-    if (stat == null) {
-        var files = fs.readdirSync(folderPath);
-        if (files.length !== 1) {
-            return null;
+        var l;
+        try {
+            fs.statSync(pack);
+            var p = require(pack);
+            hj = Robot.generateHubotJson(folderPath, p.main);
+            hj.name = p.name;
+            hj.version = p.version;
         }
-
-        hj = generateHubotJson(folderPath, files[0]);
-        fs.writeFileSync(p, JSON.stringify(hj, null, 4), 'utf8');
-    }
-    else {
-        hj = require.once(p);
+        catch (e) {
+            var files = fs.readdirSync(folderPath);
+            if (files.length !== 1) {
+                return null;
+            }
+            hj = Robot.generateHubotJson(folderPath, files[0]);
+        }
+        
+        fs.writeFileSync(desc, JSON.stringify(hj, null, 4), 'utf8');
     }
 
     if (!verifyModuleDescriptior(hj, disabled)) {
@@ -201,7 +123,7 @@ exports.loadModule = function (module) {
         var modulePath = module.folderPath,
             startPath = path.join(modulePath, module.startup),
             m = require.once(startPath);
-        
+
         var cfg = config.loadModuleConfig(module, modulePath);
         return new Robot(m, module, cfg);
     }
