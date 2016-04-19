@@ -12,13 +12,13 @@
 
 var figlet = require('figlet');
 
-Platform = function(modes) {
+Platform = function () {
     require.reload('./prototypes.js');
 
     this.config = require('./config.js');
     this.loadedModules = [];
     this.coreModules = [];
-    this.modes = null;
+    this.integrationManager = require('./integrations/integrations.js');
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
     this.modulesLoader = require.once('./modules/modules.js');
@@ -27,9 +27,7 @@ Platform = function(modes) {
     this.statusFlag = StatusFlag.NotStarted;
     this.onShutdown = null;
     this.waitingTime = 250;
-
     this.packageInfo.name = this.packageInfo.name.toProperCase();
-    this.setModes(modes);
 };
 
 Platform.prototype.handleTransaction = function(module, args) {
@@ -85,35 +83,9 @@ Platform.prototype.messageRxd = function(api, event) {
     }
 };
 
-Platform.prototype.setModes = function(modes) {
-    try {
-        if (this.statusFlag !== StatusFlag.NotStarted) {
-            throw 'Cannot change mode when it is already started.';
-        }
-        this.modes = [];
-        for (var i = 0; i < modes.length; i++) {
-            var mode = {
-                instance: require.once('./output/' + modes[i]),
-                name: modes[i]
-            };
-            this.modes.push(mode);
-        }
-        return true;
-    }
-    catch (e) {
-        console.critical(e);
-        console.error('Loading the output mode file \'' + modes[i] + '\' failed.' +
-            '\n\nIf this is your file please ensure that it is syntactically correct.');
-        return false;
-    }
-};
-
 Platform.prototype.start = function() {
     if (this.statusFlag !== StatusFlag.NotStarted) {
         throw 'Cannot start platform when it is already started.';
-    }
-    if (!this.modes.length) {
-        throw 'Modes must be set before starting';
     }
 
     console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
@@ -124,13 +96,7 @@ Platform.prototype.start = function() {
                 + 'Loading system configuration...');
 
     this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
-    for (var i = 0; i < this.modes.length; i++) {
-        this.modes[i].instance.platform = this;
-        this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
-        if (!this.modes[i].instance.config.commandPrefix) {
-            this.modes[i].instance.config.commandPrefix = this.defaultPrefix;
-        }
-    }
+    this.integrationManager.setIntegrationConfigs(this);
 
     // Load core modules
     console.warn('Loading core components...');
@@ -151,18 +117,7 @@ Platform.prototype.start = function() {
 
     // Starting output
     console.warn('Starting integrations...');
-    for (var i = 0; i < this.modes.length; i++) {
-        try {
-            console.write("Loading output '" + this.modes[i].name + "'...\t");
-            this.modes[i].instance.start(this.messageRxd.bind(this));
-            console.info("[DONE]");
-        }
-        catch (e) {
-            console.error("[FAIL]");
-            console.debug("Failed to start output integration '" + this.modes[i].name + "'.");
-            console.critical(e);
-        }
-    }
+    this.integrationManager.startIntegrations(this.messageRxd.bind(this));
 
     this.statusFlag = StatusFlag.Started;
     console.warn('System has started. ' + 'Hello World!'.rainbow);
@@ -176,16 +131,8 @@ Platform.prototype.shutdown = function(flag) {
         flag = 0;
     }
 
-    // Stop output modes
-    for (var i = 0; i < this.modes.length; i++) {
-        try {
-            this.modes[i].instance.stop();
-        }
-        catch (e) {
-            console.debug("Failed to correctly stop output mode '" + this.modes[i] + "'.");
-            console.critical(e);
-        }
-    }
+    // Stop output integrations
+    this.integrationManager.stopIntegrations();
 
     // Unload user modules
     while (this.loadedModules.length > 0) {

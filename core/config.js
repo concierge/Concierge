@@ -11,7 +11,7 @@
 
 var fs = require('fs'),
     path = require('path'),
-    modes = require('./modes.js').listModes(),
+    integs = require('./integrations/integrations.js').listIntegrations(),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
@@ -123,9 +123,9 @@ exports.loadOutputConfig = function (outputName) {
     if (!config[outputName]) {
         config[outputName] = {};
     }
-	
+
     for (var obj in config) {
-        if (modes.includes(obj)) continue;
+        if (integs.find(int => int.name === obj)) continue;
         if (!config[outputName][obj]) {
             config[outputName][obj] = config[obj];
         }

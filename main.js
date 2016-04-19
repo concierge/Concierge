@@ -27,9 +27,9 @@ require('./core/prototypes.js');
 require('./core/status.js');
 
 var consolec = require('./core/unsafe/console.js'),
-    modesf = require('./core/modes.js'),
+    integf = require('./core/integrations/integrations.js'),
     startup = require('./core/startup.js'),
-    modes = modesf.listModes(),
+    integ = integf.listIntegrations(),
     args = process.argv;
 
 args.splice(0, 2);
@@ -48,22 +48,29 @@ if (args[0] === 'log') {
     consolec.setLog(true);
 }
 
-// Check startup modes
+if (!args || args.length === 0) {
+    console.info('No integrations specified, defaulting to \'test\'.');
+    args.push('test');
+}
+
+// Check startup integrations
+var startArgs = [];
 for (var i = 0; i < args.length; i++) {
     args[i] = args[i].toLowerCase();
-    if (!modes.includes(args[i])) {
+    var inte = integ.find(function(int) {
+        return int.name === args[i];
+    });
+    if (!inte) {
         console.error('Unknown mode \'' + args[i] + '\'');
-        console.info('The modes avalible on your system are:');
-        for (var i = 0; i < modes.length; i++) {
-            console.info('\t- \'' + modes[i] + '\'');
+        console.info('The integrations avalible on your system are:');
+        for (var i = 0; i < integ.length; i++) {
+            console.info('\t- \'' + integ[i].name + '\'');
         }
         process.exit(-2);
     }
-}
-
-if (!args || args.length == 0) {
-    console.info('No mode specified, defaulting to \'test\'.');
-    args.push('test');
+    else {
+        startArgs.push(inte);
+    }
 }
 
 process.on('uncaughtException', function(err) {
@@ -76,4 +83,5 @@ process.on('uncaughtException', function(err) {
     console.critical(err);
 });
 
-startup.run(args);
+integf.setIntegrations(startArgs);
+startup.run();
