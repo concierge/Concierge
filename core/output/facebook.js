@@ -17,9 +17,12 @@ var getSenderName = function(api, event, finished) {
 			return finished('<Unknown User>');
 		}
 		for (var id in info) {
-			threadInfo[event.threadID][id] = info[id].name;
+			threadInfo[event.threadID][id] = {
+				name: info[id].name,
+				email: 'unknown@foo.bar'
+			};
 		}
-		return finished(threadInfo[event.threadID][event.senderID]);
+		return finished(threadInfo[event.threadID][event.senderID].name);
 	};
 
 	if (!threadInfo[event.threadID]) {
@@ -44,7 +47,8 @@ exports.start = function(callback) {
 		}
 
 		var options = {
-			listenEvents: true
+			listenEvents: true,
+			selfListen: true
 		};
 		if (!console.isDebug()) {
 			options.logLevel = 'silent';
@@ -108,6 +112,9 @@ exports.start = function(callback) {
 					endTyping = null;
 				}
 				api.setTitle(title, thread);
+			},
+			getUsers: function(thread) {
+				return threadInfo[thread];
 			}
 		});
 
@@ -117,16 +124,42 @@ exports.start = function(callback) {
 				console.error(err);
 				process.exit(-1);
 			}
-			stopListeningMethod = function() {
-				stopListening();
-				api.logout();
-			};
+			if (!stopListeningMethod) {
+				stopListeningMethod = function() {
+					stopListening();
+					api.logout();
+				};
+			}
+
 			switch(event.type) {
 				case "message": {
 					getSenderName(api, event, function(name) {
 						var data = shim.createEvent(event.threadID, event.senderID, name, event.body);
 						callback(platform, data);
 					});
+					break;
+				}
+				case "event": {
+					switch (event.logMessageType) {
+						case "log:unsubscribe": {
+							var usrs = event.logMessageData.removed_participants;
+							for (var i = 0; i < usrs.length; i++) {
+								usrs[i] = usrs[i].split(':')[1];
+								if (threadInfo[event.threadID] && threadInfo[event.threadID][usrs[i]]) {
+									delete threadInfo[event.threadID][usrs[i]];
+								}
+							}
+							break;
+						}
+						case "log:subscribe": {
+							var usrs = event.logMessageData.added_participants;
+							for (var i = 0; i < usrs.length; i++) {
+								usrs[i] = usrs[i].split(':')[1];
+							}
+							getSenderName(api, event, function(){});
+							break;
+						}
+					}
 					break;
 				}
 			}
