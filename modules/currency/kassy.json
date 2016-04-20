@@ -1,0 +1,5 @@
+﻿{
+  "name": "currency",
+  "version": 1.0,
+  "startup": "currency.js"
+}
