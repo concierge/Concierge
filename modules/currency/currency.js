@@ -41,18 +41,23 @@ exports.run = function(api, event) {
 
 function convert(f, to, amount, conversions) {
     if (!conversions[f]) {
-        return {error: "Unsupported currency '" + f + "'" };
+        return {
+            error: "Unsupported currency '" + f + "'"
+        };
     }
 
     if (!conversions[to]) {
-        return {error: "Unsupported currency '" + to + "'" };
+        return {
+            error: "Unsupported currency '" + to + "'" 
+        };
     }
-
 
     var a = amount/conversions[f] * conversions[to];
     a = Math.round(a*100) / 100;
 
-    return {result: a }
+    return {
+        result: a
+    };
 }
 
 function get_exchange(callback) {
