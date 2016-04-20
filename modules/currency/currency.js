@@ -1,7 +1,7 @@
 var request = require.safe('request');
 
 exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + '8ball');
+    return text.startsWith(commandPrefix + 'currency');
 };
 
 exports.help = function() {
