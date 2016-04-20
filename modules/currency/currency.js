@@ -8,18 +8,6 @@ exports.help = function() {
     return [[this.commandPrefix + 'currency <number> <from-currency> in <to-currency>','Converts between currencies.']];
 };
 
-exports.get_exchange = function(callback) {
-  request.get('http://api.fixer.io/latest', function(error, response, body) {
-       if (response.statusCode === 200 && response.body) {
-           var result = JSON.parse(response.body);
-           callback(result);
-       }
-       else {
-           callback({error:"Couldn't talk to fixer.io for the exchange rate.."});
-       }
-   });
-}
-
 exports.run = function(api, event) {
     var query = event.body.substr(10),
         parts = query.split(' ');
@@ -30,7 +18,7 @@ exports.run = function(api, event) {
       return;
     }
 
-    this.get_exchange(function (result) {
+    get_exchange(function (result) {
       //If we couldn't get the latest data, give up.
       if (result.error) {
         api.sendMessage(result.error, event.thread_id);
@@ -40,7 +28,7 @@ exports.run = function(api, event) {
 
       //Add an entry for the Euro
       result.rates.EUR = 1;
-      result = exports.convert(parts[1], parts[3], parseInt(parts[0]), result.rates);
+      result = convert(parts[1], parts[3], parseInt(parts[0]), result.rates);
 
       //If we couldn't convert, give up
       if (result.error) {
@@ -52,7 +40,7 @@ exports.run = function(api, event) {
     });
 };
 
-exports.convert = function(f, to, amount, conversions) {
+function convert(f, to, amount, conversions) {
   if (!conversions[f]) {
     return {error: "Unsupported currency '" + f + "'" };
   }
@@ -66,4 +54,16 @@ exports.convert = function(f, to, amount, conversions) {
   a = Math.round(a*100) / 100;
 
   return {result: a }
+}
+
+function get_exchange(callback) {
+  request.get('http://api.fixer.io/latest', function(error, response, body) {
+       if (response.statusCode === 200 && response.body) {
+           var result = JSON.parse(response.body);
+           callback(result);
+       }
+       else {
+           callback({error:"Couldn't talk to fixer.io for the exchange rate.."});
+       }
+   });
 }
