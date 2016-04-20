@@ -9,7 +9,7 @@ var fb = require("facebook-chat-api"),
 
 var getSenderName = function(api, event, finished) {
 	if (threadInfo[event.threadID] && threadInfo[event.threadID][event.senderID]) {
-		return finished(threadInfo[event.threadID][event.senderID]);
+		return finished(threadInfo[event.threadID][event.senderID].name);
 	}
 
 	var callback = function(err, info) {
@@ -47,8 +47,7 @@ exports.start = function(callback) {
 		}
 
 		var options = {
-			listenEvents: true,
-			selfListen: true
+			listenEvents: true
 		};
 		if (!console.isDebug()) {
 			options.logLevel = 'silent';
