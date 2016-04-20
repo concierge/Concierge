@@ -5,16 +5,13 @@ var fb = require("facebook-chat-api"),
 	platform = null,
 	endTyping = null,
 	platformApi = null,
+	unknownIter = 1,
 	threadInfo = {};
 
-var getSenderName = function(api, event, finished) {
-	if (threadInfo[event.threadID] && threadInfo[event.threadID][event.senderID]) {
-		return finished(threadInfo[event.threadID][event.senderID].name);
-	}
-
+var getSenderInfo = function (ids, api, event, finished) {
 	var callback = function(err, info) {
 		if (err) {
-			return finished('<Unknown User>');
+			return finished('<Unknown User ' + unknownIter++ + '>');
 		}
 		for (var id in info) {
 			threadInfo[event.threadID][id] = {
@@ -24,18 +21,25 @@ var getSenderName = function(api, event, finished) {
 		}
 		return finished(threadInfo[event.threadID][event.senderID].name);
 	};
+	api.getUserInfo(ids, callback);
+}
+
+var getSenderName = function(api, event, finished) {
+	if (threadInfo[event.threadID] && threadInfo[event.threadID][event.senderID]) {
+		return finished(threadInfo[event.threadID][event.senderID].name);
+	}
 
 	if (!threadInfo[event.threadID]) {
 		threadInfo[event.threadID] = {};
 		api.getThreadInfo(event.threadID, function(err, info) {
 			if (err) {
-				return finished('<Unknown User>');
+				return finished('<Unknown User ' + unknownIter++ + '>');
 			}
-			api.getUserInfo(info.participantIDs, callback);
+			getSenderInfo(info.participantIDs, api, event, finished);
 		});
 	}
 	else {
-		api.getUserInfo([event.senderID], callback);
+		getSenderInfo([event.senderID], api, event, finished);
 	}
 };
 
@@ -155,7 +159,7 @@ exports.start = function(callback) {
 							for (var i = 0; i < usrs.length; i++) {
 								usrs[i] = usrs[i].split(':')[1];
 							}
-							getSenderName(api, event, function(){});
+							getSenderInfo(usrs, api, event, function(){});
 							break;
 						}
 					}
