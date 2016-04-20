@@ -4,7 +4,37 @@ var fb = require("facebook-chat-api"),
 	stopListeningMethod = null,
 	platform = null,
 	endTyping = null,
-	platformApi = null;
+	platformApi = null,
+	threadInfo = {};
+
+var getSenderName = function(api, event, finished) {
+	if (threadInfo[event.threadID] && threadInfo[event.threadID][event.senderID]) {
+		return finished(threadInfo[event.threadID][event.senderID]);
+	}
+
+	var callback = function(err, info) {
+		if (err) {
+			return finished('<Unknown User>');
+		}
+		for (var id in info) {
+			threadInfo[event.threadID][id] = info[id].name;
+		}
+		return finished(threadInfo[event.threadID][event.senderID]);
+	};
+
+	if (!threadInfo[event.threadID]) {
+		threadInfo[event.threadID] = {};
+		api.getThreadInfo(event.threadID, function(err, info) {
+			if (err) {
+				return finished('<Unknown User>');
+			}
+			api.getUserInfo(info.participantIDs, callback);
+		});
+	}
+	else {
+		api.getUserInfo([event.senderID], callback);
+	}
+};
 
 exports.start = function(callback) {
 	fb({email: this.config.username, password: this.config.password}, function (err, api) {
@@ -12,9 +42,16 @@ exports.start = function(callback) {
 			console.error(err);
 			process.exit(-1);
 		}
-		api.setOptions({listenEvents: true});
+
+		var options = {
+			listenEvents: true
+		};
+		if (!console.isDebug()) {
+			options.logLevel = 'silent';
+		}
+		api.setOptions(options);
 		platformApi = api;
-		
+
 		platform = shim.createPlatformModule({
 			commandPrefix: exports.config.commandPrefix,
 			sendMessage: function(message, thread) {
@@ -73,7 +110,7 @@ exports.start = function(callback) {
 				api.setTitle(title, thread);
 			}
 		});
-		
+
 		var stopListening = api.listen(function(err, event) {
 			if (err) {
 				stopListening();
@@ -86,8 +123,10 @@ exports.start = function(callback) {
 			};
 			switch(event.type) {
 				case "message": {
-					var data = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
-					callback(platform, data);
+					getSenderName(api, event, function(name) {
+						var data = shim.createEvent(event.threadID, event.senderID, name, event.body);
+						callback(platform, data);
+					});
 					break;
 				}
 			}
