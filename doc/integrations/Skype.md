@@ -18,4 +18,4 @@ Replace each of the angle bracketed strings (`<...>`) with the respective inform
 
 To start in skype mode, run `node main.js skype`.
 
-<b>Please note: the account that Kassy is logged in as will not see the messages it sends.</b>
+<b>Please note: the account that Kassy is logged in as will not see the messages it sends, nor will it be able to command Kassy.</b>
