@@ -43,6 +43,13 @@ var getSenderName = function(api, event, finished) {
 	}
 };
 
+var stopTyping = function() {
+	if (endTyping) {
+		endTyping();
+		endTyping = null;
+	}
+};
+
 exports.start = function(callback) {
 	fb({email: this.config.username, password: this.config.password}, function (err, api) {
 		if(err) {
@@ -62,24 +69,15 @@ exports.start = function(callback) {
 		platform = shim.createPlatformModule({
 			commandPrefix: exports.config.commandPrefix,
 			sendMessage: function(message, thread) {
-				if (endTyping != null) {
-					endTyping();
-					endTyping = null;
-				}
+				stopTyping();
 				api.sendMessage({body:message}, thread);
 			},
 			sendUrl: function(url, thread) {
-				if (endTyping != null) {
-					endTyping();
-					endTyping = null;
-				}
+				stopTyping();
 				api.sendMessage({body: url, url: url}, thread);
 			},
 			sendImage: function(type, image, description, thread) {
-				if (endTyping != null) {
-					endTyping();
-					endTyping = null;
-				}
+				stopTyping();
 				switch (type) {
 					case "url":
 						api.sendMessage({body: description, url: image}, thread, function(err, messageInfo) {
@@ -99,10 +97,7 @@ exports.start = function(callback) {
 			},
 			sendFile: this.sendImage,
 			sendTyping: function(thread) {
-				if (endTyping != null) {
-					endTyping();
-					endTyping = null;
-				}
+				stopTyping();
 				api.sendTypingIndicator(thread, function(err, end) {
 					if (!err) {
 						endTyping = end;
@@ -110,10 +105,7 @@ exports.start = function(callback) {
 				});
 			},
 			setTitle: function(title, thread) {
-				if (endTyping != null) {
-					endTyping();
-					endTyping = null;
-				}
+				stopTyping();
 				api.setTitle(title, thread);
 			},
 			getUsers: function(thread) {
@@ -171,10 +163,7 @@ exports.start = function(callback) {
 };
 
 exports.stop = function() {
-	if (endTyping != null) {
-		endTyping();
-		endTyping = null;
-	}
+	stopTyping();
 	stopListeningMethod();
 	platformApi.logout();
 	platform = null;
