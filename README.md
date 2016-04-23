@@ -1,4 +1,6 @@
 # Kassy
+
+[![Join the chat at https://gitter.im/mrkno/Kassy](https://badges.gitter.im/mrkno/Kassy.svg)](https://gitter.im/mrkno/Kassy?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 (Karma + Sassy) * (Facebook + Slack + Skype + Hipchat) = Kassy
 
 <i>It does way more than this now...</i>
