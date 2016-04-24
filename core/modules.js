@@ -30,9 +30,9 @@ exports.loadCoreModule = function(platform, module) {
         index = Object.keys(require.cache).indexOf(fp),
         m = index !== -1 ? require.reload(fp) : require.once(fp);
     m.platform = exports;
-    m.name = module;
+    m.name = module.split(".")[0];
     if (m.load) {
-        m.load();
+        m.load.apply(platform);
     }
     return m;
 };

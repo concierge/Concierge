@@ -13,7 +13,7 @@ cd Kassy
 npm install
 ```
 Then start one or more of the available integrations:<br/>
-(eg. `node main.js facebook slack skype testing` after configuring to start them all)
+(eg. `node main.js facebook slack skype test` after configuring to start them all)
 
 ### Integrations
 Integrations are chat platforms that Kassy integrates into. The currently available preinstalled ones are:

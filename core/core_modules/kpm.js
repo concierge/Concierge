@@ -1,5 +1,4 @@
-var gitpull = require.safe('git-pull'),
-    gitclone = require.safe('git-clone'),
+var git = require.once('../git.js'),
     files = require.once('../files.js'),
     modules = require.once('../modules.js'),
     cfg = require.once('../config.js'),
@@ -7,8 +6,13 @@ var gitpull = require.safe('git-pull'),
     fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
     tmp = require.safe('tmp'),
+    request = require.safe('request'),
     sanitize = require.safe('sanitize-filename'),
     moduleCache = null,
+    moduleTable = {
+        lastUpdated: null,
+        modules: {}
+    },
     opts = {
         help: {
             run: function(args, api, event) {
@@ -45,20 +49,34 @@ var gitpull = require.safe('git-pull'),
 
                 for (var i = 0; i < args.length; i++) {
                     var url = args[i];
-                    if (!url.startsWith('http') && !url.startsWith('ssh')) {
-                        var spl = url.split('/');
-                        if (spl.length != 2) {
-                            api.sendMessage('Invalid github reference provided "' + url + '". Skipping...', event.thread_id);
-                            continue;
-                        }
-                        url = 'https://github.com/' + url;
+                    if (url.startsWith('http') || url.startsWith('ssh')) {
+                        install.call(this, url, api, event);
+                        continue;
                     }
-                    install.call(this, url, api, event);
+
+                    var spl = url.split('/');
+                    if (spl.length === 1) {
+                        refreshModuleTable(url, function(url, err) {
+                            if (err || !moduleTable.modules[url]) {
+                                api.sendMessage('Invalid KPM table reference provided "' + url + '". Skipping...', event.thread_id);
+                                return;
+                            }
+                            url = moduleTable.modules[url];
+                            install.call(this, url, api, event);
+                        }.bind(this));
+                    }
+                    else if (spl.length === 2) {
+                        url = 'https://github.com/' + url.trim();
+                        install.call(this, url, api, event);
+                    }
+                    else {
+                        api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                    }
                 }
             },
             command: 'install <gitUrl> [<gitUrl> [<gitUrl> [...]]]',
-            help: 'Installs one or more modules from exising git repositories or github references.',
-            detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
+            help: 'Installs one or more modules from exising git repositories, the lookup table or github references.',
+            detailedHelp: 'Installs one or more modules from existing git repositories, the lookup table or github references if ones of the same name do not already exist.'
         },
 
         uninstall: {
@@ -148,7 +166,7 @@ var gitpull = require.safe('git-pull'),
 
     update = function (module, api, event) {
         api.sendMessage('Updating "' + module.name + '" (' + module.version + ')...', event.thread_id);
-        gitpull(module.folderPath, function (err, consoleOutput) {
+        git.pullWithPath(module.folderPath, function (err, consoleOutput) {
             if (err) {
                 api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
             } else {
@@ -213,7 +231,7 @@ var gitpull = require.safe('git-pull'),
                     });
                 }.bind(this);
 
-            gitclone(url, dir, {}, function(err) {
+            git.clone(url, dir, function(err, consoleOutput) {
                 try {
                     var kj = require.once(path.join(dir, 'kassy.json')),
                         moduleList = getModuleList();
@@ -262,6 +280,46 @@ var gitpull = require.safe('git-pull'),
                 }
             }.bind(this));
         }.bind(this));
+    },
+    refreshModuleTable = function (url, callback) {
+        var hr = 3600000;
+        if (moduleTable.lastUpdated != null && new Date() - moduleTable.lastUpdated < hr) {
+            return callback(url);
+        }
+
+        request.get('https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md', function (error, response) {
+            if (response.statusCode === 200 && response.body) {
+                var b = response.body;
+                if (b && b.length > 0) {
+                    var spl = b.split('\n'),
+                        shouldParse = false,
+                        foundModules = {};
+                    for (var i = 0; i < spl.length; i++) {
+                        if (!spl[i].startsWith('|')) {
+                            continue;
+                        }
+
+                        var items = spl[i].split('|');
+                        if (items.length !== 4) {
+                            continue;
+                        }
+                        if (!shouldParse) {
+                            if (items[1] === '---' && items[2] === '---') {
+                                shouldParse = true;
+                            }
+                            continue;
+                        }
+                        foundModules[items[1]] = items[2];
+                    }
+                    moduleTable.modules = foundModules;
+                    moduleTable.lastUpdated = new Date();
+                }
+                callback(url);
+            }
+            else {
+                callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
+            }
+        });
     };
 
 exports.match = function (text, commandPrefix) {
@@ -285,3 +343,8 @@ exports.run = function (api, event) {
 
     return false;
 };
+
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'kpm','Kassy Package Manager, for installing external kpm modules', 'For detailed help on specific kpm commands run ' + commandPrefix + 'kpm help']];
+};
+

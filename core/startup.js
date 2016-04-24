@@ -15,8 +15,8 @@
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-var selectedModes        = null,
-    startNewPlatform    = function() {
+var selectedModes    = null,
+    startNewPlatform = function() {
         try {
             var Platform = require.once('./platform.js'),
                 platform = new Platform(selectedModes);
@@ -25,7 +25,7 @@ var selectedModes        = null,
         }
         catch(e) {
             console.critical(e);
-            console.error('A critical error occured while running. Please check your configuration or report a bug.');
+            console.error('A critical error occurred while running. Please check your configuration or report a bug.');
             process.exit(-3);
         }
     },

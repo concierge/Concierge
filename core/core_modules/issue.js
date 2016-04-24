@@ -108,11 +108,11 @@ var submitRequest = function(title, description, debugLevel, callback, waitCallb
 
 ifStringNotEmpty = function(str) {
     return str && str.trim(). length !== 0;
-},
+};
 
-help = function(api) {
-    return [[api.commandPrefix + 'issue "<title>" <debugLevel>', "posts an issue to github"],
-        [api.commandPrefix + 'issue "<title>" "<description>" <debugLevel>', "posts an issue to github with a description"],
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'issue "<title>" <debugLevel>', "posts an issue to github"],
+        [commandPrefix + 'issue "<title>" "<description>" <debugLevel>', "posts an issue to github with a description"],
         ['debugLevel can be basic, detail or full', 'defaults to basic if not specified']];
 };
 
@@ -128,7 +128,7 @@ exports.run = function(api, event) {
 
     if (input.length !== 3 && input.length !== 5) {
         var helpMessage = '',
-            helpMessages = help(api);
+            helpMessages = exports.help(api.commandPrefix);
         for (var j = 0; j < helpMessages.length; j++) {
             helpMessage += '→ ' + helpMessages[j][0] + '\n\t' + helpMessages[j][1] + '\n';
         }

@@ -20,3 +20,7 @@ exports.run = function(api, event) {
       + ' (' + os.type() + ' ' + os.arch() + ')', event.thread_id);
     return false;
 };
+
+exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'ping','Checks to see if the platform is alive', 'Also displays the hostname and computer platform']];
+};

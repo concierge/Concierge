@@ -15,7 +15,7 @@ var fs = require('fs'),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
-    sysConfigZones = ['output', 'disabled'],
+    sysConfigZones = ['output', 'disabled', 'update'],
     sysConfigFile = 'config.json';
 
 var loadConfig = function (location) {

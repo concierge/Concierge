@@ -16,3 +16,7 @@ exports.run = function(api, event) {
 	this.shutdown(StatusFlag.ShutdownShouldRestart);
 	return false;
 };
+
+exports.help = function(commandPrefix) {
+	return [[commandPrefix + 'restart','Restarts the platform', 'If restart fails manual intervention may be required.']];
+};
