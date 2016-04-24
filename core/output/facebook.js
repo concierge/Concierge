@@ -58,9 +58,9 @@ exports.start = function(callback) {
 		}
 
 		var options = {
-			listenEvents: true,
-			loglevel: 'verbose'
+			listenEvents: true
 		};
+		options.logLevel = 'verbose';
 		// if (!console.isDebug()) {
 		//	options.logLevel = 'silent';
 		// }
