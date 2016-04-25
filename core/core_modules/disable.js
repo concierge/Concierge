@@ -1,5 +1,6 @@
 var isDisabled = false;
 var prevTimeStamp;
+var counter = 0;
 var counterLimit = 3; // TODO Should be made configurable by sending /disable <counterLimit>
 
 exports.load = function() {
