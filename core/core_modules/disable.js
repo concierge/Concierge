@@ -33,7 +33,7 @@ exports.run = function(api, event) {
 			'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
 			event.sender_name + '?', event.thread_id);
 		}
-	return false;
+	return isDisabled;
 };
 
 exports.help = function(commandPrefix) {
