@@ -17,14 +17,15 @@ exports.match = function(text, commandPrefix) {
 
 		if(counter > counterLimit) {
 			counter = 0;
-			isDisabled = !isDisabled;
+			isDisabled = true;
 			return true;
 		}
 	}
+	return false;
 };
 
 exports.run = function(api, event) {
-		if (isDisabled) {
+		if (!isDisabled) {
 			api.sendMessage('I hate you.', event.thread_id);
 		}
 		else {
