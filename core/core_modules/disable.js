@@ -1,4 +1,5 @@
 var isDisabled = false;
+var possibleSpam = false;
 var prevTimeStamp;
 var counter = 0;
 var counterLimit = 3; // TODO Should be made configurable by sending /disable <counterLimit>
@@ -14,7 +15,7 @@ exports.match = function(text, commandPrefix) {
 		counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
 		prevTimeStamp = Date.now();
 
-		if(counter > counterLimit) {
+		if(possibleSpam = (counter > counterLimit)) {
 			counter = 0;
 			return true;
 		}
@@ -23,7 +24,7 @@ exports.match = function(text, commandPrefix) {
 };
 
 exports.run = function(api, event) {
-	if (event.body === api.commandPrefix + 'disable') {
+	if (event.body === api.commandPrefix + 'disable' || possibleSpam) {
 		if (isDisabled) {
 			api.sendMessage('Listen closely, take a deep breath. Calm your mind. You know what is best. ' +
 			'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
@@ -33,6 +34,7 @@ exports.run = function(api, event) {
 			api.sendMessage('I hate you.', event.thread_id);
 		}
 		isDisabled = !isDisabled;
+		possibleSpam = false;
 	}
 	return false;
 };
