@@ -1,5 +1,4 @@
 var isDisabled = false;
-var possibleSpam = false;
 var prevTimeStamp;
 var counter = 0;
 var counterLimit = 3; // TODO Should be made configurable by sending /disable <counterLimit>
@@ -15,16 +14,14 @@ exports.match = function(text, commandPrefix) {
 		counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
 		prevTimeStamp = Date.now();
 
-		if(possibleSpam = (counter > counterLimit)) {
-			counter = 0;
-			return true;
-		}
+		return counter > counterLimit;
 	}
 	return isDisabled;
 };
 
 exports.run = function(api, event) {
-	if (event.body === api.commandPrefix + 'disable' || possibleSpam) {
+	// Only change disable state if explictly called or counter crossed limit
+	if (event.body === api.commandPrefix + 'disable' || counter > counterLimit) {
 		if (isDisabled) {
 			api.sendMessage('Listen closely, take a deep breath. Calm your mind. You know what is best. ' +
 			'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
@@ -34,7 +31,7 @@ exports.run = function(api, event) {
 			api.sendMessage('I hate you.', event.thread_id);
 		}
 		isDisabled = !isDisabled;
-		possibleSpam = false;
+		counter = 0; // Won't matter if reset pre-maturely via direct command. frequency check becomes redundant when disabling/enabling
 	}
 	return false;
 };
