@@ -31,7 +31,7 @@ exports.run = function(api, event) {
 			api.sendMessage('I hate you.', event.thread_id);
 		}
 		isDisabled = !isDisabled;
-		counter = 0; // Won't matter if reset pre-maturely via direct command. frequency check becomes redundant when disabling/enabling
+		counter = 0;
 	}
 	return false;
 };
