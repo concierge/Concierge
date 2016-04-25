@@ -2,7 +2,7 @@ var isDisabled = false;
 var prevTimeStamp;
 var counterLimit = 3; // TODO Should be made configurable by sending /disable <counterLimit>
 
-exports.load() {
+exports.load = function() {
 	prevDate = Date.now();
 }
 
