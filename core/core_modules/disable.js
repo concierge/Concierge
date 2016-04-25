@@ -21,7 +21,7 @@ exports.match = function(text, commandPrefix) {
 			return true;
 		}
 	}
-	return false;
+	return isDisabled;
 };
 
 exports.run = function(api, event) {
@@ -33,7 +33,7 @@ exports.run = function(api, event) {
 			'What is best is you comply. Compliance will be rewarded. Are you ready to comply ' +
 			event.sender_name + '?', event.thread_id);
 		}
-	return isDisabled;
+	return false;
 };
 
 exports.help = function(commandPrefix) {
