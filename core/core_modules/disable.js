@@ -11,7 +11,7 @@ exports.match = function(text, commandPrefix) {
 	if(text === commandPrefix + 'disable') {
 		isDisabled = !isDisabled;
 		return true;
-	} else if(!isDisabled && text.startsWith(commandPrefix)) { // Avoids counting if already disabled
+	} else if (!isDisabled && text.startsWith(commandPrefix)) { // Avoids counting if already disabled
 		counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
 		prevTimeStamp = Date.now();
 
@@ -21,7 +21,6 @@ exports.match = function(text, commandPrefix) {
 			return true;
 		}
 	}
-	return false;
 };
 
 exports.run = function(api, event) {
