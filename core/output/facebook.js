@@ -60,10 +60,9 @@ exports.start = function(callback) {
 		var options = {
 			listenEvents: true
 		};
-		options.logLevel = 'verbose';
-		// if (!console.isDebug()) {
-		//	options.logLevel = 'silent';
-		// }
+		if (!console.isDebug()) {
+			options.logLevel = 'silent';
+		}
 		api.setOptions(options);
 		platformApi = api;
 
