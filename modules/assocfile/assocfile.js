@@ -5,7 +5,6 @@ exports.help = function(commandPrefix) {
 };
 
 exports.match = function(text, commandPrefix, thread, senderName, api) {
-	console.debug("[" + thread + "] " + senderName + ": " + text);
 	if (text.startsWith(commandPrefix + 'assocfile')) {
 		return true;
 	}
