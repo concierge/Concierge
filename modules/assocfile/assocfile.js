@@ -1,7 +1,7 @@
 //This module is "assocfile" instead of "associatefile", becase "associate" module is catching all commands starting with "associate"
 
 exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'assocfile "<hook>" "<file_name>" or clear', 'Associate and disassociate a file with a phrase.', 'Associate and disassociate a file like image or video (from ~\files directory) with a phrase (so that a file is sent on a given phrase in chat).']];
+	return [[commandPrefix + 'assocfile "<hook>" "<file_name>" or clear', 'Associate and disassociate a file with a phrase.', 'Associate and disassociate a file like image, video or audio (from ~\files directory) with a phrase (so that a file is sent on a given phrase in chat).']];
 };
 
 exports.match = function(text, commandPrefix, thread, senderName, api) {
@@ -13,7 +13,7 @@ exports.match = function(text, commandPrefix, thread, senderName, api) {
 	for (var assoc in this.config[thread]) {
 		if (s.indexOf(assoc.toLowerCase()) !== -1) {
 			if (api) {
-				api.sendFile("file", "files\\"+this.config[thread][assoc], "", thread);
+				api.sendImage("file", "files\\"+this.config[thread][assoc], "", thread);
 			}
 			return true;
 		}
@@ -65,7 +65,7 @@ exports.run = function(api, event) {
 
 	var spl = event.body.split('"');
 	if (spl.length !== 3 && spl.length !== 5)  {
-		api.sendMessage('WTF are you doing????!', event.thread_id);
+		api.sendMessage('Invalid arguments, use /help assocfile for help.', event.thread_id);
 		return;
 	}
 
