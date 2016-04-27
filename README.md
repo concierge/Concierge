@@ -20,6 +20,7 @@ Integrations are chat platforms that Kassy integrates into. The currently availa
 - [Facebook Integration](doc/integrations/Facebook.md)
 - [Slack Integration](doc/integrations/Slack.md)
 - [Skype Integration](doc/integrations/Skype.md)
+- [Telegram Integration](doc/integrations/Telegram.md)
 - [Testing Mode](doc/integrations/Testing.md)
 
 ### Documentation
@@ -32,6 +33,7 @@ Integrations are chat platforms that Kassy integrates into. The currently availa
 		- [Facebook Integration](doc/integrations/Facebook.md)
 		- [Slack Integration](doc/integrations/Slack.md)
 		- [Skype Integration](doc/integrations/Skype.md)
+                - [Telegram Integration](doc/integrations/Telegram.md)
 		- [Testing Mode](doc/integrations/Testing.md)
 - [Debugging and Logging](doc/DebuggingAndLogging.md)
 
