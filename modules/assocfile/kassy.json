@@ -1,0 +1,5 @@
+﻿{
+  "name": "assocfile",
+  "version": 1.0,
+  "startup": "assocfile.js"
+}
