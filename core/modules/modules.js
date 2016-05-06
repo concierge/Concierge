@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Provides helper functions for handling user and system modules.
  *
  * Written By:
@@ -52,11 +52,26 @@ exports.loadModule = function (module) {
 exports.verifyModule = function (path, disabled) {
     var mod = null;
     for (var i = 0; i < loaders.length; i++) {
-        var t = loaders[i].verifyModule(path, disabled);
-        if (t && t != null) {
-            t.__loaderUID = i;
+        mod = loaders[i].verifyModule(path, disabled);
+        if (mod) {
+            mod.__loaderUID = i;
             break;
         }
     }
     return mod;
+};
+
+exports.unloadModule = function(mod) {
+    try {
+        console.debug('Unloading module "' + mod.name + '".');
+        if (mod.unload) {
+            mod.unload();
+        }
+        config.saveModuleConfig(mod.name);
+    }
+    catch (e) {
+        console.error('Unloading module "' + mod.name + '" failed.');
+        console.critical(e);
+    }
+    return null;
 };

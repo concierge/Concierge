@@ -32,3 +32,17 @@ exports.loadCoreModule = function(platform, module) {
     }
     return m;
 };
+
+exports.unloadCoreModule = function(mod) {
+    try {
+        console.debug('Unloading core module "' + mod.name + '".');
+        if (mod.unload) {
+            mod.unload();
+        }
+    }
+    catch (e) {
+        console.error('Unloading core module "' + mod.name + '" failed.');
+        console.critical(e);
+    }
+    return null;
+};

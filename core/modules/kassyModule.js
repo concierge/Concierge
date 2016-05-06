@@ -31,24 +31,24 @@ var verifyModuleDescriptior = function (kj, disabled) {
 exports.verifyModule = function (location, disabled) {
     var stat = fs.statSync(location);
     if (!stat.isDirectory()) {
-        return;
+        return null;
     }
 
     var folderPath = path.resolve(location),
         p = path.join(folderPath, './' + descriptor);
     try {
         stat = fs.statSync(p);
+        if (!stat) {
+            return null;
+        }
     }
     catch (e) {
         return null;
     }
-    if (stat == null) {
-        return;
-    }
 
     var kj = require.once(p);
     if (!verifyModuleDescriptior(kj, disabled)) {
-        return;
+        return null;
     }
 
     if (!kj.folderPath) {
@@ -65,7 +65,7 @@ exports.listModules = function (disabled) {
         try {
             var candidate = path.resolve(path.join(modulesDir, data[i])),
                 output = exports.verifyModule(candidate, disabled);
-            if (output && output != null) {
+            if (output) {
                 modules[output.name] = output;
             }
             else {
@@ -105,7 +105,7 @@ createHistoricalMatcher = function(matcher) {
         return matcher(event.body, commandPrefix);
     };
 },
-    
+
 getFunctionParameterNames = function (func) {
     // http://stackoverflow.com/questions/9091838/get-function-parameter-names-for-interface-purposes
     var f = func.toString();
@@ -115,7 +115,7 @@ getFunctionParameterNames = function (func) {
 exports.loadModule = function (module) {
     var modulePath  = module.folderPath,
         startPath   = path.join(modulePath, module.startup),
-        m           = null;
+        m;
 
     try {
         m = require.once(startPath);
