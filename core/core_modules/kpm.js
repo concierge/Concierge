@@ -174,7 +174,7 @@ var git = require.once('../git.js'),
             if (err) {
                 api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
             } else {
-                api.sendMessage('Restarting module "' + module.name + '"...');
+                api.sendMessage('Restarting module "' + module.name + '"...', event.thread_id);
                 // unload the current version
                 this.loadedModules = this.loadedModules.filter(function (value) {
                     if (value.name !== module.name) return true;
