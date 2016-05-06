@@ -5,8 +5,13 @@ var git = require.once('../git.js'),
     fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
     tmp = require.safe('tmp'),
+    request = require.safe('request'),
     sanitize = require.safe('sanitize-filename'),
     moduleCache = null,
+    moduleTable = {
+        lastUpdated: null,
+        modules: {}
+    },
     opts = {
         help: {
             run: function(args, api, event) {
@@ -43,20 +48,34 @@ var git = require.once('../git.js'),
 
                 for (var i = 0; i < args.length; i++) {
                     var url = args[i];
-                    if (!url.startsWith('http') && !url.startsWith('ssh')) {
-                        var spl = url.split('/');
-                        if (spl.length != 2) {
-                            api.sendMessage('Invalid github reference provided "' + url + '". Skipping...', event.thread_id);
-                            continue;
-                        }
-                        url = 'https://github.com/' + url;
+                    if (url.startsWith('http') || url.startsWith('ssh')) {
+                        install.call(this, url, api, event);
+                        continue;
                     }
-                    install.call(this, url, api, event);
+
+                    var spl = url.split('/');
+                    if (spl.length === 1) {
+                        refreshModuleTable(url, function(url, err) {
+                            if (err || !moduleTable.modules[url]) {
+                                api.sendMessage('Invalid KPM table reference provided "' + url + '". Skipping...', event.thread_id);
+                                return;
+                            }
+                            url = moduleTable.modules[url];
+                            install.call(this, url, api, event);
+                        }.bind(this));
+                    }
+                    else if (spl.length === 2) {
+                        url = 'https://github.com/' + url.trim();
+                        install.call(this, url, api, event);
+                    }
+                    else {
+                        api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                    }
                 }
             },
             command: 'install <gitUrl> [<gitUrl> [<gitUrl> [...]]]',
-            help: 'Installs one or more modules from exising git repositories or github references.',
-            detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
+            help: 'Installs one or more modules from exising git repositories, the lookup table or github references.',
+            detailedHelp: 'Installs one or more modules from existing git repositories, the lookup table or github references if ones of the same name do not already exist.'
         },
 
         uninstall: {
@@ -260,6 +279,46 @@ var git = require.once('../git.js'),
                 }
             }.bind(this));
         }.bind(this));
+    },
+    refreshModuleTable = function (url, callback) {
+        var hr = 3600000;
+        if (moduleTable.lastUpdated != null && new Date() - moduleTable.lastUpdated < hr) {
+            return callback(url);
+        }
+
+        request.get('https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md', function (error, response) {
+            if (response.statusCode === 200 && response.body) {
+                var b = response.body;
+                if (b && b.length > 0) {
+                    var spl = b.split('\n'),
+                        shouldParse = false,
+                        foundModules = {};
+                    for (var i = 0; i < spl.length; i++) {
+                        if (!spl[i].startsWith('|')) {
+                            continue;
+                        }
+
+                        var items = spl[i].split('|');
+                        if (items.length !== 4) {
+                            continue;
+                        }
+                        if (!shouldParse) {
+                            if (items[1] === '---' && items[2] === '---') {
+                                shouldParse = true;
+                            }
+                            continue;
+                        }
+                        foundModules[items[1]] = items[2];
+                    }
+                    moduleTable.modules = foundModules;
+                    moduleTable.lastUpdated = new Date();
+                }
+                callback(url);
+            }
+            else {
+                callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
+            }
+        });
     };
 
 exports.match = function (event, commandPrefix) {

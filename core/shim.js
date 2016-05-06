@@ -81,7 +81,7 @@ exports.createEvent = function(thread, senderId, senderName, message) {
 	return {
 		thread_id: thread,
 		sender_id: senderId,
-		sender_name: senderName,
+		sender_name: senderName + "", // Accept sender_name  = null as a literal
 		body: message
 	};
 };
