@@ -1,7 +1,6 @@
 var figlet = require.safe('figlet'),
 
 constructHelpMessage = function (help, modules, context) {
-    console.log(context);
     for (var i = 0; i < modules.length; i++) {
         var cmdHelp = modules[i].ignoreHelpContext
             ? modules[i].help(context.commandPrefix)
@@ -67,7 +66,6 @@ exports.run = function(api, event) {
             commandPrefix: api.commandPrefix
         },
 		help;
-	console.log(api);
 	if (commands.length === 1) {
 		help = shortSummary.call(exports.platform, context);
 	}

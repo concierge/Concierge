@@ -42,7 +42,7 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
         body = fs.readFileSync(mod, 'utf-8'),
         scriptDocumentation = { name: path.basename(mod).replace(/\.(coffee|js)$/, '') },
         currentSection = null,
-        ref = body.split("\n"),
+        ref = body.split('\n'),
         commands = [];
 
     for (var i = 0; i < ref.length; i++) {
@@ -50,7 +50,7 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
         if (line[0] !== '#' && line.substr(0, 2) !== '//') {
             break;
         }
-        var cleanedLine = line.replace(/^(#|\/\/)\s?/, "").trim();
+        var cleanedLine = line.replace(/^(#|\/\/)\s?/, '').trim();
         if (cleanedLine.length === 0 || cleanedLine.toLowerCase() === 'none') {
             continue;
         }
@@ -85,7 +85,7 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
     }
 
     if (help.length === 0) {
-        help.push([scriptDocumentation.name, "Does something. The unhelpful author didn't specify what."]);
+        help.push([scriptDocumentation.name, 'Does something. The unhelpful author didn\'t specify what.']);
     }
 
     return {
@@ -168,7 +168,7 @@ Robot.prototype.hear = function (regex, callback) {
 Robot.prototype.respond = function (regex, callback) {
     this.listeners.push({
         matcher: function (msg) {
-            var prefix = msg.prefix.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+            var prefix = msg.prefix.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
             var reg = eval('/^' + prefix + regex.toString().substring(1));
             return msg.event.body.match(reg);
         },

@@ -35,7 +35,7 @@ exports.requireOrInstall = function(req, name) {
 		try {
 			fs.statSync(name);
 		}
-		catch(p) {
+		catch (p) {
 			install(name);
 		}
 	}
