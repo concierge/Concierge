@@ -69,11 +69,11 @@ exports.run = function(api, event) {
 		help;
 	console.log(api);
 	if (commands.length === 1) {
-		help = shortSummary.call(exports.platform, api.commandPrefix);
+		help = shortSummary.call(exports.platform, context);
 	}
 	else {
 		commands.splice(0, 1);
-		help = longDescription.call(exports.platform, commands.join(' '), api.commandPrefix);
+		help = longDescription.call(exports.platform, commands.join(' '), context);
 	}
 
 	api.sendPrivateMessage(help, event.thread_id, event.sender_id);
