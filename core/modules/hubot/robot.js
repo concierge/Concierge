@@ -107,7 +107,7 @@ Robot.prototype.run = function (api, event) {
     if (!event.__robotCallbackListeners) {
         return;
     }
-    
+
     for (var i = 0; i < event.__robotCallbackListeners.length; i++) {
         var responder = new Responder(api, event, event.__robotCallbackListeners[i].match, event.__robotCallbackMessage);
         event.__robotCallbackListeners[i].callback(responder);
@@ -116,7 +116,7 @@ Robot.prototype.run = function (api, event) {
 
 Robot.prototype.match = function (event, commandPrefix) {
     var msg = new Message(event, commandPrefix);
-    
+
     var hasMatched = false;
     for (var i = 0; i < this.listeners.length; i++) {
         var m = this.listeners[i].matcher(msg);
@@ -132,7 +132,7 @@ Robot.prototype.match = function (event, commandPrefix) {
             });
         }
     }
-    
+
     if (!hasMatched) {
         for (var i = 0; i < this.catchAllListeners.length; i++) {
             if (!event.__robotCallbackListeners) {
@@ -145,7 +145,7 @@ Robot.prototype.match = function (event, commandPrefix) {
             });
         }
     }
-    
+
     return !!event.__robotCallbackListeners;
 };
 
@@ -205,6 +205,10 @@ Robot.prototype.loadFile = function (scriptsPath, script) {
     if (!script) {
         script = scriptsPath;
         scriptsPath = this.folderPath;
+    }
+
+    if (!Object.keys(require.extensions).includes(script.substring(script.lastIndexOf('.')))) {
+        return;
     }
 
     var p = path.join(scriptsPath, script),
