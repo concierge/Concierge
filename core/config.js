@@ -55,14 +55,9 @@ exports.saveModuleConfig = function(mod) {
     }
 };
 
-exports.saveConfig = function () {
+exports.saveSystemConfig = function () {
     try {
         saveIndividualConfig(sysConfigFile, sysConfig);
-        for (var mod in modConfig) {
-            var m = modConfig[mod];
-            saveIndividualConfig(m.location, m.data);
-        }
-        modConfig = null;
         sysConfig = null;
         return true;
     } catch (e) {
