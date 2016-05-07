@@ -16,7 +16,7 @@ var path            = require('path'),
 exports.listCoreModules = function () {
     var data = files.filesInDirectory('./' + coreMoulesDir);
     data = data.filter(function (value) {
-        return value.endsWith(".js");
+        return value.endsWith('.js');
     });
     return data;
 };

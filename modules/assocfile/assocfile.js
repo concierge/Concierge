@@ -14,13 +14,13 @@ exports.match = function(event, commandPrefix) {
 					responses: []
 				};
 			}
-			event.__associateCmd.responses.push("files\\" + exports.config[event.thread_id][assoc]);
+			event.__associateCmd.responses.push('files\\' + exports.config[event.thread_id][assoc]);
 		}
 	}
 	return !!event.__associateCmd;
 };
 
-toggleAssociation = function(thread, hook, text) {
+var toggleAssociation = function(thread, hook, text) {
 	hook = hook.toLowerCase();
 	if (exports.config[thread] && exports.config[thread][hook] && !text) {
 		delete exports.config[thread][hook];
@@ -32,7 +32,7 @@ toggleAssociation = function(thread, hook, text) {
 	}
 	exports.config[thread][hook] = text;
 	return true;
-};
+},
 
 printAssociations = function(api, event) {
 	var assoc = exports.config[event.thread_id];
@@ -42,7 +42,7 @@ printAssociations = function(api, event) {
 	}
 	message.trim();
 	api.sendMessage(message, event.thread_id);
-};
+},
 
 clear = function(api, event) {
 	exports.config[event.thread_id] = {};
@@ -63,7 +63,7 @@ exports.run = function(api, event) {
 		for (var i = 0; i < event.__assocateCmd.responses.length; i++) {
 			api.sendImage("file", event.__associatedCmd.responses[i], event.thread_id);
 		}
-		return
+	    return;
 	}
 
 	if (event.arguments.length !== 2 && event.arguments.length !== 3)  {

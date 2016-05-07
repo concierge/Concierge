@@ -21,8 +21,8 @@ var verifyModuleDescriptior = function (kj, disabled) {
         return false;
     }
 
-    if (disabled === true && exports.disabledConfig
-        && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+    if (disabled === true && exports.disabledConfig &&
+        exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
         return false;
     }
     return true;
