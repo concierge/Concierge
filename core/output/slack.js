@@ -547,7 +547,6 @@ clearTimeouts = function(callback) {
 	Object.keys(sockets).forEach(function (team, index) {
 		if (team.pingTimeout) {
 			clearTimeout(team.pingTimeout);
-			console.log("issues");
 			removeHelper(team, pingTimeout);
 		}
 

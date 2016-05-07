@@ -13,12 +13,21 @@
 'use strict';
 
 var hook = require('./unsafe/hook.js'),
-	preventCache = [];
+    preventCache = [],
+    inst = require('./install.js');
 
-global.requireHook = function(req) {
-    req.searchCache = function (moduleName, callback) {
-        var mod = req.resolve(moduleName);
-        if (mod && ((mod = req.cache[mod]) !== undefined)) {
+global.requireHook = function (req) {
+    var func = function (mod) {
+        return inst.requireOrInstall(req, mod);
+    };
+    for (var key in req) {
+        func[key] = req[key];
+    }
+    func.safe = func;
+
+    func.searchCache = function (moduleName, callback) {
+        var mod = func.resolve(moduleName);
+        if (mod && ((mod = func.cache[mod]) !== undefined)) {
             (function run(mod) {
                 mod.children.forEach(function (child) {
                     run(child);
@@ -28,9 +37,9 @@ global.requireHook = function(req) {
         }
     };
 
-    req.uncache = function (moduleName) {
-        req.searchCache(moduleName, function (mod) {
-            delete req.cache[mod.id];
+    func.uncache = function (moduleName) {
+        func.searchCache(moduleName, function (mod) {
+            delete func.cache[mod.id];
         });
 
         Object.keys(module.constructor._pathCache).forEach(function (cacheKey) {
@@ -40,18 +49,18 @@ global.requireHook = function(req) {
         });
     };
 
-    req.reload = function (moduleName) {
-        req.uncache(moduleName);
-        return req(moduleName);
+    func.reload = function (moduleName) {
+        func.uncache(moduleName);
+        return func(moduleName);
     };
 
-    req.once = function (moduleName, preventRerequire) {
+    func.once = function (moduleName, preventRerequire) {
     	if (preventCache.indexOf(moduleName) !== -1) {
     		return;
     	}
     
-        var mod = req(moduleName);
-        req.uncache(moduleName);
+        var mod = func(moduleName);
+        func.uncache(moduleName);
         
         if (preventRerequire) {
         	preventCache.push(moduleName);
@@ -60,10 +69,9 @@ global.requireHook = function(req) {
         return mod;
     };
 
-    req.safe = require("./install.js").requireOrInstall;
+    return func;
 };
 
-hook.setInjectionFunction(function() {
-	var __glob = global || GLOBAL;
-	__glob.requireHook(require);
+hook.setInjectionFunction(function () {
+    require = (global || GLOBAL).requireHook(require);
 });
