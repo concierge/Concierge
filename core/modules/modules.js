@@ -11,27 +11,27 @@
 
 var fs              = require('fs'),
     path            = require('path'),
-	loaders			= [require.once('./kassyModule.js')],
+    loaders         = [require.once('./kassyModule.js')],
     files           = require.once('./../files.js'),
     config          = require('./../config.js'),
     modulesDir      = 'modules',
     descriptor      = 'kassy.json',
-	conflict		= 1;
+    conflict        = 1;
 
 exports.listModules = function (disabled) {
-	var modules = {};
+    var modules = {};
     for (var i = 0; i < loaders.length; i++) {
-		var m = loaders[i].listModules(disabled);
-		for (var key in m) {
-			var t = key;
-			while (modules[t]) {
-				t = key + conflict++;
-			}
-			modules[t] = m[key];
-			modules[t].__loaderUID = i;
-		}
-	}
-	return modules;
+        var m = loaders[i].listModules(disabled);
+        for (var key in m) {
+            var t = key;
+            while (modules[t]) {
+                t = key + conflict++;
+            }
+            modules[t] = m[key];
+            modules[t].__loaderUID = i;
+        }
+    }
+    return modules;
 };
 
 exports.loadModule = function (module) {

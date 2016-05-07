@@ -135,8 +135,8 @@ Platform.prototype.start = function() {
 
     // Load core modules
     console.warn('Loading core components...');
-	var coreLoader = require.once('./modules/core.js');
-	coreLoader.platform = this;
+    var coreLoader = require.once('./modules/core.js');
+    coreLoader.platform = this;
     var m = coreLoader.listCoreModules();
     for (var i = 0; i < m.length; i++) {
         this.coreModules.push(coreLoader.loadCoreModule(this, m[i]));
