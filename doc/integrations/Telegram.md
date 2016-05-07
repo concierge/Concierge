@@ -6,7 +6,7 @@ Create a new file, `config.json` that has the following:
     "output": {
         "telegram": {
             "token": "<telegramToken>",
-                "commandPrefix": "/",
+            "commandPrefix": "/"
         }
     }
 }
