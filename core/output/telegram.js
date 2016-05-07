@@ -5,7 +5,7 @@ var options = {
 var TelegramBot = require.safe('node-telegram-bot-api');
 // Adds the missing stopPolling() method
 // https://github.com/yagop/node-telegram-bot-api/pull/51#issuecomment-217395990
-require.safe('monkey-patches-node-telegram-bot-api')(TelegramBot,options);
+require.safe('monkey-patches-node-telegram-bot-api')(TelegramBot, options);
 
 var bot = null,
     shim = require('../shim.js'),
@@ -37,7 +37,7 @@ exports.start = function(callback) {
 };
 
 exports.stop = function() {
-    console.debug("Telegram -> start shutdown");
-    exports.config.offset = bot._polling.offset+1;
+    console.debug('Telegram -> start shutdown');
+    exports.config.offset = bot._polling.offset + 1;
     bot.stopPolling();
 };
