@@ -203,7 +203,9 @@ var git = require.once('../git.js'),
         api.sendMessage('Unloading module "' + module.name + '"...', event.thread_id);
         // unload the current version
         this.loadedModules = this.loadedModules.filter(function (value) {
-            if (value.name !== module.name) return true;
+            if (value.name !== module.name) {
+                return true;
+            }
             exports.platform.modulesLoader.unloadModule(value);
             return false;
         });
