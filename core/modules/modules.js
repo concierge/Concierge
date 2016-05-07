@@ -9,13 +9,8 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-var fs              = require('fs'),
-    path            = require('path'),
-    loaders         = [require.once('./kassyModule.js')],
-    files           = require.once('./../files.js'),
+var loaders         = [require.once('./kassyModule.js')],
     config          = require('./../config.js'),
-    modulesDir      = 'modules',
-    descriptor      = 'kassy.json',
     conflict        = 1;
 
 exports.listModules = function (disabled) {
@@ -36,15 +31,15 @@ exports.listModules = function (disabled) {
 
 exports.loadModule = function (module) {
     try {
-        console.write("Loading module '" + module.name + "'... " + (console.isDebug() ? "\n" : ""));
+        console.write('Loading module \'' + module.name + '\'... ' + (console.isDebug() ? '\n' : ''));
         var m = loaders[module.__loaderUID].loadModule(module);
-        console.info(console.isDebug() ? "Loading Succeeded" : "\t[DONE]");
+        console.info(console.isDebug() ? 'Loading Succeeded' : '\t[DONE]');
         return m;
     }
     catch (e) {
-        console.error(console.isDebug() ? "Loading Failed" : "\t[FAIL]");
+        console.error(console.isDebug() ? 'Loading Failed' : '\t[FAIL]');
         console.critical(e);
-        console.debug('Module \'' + module.name + '\' could not be loaded.');
+        console.debug('Module "' + module.name + '" could not be loaded.');
         return null;
     }
 };
