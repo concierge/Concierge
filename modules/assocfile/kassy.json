@@ -1,0 +1,8 @@
+﻿{
+  "name": "assocfile",
+  "version": 1.1,
+  "startup": "assocfile.js",
+  "help": [
+      ["{{commandPrefix}}assocfile \"<hook>\" \"<file_name>\" or clear", "Associate and disassociate a file with a phrase.", "Associate and disassociate a file like image, video or audio (from ~\\files directory) with a phrase (so that a file is sent on a given phrase in chat)."]
+  ]
+}

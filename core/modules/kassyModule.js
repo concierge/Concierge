@@ -21,8 +21,8 @@ var verifyModuleDescriptior = function (kj, disabled) {
         return false;
     }
 
-    if (disabled === true && exports.disabledConfig
-        && exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+    if (disabled === true && exports.disabledConfig &&
+        exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
         return false;
     }
     return true;
@@ -105,7 +105,7 @@ createHistoricalMatcher = function(matcher) {
         return matcher(event.body, commandPrefix);
     };
 },
-    
+
 getFunctionParameterNames = function (func) {
     // http://stackoverflow.com/questions/9091838/get-function-parameter-names-for-interface-purposes
     var f = func.toString();
