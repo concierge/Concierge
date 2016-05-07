@@ -18,7 +18,7 @@ Should be called when a message is received from your chat service.
 
 Arguments:
 - `api` - Provides methods for the end modules to call. Refer to [module documentation](ModuleCreation.md) under the API section for what should be provided. Note also that not all methods need be provided if you are using shim (see below). Object.
-- `event` - Provides details about the message received. Refer to [module documentation](ModuleCreation.md) under the event section for what should be provided. Note also that not all methods need be provided if you are using shim (see below). Object.
+- `event` - Provides details about the message received. Refer to [module documentation](ModuleCreation.md) under the event section for what should be provided. Note that the fields starting with `argument` should not be provided, can be generated using shim (see below). Object.
 - <i>Returns:</i> `undefined`
 
 #### `exports.stop()`

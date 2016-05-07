@@ -15,27 +15,24 @@ npm install
 Then start one or more of the available integrations:<br/>
 (eg. `node main.js facebook slack skype test` after configuring to start them all)
 
-### Integrations
-Integrations are chat platforms that Kassy integrates into. The currently available preinstalled ones are:
-- [Facebook Integration](doc/integrations/Facebook.md)
-- [Slack Integration](doc/integrations/Slack.md)
-- [Skype Integration](doc/integrations/Skype.md)
-- [Telegram Integration](doc/integrations/Telegram.md)
-- [Testing Mode](doc/integrations/Testing.md)
-
-### Documentation
-- [Special Commands](doc/SpecialCommands.md)
+### Modules
 - [Creating Modules](doc/ModuleCreation.md)
+- [KPM Modules List](https://github.com/mrkno/Kassy/wiki/KPM-Table)
+
+### All Documentation
+- [Creating Modules](doc/ModuleCreation.md)
+- [KPM Modules Table](https://github.com/mrkno/Kassy/wiki/KPM-Table)
+- [Special Commands](doc/SpecialCommands.md)
 - [Usage Example/Overview](https://github.com/mrkno/Kassy/issues/77#issuecomment-181676118)
-- Integrations
-	- [Creating Integrations](doc/IntegrationCreation.md)
-	- Existing Integrations
+- Integrations (Integrations are chat platforms that Kassy integrates into)
+	- Existing Integrations. *Look here for documentation on how to set them up.*
 		- [Facebook Integration](doc/integrations/Facebook.md)
 		- [Slack Integration](doc/integrations/Slack.md)
 		- [Skype Integration](doc/integrations/Skype.md)
 		- [Telegram Integration](doc/integrations/Telegram.md)
 		- [Testing Mode](doc/integrations/Testing.md)
-- [Debugging and Logging](doc/DebuggingAndLogging.md)
+	- [Creating Integrations](doc/IntegrationCreation.md)
+- [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
 
 ## Disclaimer
 HERE BE DRAGONS!

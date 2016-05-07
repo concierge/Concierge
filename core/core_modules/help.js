@@ -30,7 +30,7 @@ shortSummary = function(prefix) {
 	return constructHelpMessage(help, this.loadedModules, context, prefix);
 },
 
-longDescription = function(moduleName, prefix) {
+longDescription = function (moduleName, prefix) {
 	var module = checkIfModuleExists(this.coreModules, moduleName);
 
 	if (!module || module.length === 0) {
@@ -59,23 +59,21 @@ longDescription = function(moduleName, prefix) {
 	return help;
 };
 
-exports.match = function(text, commandPrefix) {
-	return text === commandPrefix + this.packageInfo.name
-		|| text === commandPrefix + 'help'
-		|| (text.startsWith(commandPrefix + this.packageInfo.name + ' '))
-		|| text.startsWith(commandPrefix + 'help ');
+exports.match = function(event, commandPrefix) {
+    return event.arguments[0] === commandPrefix + exports.platform.packageInfo.name
+        || event.arguments[0] === commandPrefix + 'help';
 };
 
 exports.run = function(api, event) {
-	var commands = event.body.split(' '),
-		help = null;
+	var commands = event.arguments,
+		help;
 		
 	if (commands.length === 1) {
-		help = shortSummary.call(this, api.commandPrefix);
+		help = shortSummary.call(exports.platform, api.commandPrefix);
 	}
 	else {
 		commands.splice(0, 1);
-		help = longDescription.call(this, commands.join(' '), api.commandPrefix);
+		help = longDescription.call(exports.platform, commands.join(' '), api.commandPrefix);
 	}
 	
 	api.sendPrivateMessage(help, event.thread_id, event.sender_id);
@@ -83,5 +81,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'help','displays this help', 'prints a short summary of all available commands'], [this.commandPrefix + 'help <query>', 'prints help for a specific module']];
+	return [[commandPrefix + 'help','displays this help', 'prints a short summary of all available commands'], [commandPrefix + 'help <query>', 'prints help for a specific module']];
 };
