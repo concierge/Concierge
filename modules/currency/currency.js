@@ -1,17 +1,9 @@
 var request = require.safe('request');
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'currency');
-};
-
-exports.help = function() {
-    return [[this.commandPrefix + 'currency <number> <from-currency> in <to-currency>','Converts between currencies.']];
-};
-
 exports.run = function(api, event) {
     var query = event.body.substr(10),
         parts = query.split(' ');
-    
+
     //If we don't have the right number of parts, give up
     if (parts.length !== 4) {
         api.sendMessage("That looks wrong. You should try harder.", event.thread_id);
@@ -48,7 +40,7 @@ function convert(f, to, amount, conversions) {
 
     if (!conversions[to]) {
         return {
-            error: "Unsupported currency '" + to + "'" 
+            error: "Unsupported currency '" + to + "'"
         };
     }
 

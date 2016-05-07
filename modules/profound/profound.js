@@ -9,14 +9,6 @@
  */
 var request = require.safe('request');
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'profound');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'profound','Calculates the meaning of life. You probably wouldn\'t understand']];
-};
-
 exports.fetch = function(callback) {
     request.post('http://watchout4snakes.com/wo4snakes/Random/NewRandomSentence', function(error, response) {
         if (error || response.statusCode !== 200) {

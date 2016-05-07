@@ -1,14 +1,6 @@
 var reddit = require('./../common/reddit.js'),
     results = [];
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'insult');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'insult','Will almost certainly return profanity.']];
-};
-
 exports.insult = function(callback, waitCallback) {
     // If we have no stored insults, get some
     if (results === undefined || results === null || results.length === 0) {

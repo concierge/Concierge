@@ -1,7 +1,7 @@
 var disabled = false;
 
-exports.match = function(text, commandPrefix) {
-	return disabled || text === commandPrefix + 'disable';
+exports.match = function(event, commandPrefix) {
+	return disabled || event.body === commandPrefix + 'disable';
 };
 
 exports.run = function(api, event) {

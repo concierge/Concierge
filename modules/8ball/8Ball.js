@@ -1,13 +1,5 @@
 var request = require.safe('request');
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + '8ball');
-};
-
-exports.help = function() {
-    return [[this.commandPrefix + '8ball <query>','Answers your questions to life.']];
-};
-
 insults = ['You\'re asking the impossible',
     'It would help if you ask me something',
     'I don\'t have an answer for this',
@@ -43,7 +35,7 @@ exports.search = function (query, callback) {
 };
 
 exports.run = function(api, event) {
-    var query = event.body.substr(6);
+    var query = event.arguments_body;
     exports.search(query, function(result) {
 		api.sendImage("url", result, "Hmmmmmmm", event.thread_id);
     });

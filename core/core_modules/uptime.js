@@ -16,8 +16,8 @@ difference = function (dateFrom, dateTo) {
     return diff;
 };
 
-exports.match = function(text, commandPrefix) {
-    return text === commandPrefix + 'uptime';
+exports.match = function(event, commandPrefix) {
+    return event.body === commandPrefix + 'uptime';
 };
 
 exports.run = function(api, event) {

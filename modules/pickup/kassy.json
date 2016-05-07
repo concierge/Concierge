@@ -1,5 +1,9 @@
 ﻿{
   "name": "pickUp",
-  "version": 2.0,
-  "startup": "pickUp.js"
+  "version": 2.1,
+  "startup": "pickUp.js",
+  "command": "pickup",
+  "help": [
+    [ "{{commandPrefix}}pickup", "Relationship advice." ]
+  ]
 }
