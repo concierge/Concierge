@@ -1,5 +1,10 @@
 ﻿{
   "name": "karma",
-  "version": 2.0,
-  "startup": "karma.js"
+  "version": 2.1,
+  "startup": "karma.js",
+  "help": [
+    [ "<text>++", "Increases <text>'s karma." ],
+    [ "<text>--", "Decreases <text>'s karma." ],
+    [ "{{commandPrefix}}karma", "Shows all current karma." ]
+  ]
 }

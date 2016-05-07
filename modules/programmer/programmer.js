@@ -2,14 +2,6 @@ var reddit = require('./../common/reddit.js'),
     request = require.safe('request'),
     results = [];
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'programmer');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'programmer','Reactions of a programmer.']];
-};
-
 exports.reaction = function(callback, waitCallback) {
     // If we have no stored reactions, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {

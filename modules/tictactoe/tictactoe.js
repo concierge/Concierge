@@ -1,4 +1,4 @@
-/** 
+/**
  * Hopefully plays TicTacToe
  *
  * Written By: Jay Harris
@@ -10,8 +10,16 @@ var games = [];
  * Maps a coordinate to something a programmer would use
 */
 function mapToCoord(coord) {
-    var rows = {"A":0, "B":1, "C":2},
-        columns = {"1":0, "2":1, "3":2};
+    var rows = {
+        A: 0,
+        B: 1,
+        C: 2
+    },
+    columns = {
+        1: 0,
+        2: 1,
+        3: 2
+    };
 
     if (rows[coord] !== undefined){
         return rows[coord];
@@ -34,7 +42,7 @@ function removeGame(game) {
 }
 
 /**
- * Finds a game given a player and a thread id. 
+ * Finds a game given a player and a thread id.
  * Returns undefined if no games are found
 */
 function findGame(thread, player) {
@@ -50,14 +58,14 @@ function findGame(thread, player) {
         if (game.noughts === player || game.crosses === player) {
             return game;
         }
-    } 
+    }
 }
 
 /**
  * Places a piece in a certain game
 */
 function place(game, player, move) {
-    //Work out what piece we are using.
+    // Work out what piece we are using.
     var piece = "X",
         board = game.board;
 
@@ -65,20 +73,20 @@ function place(game, player, move) {
         piece = "O";
     }
 
-    //It's not even your turn
+    // It's not even your turn
     if (player !== game.turn) {
-        return "Invalid Move! (it's not your turn " + player + ")";
+        return 'Invalid Move! (it\'s not your turn ' + player + ')';
     }
 
-    //You tried to put it on top of an existing piece
+    // You tried to put it on top of an existing piece
     if (board[move[0]][move[1]] !== '-') {
-        return "Invalid Move! (there's already something there " + player + ")";
+        return 'Invalid Move! (there\'s already something there ' + player + ')';
     }
 
-    //Make your move
+    // Make your move
     board[move[0]][move[1]] = piece;
 
-    //Swap the current player
+    // Swap the current player
     if (player === game.noughts) {
         game.turn = game.crosses;
     } else {
@@ -105,7 +113,7 @@ function createGame(player1, player2, thread) {
 }
 
 /**
-*prints the game to the chat
+* prints the game to the chat
 */
 function printGame(game) {
     var output = "",
@@ -141,55 +149,49 @@ function checkWin(game, player) {
     var board = game.board,
         piece = player === game.nought ? "O" : "X";
 
-    //Check rows
+    // Check rows
     for (var i in board) {
         var row = board[i];
 
         if (row[0] === piece && row[1] === piece && row[2] === piece) {
             return player;
         }
-    }   
+    }
 
-    //Check columns
+    // Check columns
     for (var i = 0; i < 3; ++i) {
         if (board[0][i] === piece && board[1][i] === piece && board[2][i] === piece) {
             return player;
         }
     }
 
-    //Check Diagonal
+    // Check Diagonal
     if (board[0][0] === piece && board[1][1] === piece && board[2][2] === piece) {
         return player;
     }
 
-    //Check Anti-Diagonal
+    // Check Anti-Diagonal
     if (board[0][2] === piece && board[1][1] === piece && board[2][0] === piece) {
         return player;
     }
-}
-
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'tictactoe')
-        || text.startsWith(commandPrefix + 'move')
-        || text.startsWith(commandPrefix + 'surrender');
 };
 
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + "tictactoe <opponent's full name>","starts a new game against the specified opponent"],
-           [commandPrefix + "move <row><column>","places a piece at the specified row and column, if you are in a game"],
-           [commandPrefix + "surrender","gives up on a game"]];
+exports.match = function (event, commandPrefix) {
+    return event.arguments[0] === commandPrefix + 'tictactoe'
+        || event.arguments[0] === commandPrefix + 'move'
+        || event.arguments[0] === commandPrefix + 'surrender';
 };
 
 exports.run = function(api, event) {
-    "use strict"
+    "use strict";
     var command = event.body,
         commandPrefix = api.commandPrefix;
 
-    //If we are creating a new game
+    // If we are creating a new game
     if (command.startsWith(commandPrefix + "tictactoe")) {
         var split = command.split('"');
 
-        //There are way to many quotes for this to end well
+        // There are way to many quotes for this to end well
         if (split.length !== 3 && split.length !== 5)  {
             api.sendMessage('And just what do you expect me to do with that?', event.thread_id);
             return;
@@ -200,12 +202,12 @@ exports.run = function(api, event) {
             game = createGame(player1, player2, event.thread_id);
 
         if (findGame(event.thread_id, player1)) {
-            api.sendMessage(player1 + " is already in a game on this thread!", event.thread_id);
+            api.sendMessage(player1 + ' is already in a game on this thread!', event.thread_id);
             return;
         }
 
         if (findGame(event.thread_id, player2)) {
-            api.sendMessage(player2 + " is already in a game on this thread!", event.thread_id);
+            api.sendMessage(player2 + ' is already in a game on this thread!', event.thread_id);
             return;
         }
 
@@ -215,22 +217,21 @@ exports.run = function(api, event) {
         api.sendMessage(output, event.thread_id);
     }
 
-    //If we are trying to make a move
-    if (command.startsWith(commandPrefix + "move")) {
-        var offset = commandPrefix.length + "move".length + 1,
+    // If we are trying to make a move
+    if (command.startsWith(commandPrefix + 'move')) {
+        var offset = commandPrefix.length + 'move'.length + 1,
             move = command.substr(offset),
             game = findGame(event.thread_id, event.sender_name.trim());
 
         if (!game) {
-            api.sendMessage("You're not even playing " + event.sender_name.trim(), event.thread_id);
+            api.sendMessage('You\'re not even playing ' + event.sender_name.trim(), event.thread_id);
             return;
         }
 
         if (move.length !== 2) {
-            api.sendMessage("Um. Is that even a coordinate?");
+            api.sendMessage('Um. Is that even a coordinate?');
         }
 
-        console.log(move);
         var y = mapToCoord(move.substr(0, 1)),
             x = mapToCoord(move.substr(1, 1));
 
@@ -240,7 +241,7 @@ exports.run = function(api, event) {
         };
 
         if (move[0] === undefined || move[1] === undefined) {
-            api.sendMessage("Do at least TRY and pick a coordinate on the board", event.thread_id);
+            api.sendMessage('Do at least TRY and pick a coordinate on the board', event.thread_id);
             return;
         }
 
@@ -255,24 +256,24 @@ exports.run = function(api, event) {
 
         output = checkWin(game, event.sender_name.trim());
         if (output) {
-            api.sendMessage("Game Over! " + output + " wins!", event.thread_id);
+            api.sendMessage('Game Over! ' + output + ' wins!', event.thread_id);
             removeGame(game);
         } else {
-            api.sendMessage(game.turn + "'s turn!", event.thread_id);
+            api.sendMessage(game.turn + '\'s turn!', event.thread_id);
         }
     }
 
-    //If we are surrendering
-    if (command.startsWith(commandPrefix + "surrender")) {
+    // If we are surrendering
+    if (command.startsWith(commandPrefix + 'surrender')) {
         var game = findGame(event.thread_id, event.sender_name.trim());
 
         if (!game) {
-            api.sendMessage("You're not even in a game! Why are you surrendering?");
+            api.sendMessage('You\'re not even in a game! Why are you surrendering?');
             return;
         }
 
         removeGame(game);
-        
-        api.sendMessage(event.sender_name.trim() + " surrenders! " + (event.sender_name.trim() !== game.noughts ? game.noughts : game.crosses) + " wins!");
+
+        api.sendMessage(event.sender_name.trim() + ' surrenders! ' + (event.sender_name.trim() !== game.noughts ? game.noughts : game.crosses) + ' wins!');
     }
 };
