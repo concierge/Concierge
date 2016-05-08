@@ -59,6 +59,12 @@ exports.createPlatformModule = function(platform) {
 		}
 	}
 
+    if (!platform.sendPrivateMessage) {
+        platform.sendPrivateMessage = function (message, thread) {
+            platform.sendMessage(message, thread);
+        }
+    }
+
 	if (!platform.commandPrefix) {
 		if (platform.config && platform.config.commandPrefix) {
 			platform.commandPrefix = platform.config.commandPrefix;
@@ -68,20 +74,23 @@ exports.createPlatformModule = function(platform) {
 		}
 	}
 
-	if (!platform.sendPrivateMessage) {
-		platform.sendPrivateMessage = function(message, thread) {
-			platform.sendMessage(message, thread);
-		}
-	}
-
 	return platform;
 };
 
 exports.createEvent = function(thread, senderId, senderName, message) {
-	return {
+	var event = {
 		thread_id: thread,
 		sender_id: senderId,
 		sender_name: senderName + "", // Accept sender_name  = null as a literal
 		body: message
-	};
+    };
+    event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);
+    if (event.arguments === null) {
+        event.arguments = [''];
+    }
+    event.arguments_body = event.body.substr(event.arguments[0].length + 1);
+    for (var i = 0; i < event.arguments.length; i++) {
+        event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
+    }
+    return event;
 };

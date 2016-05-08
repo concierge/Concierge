@@ -1,5 +1,9 @@
 ﻿{
   "name": "idea",
-  "version": 2.0,
-  "startup": "idea.js"
+  "version": 2.1,
+  "startup": "idea.js",
+  "command": "idea",
+  "help": [
+    [ "{{commandPrefix}}idea", "Generates an idea for your next StartUp." ]
+  ]
 }

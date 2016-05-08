@@ -11,8 +11,8 @@
 
 var os = require("os");
 
-exports.match = function(text, commandPrefix) {
-    return text === commandPrefix + 'ping';
+exports.match = function(event, commandPrefix) {
+    return event.body === commandPrefix + 'ping';
 };
 
 exports.run = function(api, event) {

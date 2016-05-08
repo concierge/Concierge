@@ -1,6 +1,6 @@
 ## Creating New Modules
 ### General Nodes
-For a "Hello World" example see [here](https://github.com/mrkno/HelloKassy). 
+For a "Hello World" example see [here](https://github.com/mrkno/HelloKassy).
 
 The basic module for a Kassy module will contain the following files:
 - `someModule.js` - a javascript file that will be the basis of the module.
@@ -14,34 +14,35 @@ Correctly created modules once in a public git repository can automatically be i
 - Each module folder should contain a `kassy.json` file (see existing modules for examples).
 
 #### `require('module')`
-Any modules that depend on an `npm` package should include it using:
-```
-var module = require.safe('module');
-```
-instead of:
-```
-var module = require('module');
-```
+Any modules that depend on an `npm` package should include it as usual using the `require` function. Note: if the package that has been required is not installed, the latest version will be installed for you.
 
-This is so that `package.json` does not need to be updated for every module and to allow for seamless updating using the built in updater.
+Additional methods are also avalible with require:
+
+* ~~require.safe('module')~~ __Deprecated__ available for backwards compatibility.
+* ~~require.once('module')~~ __Internal__ required to allow seemless code hotswap.
 
 ### Methods
 
 Every module must provide the same basic methods, which can then be expanded to perform whatever tasks are required. These are as follows:
 
-#### `exports.match(messageText, commandPrefix, messageThread, senderName)`
+#### `exports.match(event, commandPrefix)`
+<i>Optional if implemented in `kassy.json`, see below.</i>
 This method is used to test whether your module should be run on the given message.
 
 Arguments:
-- `messageText`. The text of the message that has been received. String.
+- `event`. The event representing the data that has been received See the Event section below. Object.
 - `commandPrefix`. The command prefix of the integration that received the message. String.
-- `messageThread`. A handle to the thread the message was received on. String.
-- `senderName`. The name of the sender. String.
 - <i>returns</i>. `true` if the module should run, `false` otherwise. Boolean.
 
-For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
+For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match` would return `true` if `event.body` was `/weather some data here` and `false` if it was `not what you are wanting`.
+
+<i>Note:
+
+For backwards compatibility reasons, if the `event` argument is renamed to `text`, `event.body` will be passed rather than the `event` object.</i>
+
 
 #### `exports.help(commandPrefix)`
+<i>Optional if implemented in `kassy.json`, see below.</i>
 This method should return an array of arrays containing help to be used with the `/kassy` command.
 
 Each sub-array should contain:
@@ -165,15 +166,27 @@ Is a static variable containing the command prefix that should be used for the p
 `kassy.json` is a file of the following format:
 ```
 {
-	"name": "<yourModuleNameHere>",
-	"version": 1.0,
-	"startup": "<yourModuleJSFileHere.js>"
+    "name": "<yourModuleNameHere>",
+    "version": 1.0,
+    "startup": "<yourModuleJSFileHere.js>",
+    "command": "<(optional) someCommandHere>",
+    "help": [
+        ["{{commandPrefix}}<whateverCommandYouProvide>", "<some brief help>", "<(optional) some longer help>"]
+    ]
 }
 ```
+
+Notes:
+- Both the `command` and `help` sections are optional and can be used instead of their equivilent code methods.
+- The `command` section is equivilent to doing a basic command check in `exports.match`
+- The `help` section is equivilent to returning a constant array in `exports.help`
+
 
 ### Event
 The `event` object contains the following fields:
 - `body`. The body of the message received. String.
+- `arguments`. `body` split at spaces except where the spaces are inside double quotes. Array of Strings.
+- `arguments_body`. `body` with the command removed from the beginning. String.
 - `thread_id`. The ID of the thread the message was received from. String.
 - `sender_name`. The name of the sender that the message was received from. String.
 - `sender_id`. The ID of the sender who sent the message. String.

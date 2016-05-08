@@ -1,14 +1,6 @@
 var request = require.safe('request'),
     giphyCache = {};
 
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'gif');
-};
-
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'gif <query>','Searches for animated GIF.']];
-};
-
 exports.search = function (query, callback, waitCallback) {
     var cacheq = query.trim().toLowerCase();
     var index = 0;
@@ -71,7 +63,7 @@ exports.run = function(api, event) {
         return;
     }
 
-    var query = event.body.substr(5);
+    var query = event.arguments_body;
 
     if(!query || query.length == 0) {
         api.sendMessage("Of course, I'll look for an empty string!", event.thread_id);

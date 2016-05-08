@@ -10,7 +10,7 @@
 *        Copyright (c) Matthew Knox and Contributors 2015.
 */
 
-var figlet = require('figlet'),
+var figlet = require('figlet');
 
 Platform = function(modes) {
     require.reload('./prototypes.js');
@@ -21,7 +21,9 @@ Platform = function(modes) {
     this.modes = null;
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
-    this.modules = require.once('./modules.js');
+    this.modulesLoader = require.once('./modules/modules.js');
+    this.coreLoader = require.once('./modules/core.js');
+    this.coreLoader.platform = this;
     this.statusFlag = StatusFlag.NotStarted;
     this.onShutdown = null;
     this.waitingTime = 250;
@@ -43,7 +45,7 @@ Platform.prototype.handleTransaction = function(module, args) {
 };
 
 Platform.prototype.messageRxd = function(api, event) {
-    var matchArgs = [event.body, api.commandPrefix, event.thread_id, event.sender_name],
+    var matchArgs = [event, api.commandPrefix],
         runArgs = [api, event],
         abort = false;
 
@@ -60,7 +62,7 @@ Platform.prototype.messageRxd = function(api, event) {
 
     // Run user modules in protected mode
     for (var i = 0; i < this.loadedModules.length; i++) {
-    	var matchResult = false;
+    	var matchResult;
     	try {
     		matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
     	}
@@ -121,7 +123,7 @@ Platform.prototype.start = function() {
     console.warn('Starting system...\n'
                 + 'Loading system configuration...');
 
-    this.modules.disabledConfig = this.config.loadDisabledConfig();
+    this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
     for (var i = 0; i < this.modes.length; i++) {
         this.modes[i].instance.platform = this;
         this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
@@ -132,19 +134,19 @@ Platform.prototype.start = function() {
 
     // Load core modules
     console.warn('Loading core components...');
-    var m = this.modules.listCoreModules();
+    var m = this.coreLoader.listCoreModules();
     for (var i = 0; i < m.length; i++) {
-        this.coreModules.push(this.modules.loadCoreModule(this, m[i]));
+        this.coreModules.push(this.coreLoader.loadCoreModule(this, m[i]));
     }
 
     // Load Kassy modules
     console.warn('Loading modules...');
-    m = this.modules.listModules();
+    m = this.modulesLoader.listModules();
     for (var mod in m) {
-		var ld = this.modules.loadModule(m[mod]);
-		if (ld !== null) {
-			this.loadedModules.push(ld);
-		}
+        var ld = this.modulesLoader.loadModule(m[mod]);
+        if (ld && ld !== null) {
+            this.loadedModules.push(ld);
+        }
     }
 
     // Starting output
@@ -186,24 +188,18 @@ Platform.prototype.shutdown = function(flag) {
     }
 
     // Unload user modules
-    for (var i = 0; i < this.loadedModules.length; i++) {
-        if (this.loadedModules[i].unload) {
-            this.loadedModules[i].unload();
-        }
-        this.loadedModules[i] = null;
+    while (this.loadedModules.length > 0) {
+        this.modulesLoader.unloadModule(this.loadedModules[0]);
+        this.loadedModules.splice(0, 1);
     }
-    this.loadedModules = [];
-
+    
     // Unload core modules
-    for (var i = 0; i < this.coreModules.length; i++) {
-        if (this.coreModules[i].unload) {
-            this.coreModules[i].unload();
-        }
-        this.coreModules[i] = null;
+    while (this.coreModules.length > 0) {
+        this.coreLoader.unloadCoreModule(this.coreModules[0]);
+        this.coreModules.splice(0, 1);
     }
-    this.coreModules = [];
 
-    this.config.saveConfig();
+    this.config.saveSystemConfig();
     this.statusFlag = flag ? flag : StatusFlag.Shutdown;
 
     console.warn(this.packageInfo.name + " has shutdown.");

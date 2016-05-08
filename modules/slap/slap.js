@@ -4,17 +4,6 @@
  * Date Written: 21/07/2015
  */
 
-// Define the 'regex' command matching criteria boolean
-exports.match = function(text, commandPrefix) {
-    return text.startsWith(commandPrefix + 'slap');
-};
-
-// Give users help if they can't slaps
-exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'slap <infidel>','Slaps an annoying infidel - descriptively!']];
-};
-
-
 // The main slapper
 exports.slap = function(sender_name, infidel){
     var adjectives = [
@@ -44,8 +33,8 @@ exports.slap = function(sender_name, infidel){
 
 // Make the slapper work for it's money
 exports.run = function(api, event) {
-    // Strip the command and obtain the query
-    var query = event.body.substr(5 + api.commandPrefix.length);
+    // Obtain the query
+    var query = event.arguments_body;
 
     // get the feels
     var result = exports.slap(event.sender_name.trim(), query);

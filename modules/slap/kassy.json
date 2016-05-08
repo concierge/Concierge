@@ -1,5 +1,9 @@
 ﻿{
   "name": "slap",
-  "version": 2.0,
-  "startup": "slap.js"
+  "version": 2.1,
+  "startup": "slap.js",
+  "command": "slap",
+  "help": [
+    [ "{{commandPrefix}}slap <infidel>", "Slaps an annoying infidel - descriptively!" ]
+  ]
 }

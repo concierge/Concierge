@@ -1,15 +1,7 @@
 var request = require.safe('request'),
-	animCache = {};
+	animCache = {},
 
-exports.match = function(text, commandPrefix) {
-	return text.startsWith(commandPrefix + 'anim');
-};
-
-exports.help = function(commandPrefix) {
-	return [[commandPrefix + 'anim <query>','Searches for animated GIF.']];
-};
-
-exports.search = function (query, callback, waitCallback) {
+search = function (query, callback, waitCallback) {
 	var cacheq = query.trim().toLowerCase();
 	var index = 0;
 	if (animCache[cacheq]) {
@@ -58,10 +50,10 @@ exports.search = function (query, callback, waitCallback) {
 			callback({error:'Whomever the system admin is around here, I demand that they should be fired.'});
 		}
 	});
-};
+},
 
 // Taken from sassy. Copyright sassy authors
-exports.ensureExt = function (url) {
+ensureExt = function (url) {
 	if (!/(\.gif|\.jpe?g|\.png|\.gifv)$/i.test(url)) {
 		url += '#.png';
 	}
@@ -79,8 +71,8 @@ exports.run = function(api, event) {
 		return;
 	}
 
-	var query = event.body.substr(6);
-	exports.search(query, function(image) {
+    var query = event.arguments_body;
+	search(query, function(image) {
 		if (image.error) {
 			api.sendMessage(image.error, event.thread_id);
 			return;
@@ -88,7 +80,7 @@ exports.run = function(api, event) {
 
 		var img = image.link;
 		if (img) {
-			var url = exports.ensureExt(img);
+			var url = ensureExt(img);
 			api.sendImage("url", url, "I found this:", event.thread_id);
 		}
 		else {

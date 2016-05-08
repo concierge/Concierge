@@ -1,5 +1,9 @@
 ﻿{
   "name": "8Ball",
-  "version": 2.0,
-  "startup": "8Ball.js"
+  "version": 2.1,
+  "startup": "8Ball.js",
+  "command": "8ball",
+  "help": [
+    [ "{{commandPrefix}}8ball <query>", "Answers your questions to life." ]
+  ]
 }

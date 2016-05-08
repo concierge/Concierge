@@ -1,16 +1,10 @@
-exports.match = function(text, commandPrefix) {
-	return text.endsWith('++') || text.endsWith('--') || text === commandPrefix + 'karma';
-};
-
-exports.help = function(commandPrefix) {
-    return [['<text>++','Increases <text>\'s karma.'],
-			['<text>--','Decreases <text>\'s karma.'],
-			[commandPrefix + 'karma','Shows all current karma.']];
+exports.match = function(event, commandPrefix) {
+	return event.body.endsWith('++') || event.body.endsWith('--') || event.body === commandPrefix + 'karma';
 };
 
 exports.parseKarmaChange = function(message) {
 	var karma = 0, name = "";
-	for (var i = message.length - 2; i != -1; i--) {
+	for (var i = message.length - 2; i !== -1; i--) {
 		switch(message[i]){
 			case '+': karma++; break;
 			case '-': karma--; break;
