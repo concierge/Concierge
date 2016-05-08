@@ -24,7 +24,7 @@ exports.listIntegrations = function () {
     var integ = files.filesInDirectory('./' + integrationsLocation),
         list = [];
     for (var i = 0; i < integ.length; i++) {
-        var p = path.join(__dirname, '../../'+ integrationsLocation, integ[i]);
+        var p = path.join(__dirname, '../../' + integrationsLocation, integ[i]);
         if (path.extname(integ[i]) !== '') {
             list.push({
                 name: path.basename(integ[i], path.extname(integ[i])).toLowerCase(),
