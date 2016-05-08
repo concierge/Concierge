@@ -9,7 +9,7 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-var loaders         = [require.once('./kassyModule.js')],
+var loaders         = [require.once('./kassyModule.js'), require.once('./hubotModule.js')],
     config          = require('./../config.js'),
     conflict        = 1;
 

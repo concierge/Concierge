@@ -14,16 +14,12 @@ Correctly created modules once in a public git repository can automatically be i
 - Each module folder should contain a `kassy.json` file (see existing modules for examples).
 
 #### `require('module')`
-Any modules that depend on an `npm` package should include it using:
-```
-var module = require.safe('module');
-```
-instead of:
-```
-var module = require('module');
-```
+Any modules that depend on an `npm` package should include it as usual using the `require` function. Note: if the package that has been required is not installed, the latest version will be installed for you.
 
-This is so that `package.json` does not need to be updated for every module and to allow for seamless updating using the built in updater.
+Additional methods are also avalible with require:
+
+* ~~require.safe('module')~~ __Deprecated__ available for backwards compatibility.
+* ~~require.once('module')~~ __Internal__ required to allow seemless code hotswap.
 
 ### Methods
 
