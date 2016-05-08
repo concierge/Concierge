@@ -12,7 +12,7 @@
 
 var figlet = require('figlet');
 
-Platform = function () {
+Platform = function() {
     require.reload('./prototypes.js');
 
     this.config = require('./config.js');

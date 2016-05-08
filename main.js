@@ -38,6 +38,7 @@ args.splice(0, 2);
 // Parse optional arguments
 argp.runArguments(args);
 
+// Check startup modes
 if (!args || args.length === 0) {
     console.info('No integrations specified, defaulting to \'test\'.');
     args.push('test');

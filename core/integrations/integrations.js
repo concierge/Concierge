@@ -53,7 +53,7 @@ exports.listIntegrations = function () {
         }
     }
     cachedIntegrations = list;
-	return list;
+    return list;
 };
 
 exports.setIntegrationConfigs = function(platform) {
@@ -64,7 +64,7 @@ exports.setIntegrationConfigs = function(platform) {
             selectedIntegrations[i].instance.config.commandPrefix = platform.defaultPrefix;
         }
     }
-}
+};
 
 exports.setIntegrations = function (integrations) {
     if (selectedIntegrations) {
@@ -75,7 +75,7 @@ exports.setIntegrations = function (integrations) {
     try {
         for (i = 0; i < integrations.length; i++) {
             if (!global.coffeescriptLoaded && integrations[i].start.endsWith('.coffee')) {
-                require("coffee-script").register();
+                require('coffee-script').register();
                 global.coffeescriptLoaded = true;
             }
             integrations[i].instance = require.once(integrations[i].start);
@@ -106,13 +106,13 @@ exports.startIntegrations = function (callback) {
 
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {
-            console.write("Loading integration '" + selectedIntegrations[i].name + "'...\t");
+            console.write('Loading integration \'' + selectedIntegrations[i].name + '\'...\t');
             selectedIntegrations[i].instance.start(callback);
-            console.info("[DONE]");
+            console.info('[DONE]');
         }
         catch (e) {
-            console.error("[FAIL]");
-            console.debug("Failed to start output integration '" + selectedIntegrations[i].name + "'.");
+            console.error('[FAIL]');
+            console.debug('Failed to start output integration \'' + selectedIntegrations[i].name + '\'.');
             console.critical(e);
         }
     }
@@ -130,7 +130,7 @@ exports.stopIntegrations = function() {
             selectedIntegrations[i].instance.stop();
         }
         catch (e) {
-            console.debug("Failed to correctly stop output integration '" + selectedIntegrations[i] + "'.");
+            console.debug('Failed to correctly stop output integration \'' + selectedIntegrations[i] + '\'.');
             console.critical(e);
         }
     }

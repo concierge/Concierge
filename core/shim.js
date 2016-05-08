@@ -58,12 +58,6 @@ exports.createPlatformModule = function(platform) {
 			platform.sendMessage('If I could set the title of this chat I would set it to "' + title + '"', thread);
 		}
 	}
-    
-    if (!platform.sendPrivateMessage) {
-        platform.sendPrivateMessage = function (message, thread) {
-            platform.sendMessage(message, thread);
-        }
-    }
 
     if (!platform.sendPrivateMessage) {
         platform.sendPrivateMessage = function (message, thread) {
