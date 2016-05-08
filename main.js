@@ -27,10 +27,10 @@ require('./core/prototypes.js');
 require('./core/status.js');
 require('./core/unsafe/console.js');
 
-var consolec = require('./core/unsafe/console.js'),
-    modesf = require('./core/modes.js'),
+var integf = require('./core/integrations/integrations.js'),
     startup = require('./core/startup.js'),
-    modes = modesf.listModes(),
+    integ = integf.listIntegrations(),
+    argp = require('./core/arguments.js'),
     args = process.argv;
 
 args.splice(0, 2);
@@ -38,7 +38,13 @@ args.splice(0, 2);
 // Parse optional arguments
 argp.runArguments(args);
 
-// Check startup modes
+if (!args || args.length === 0) {
+    console.info('No integrations specified, defaulting to \'test\'.');
+    args.push('test');
+}
+
+// Check startup integrations
+var startArgs = [];
 for (var i = 0; i < args.length; i++) {
     args[i] = args[i].toLowerCase();
     var inte = integ.find(function(int) {

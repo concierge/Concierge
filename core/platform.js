@@ -83,6 +83,7 @@ Platform.prototype.messageRxd = function(api, event) {
     }
 };
 
+
 Platform.prototype.start = function() {
     if (this.statusFlag !== StatusFlag.NotStarted) {
         throw 'Cannot start platform when it is already started.';
@@ -96,13 +97,7 @@ Platform.prototype.start = function() {
                 + 'Loading system configuration...');
 
     this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
-    for (var i = 0; i < this.modes.length; i++) {
-        this.modes[i].instance.platform = this;
-        this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
-        if (!this.modes[i].instance.config.commandPrefix) {
-            this.modes[i].instance.config.commandPrefix = this.defaultPrefix;
-        }
-    }
+    this.integrationManager.setIntegrationConfigs(this);
 
     // Load core modules
     console.warn('Loading core components...');
@@ -145,7 +140,7 @@ Platform.prototype.shutdown = function(flag) {
         this.modulesLoader.unloadModule(this.loadedModules[0]);
         this.loadedModules.splice(0, 1);
     }
-    
+
     // Unload core modules
     while (this.coreModules.length > 0) {
         this.coreLoader.unloadCoreModule(this.coreModules[0]);
