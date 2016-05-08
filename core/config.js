@@ -11,7 +11,7 @@
 
 var fs = require('fs'),
     path = require('path'),
-    modes = require('./modes.js').listModes(),
+    integs = require('./integrations/integrations.js').listIntegrations(),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
@@ -69,18 +69,18 @@ exports.saveSystemConfig = function () {
 
 exports.getConfig = function (m) {
     var isSystem = sysConfigZones.includes(m);
-    
+
     if (!sysConfig) {
         sysConfig = loadConfig(sysConfigFile);
     }
-    
+
     if (!isSystem && !sysConfig[m]) {
         return {};
     }
     else if (!sysConfig[m]) {
         sysConfig[m] = {};
     }
-    
+
     if (!isSystem) {
         console.warn("\nConfiguration data for module '" + m + "' stored in deprecated location.\n" +
             "Configuration will be moved to module specific configuration file.");
@@ -95,7 +95,7 @@ exports.loadModuleConfig = function (module, location, ignoreCache) {
     if (!modConfig) {
         modConfig = {};
     }
-    
+
     if (modConfig[module.name] && !ignoreCache) {
         return modConfig[module.name];
     }
@@ -110,7 +110,7 @@ exports.loadModuleConfig = function (module, location, ignoreCache) {
     for (var name in deprecatedDataB) {
         configData[name] = deprecatedDataB[name];
     }
-    
+
     modConfig[module.name] = {
         location: path.join(location, modConfigFile),
         data: configData
@@ -123,9 +123,11 @@ exports.loadOutputConfig = function (outputName) {
     if (!config[outputName]) {
         config[outputName] = {};
     }
-	
+
     for (var obj in config) {
-        if (modes.includes(obj)) continue;
+        if (integs.find(int => int.name === obj)) {
+            continue;
+        }
         if (!config[outputName][obj]) {
             config[outputName][obj] = config[obj];
         }
