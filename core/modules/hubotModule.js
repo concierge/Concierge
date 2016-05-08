@@ -16,14 +16,15 @@ var fs = require('fs'),
     modulesDir = 'modules',
     descriptor = 'hubot.json',
     pkg = 'package.json',
-    Robot = require.once('./hubot/robot.js');
+    Robot = require.once('./hubot/robot.js'),
+    coffeescriptLoaded = false;
 
 var verifyModuleDescriptior = function (hj, disabled) {
     if (!hj.name || !hj.startup || !hj.version) {
         return false;
     }
-    
-    if (disabled === true && exports.disabledConfig 
+
+    if (disabled === true && exports.disabledConfig
         && exports.disabledConfig[hj.name] && exports.disabledConfig[hj.name] === true) {
         return false;
     }
@@ -35,7 +36,7 @@ exports.verifyModule = function (location, disabled) {
     if (!stat.isDirectory()) {
         return null;
     }
-    
+
     var folderPath = path.resolve(location),
         desc = path.join(folderPath, './' + descriptor),
         pack = path.join(folderPath, './' + pkg),
@@ -46,7 +47,6 @@ exports.verifyModule = function (location, disabled) {
         hj = require.once(desc);
     }
     catch (e) {
-        var l;
         try {
             fs.statSync(pack);
             var p = require(pack);
@@ -61,14 +61,14 @@ exports.verifyModule = function (location, disabled) {
             }
             hj = Robot.generateHubotJson(folderPath, files[0]);
         }
-        
+
         fs.writeFileSync(desc, JSON.stringify(hj, null, 4), 'utf8');
     }
 
     if (!verifyModuleDescriptior(hj, disabled)) {
         return null;
     }
-    
+
     if (!hj.folderPath) {
         hj.folderPath = folderPath;
     }
@@ -78,7 +78,7 @@ exports.verifyModule = function (location, disabled) {
 exports.listModules = function (disabled) {
     var data = files.filesInDirectory('./' + modulesDir),
         modules = {};
-    
+
     for (var i = 0; i < data.length; i++) {
         try {
             var candidate = path.resolve(path.join(modulesDir, data[i])),
@@ -98,26 +98,12 @@ exports.listModules = function (disabled) {
     return modules;
 };
 
-var createHelp = function (module) {
-    return function (commandPrefix) {
-        var h = [];
-        for (var i = 0; i < module.help.length; i++) {
-            var l = [];
-            for (var j = 0; j < module.help[i].length; j++) {
-                l.push(module.help[i][j].replace(/{{commandPrefix}}/g, commandPrefix));
-            }
-            h.push(l);
-        }
-        return h;
-    };
-};
-
 exports.loadModule = function (module) {
-    if (!global.coffeescriptLoaded && module.startup.endsWith('.coffee')) {
-        require("coffee-script").register();
-        global.coffeescriptLoaded = true;
+    if (!coffeescriptLoaded && module.startup.endsWith('.coffee')) {
+        require('coffee-script').register();
+        coffeescriptLoaded = true;
     }
-    
+
     try {
         var modulePath = module.folderPath,
             startPath = path.join(modulePath, module.startup),

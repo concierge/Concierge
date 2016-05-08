@@ -9,6 +9,10 @@ var git = require.once('../git.js'),
     request = require('request'),
     urll = require('url'),
     moduleCache = null,
+    moduleTable = {
+        lastUpdated: null,
+        modules: {}
+    },
     opts = {
         help: {
             run: function(args, api, event) {
@@ -56,8 +60,14 @@ var git = require.once('../git.js'),
 
                     var spl = url.split('/');
                     if (spl.length === 1) {
-                        // todo: kpm table lookup
-                        api.sendMessage('KPM table has not yet been implemented. Skipping...', event.thread_id);
+                        refreshModuleTable(url, function(url, err) {
+                            if (err || !moduleTable.modules[url]) {
+                                api.sendMessage('Invalid KPM table reference provided "' + url + '". Skipping...', event.thread_id);
+                                return;
+                            }
+                            url = moduleTable.modules[url];
+                            gitInstall.call(this, url, api, event);
+                        }.bind(this));
                     }
                     else if (spl.length === 2) {
                         url = 'https://github.com/' + url.trim();
@@ -164,10 +174,12 @@ var git = require.once('../git.js'),
             if (err) {
                 api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
             } else {
-                api.sendMessage('Restarting module "' + module.name + '"...');
+                api.sendMessage('Restarting module "' + module.name + '"...', event.thread_id);
                 // unload the current version
                 this.loadedModules = this.loadedModules.filter(function (value) {
-                    if (value.name !== module.name) return true;
+                    if (value.name !== module.name) {
+                        return true;
+                    }
                     exports.platform.modulesLoader.unloadModule(value);
                     return false;
                 });
@@ -191,7 +203,9 @@ var git = require.once('../git.js'),
         api.sendMessage('Unloading module "' + module.name + '"...', event.thread_id);
         // unload the current version
         this.loadedModules = this.loadedModules.filter(function (value) {
-            if (value.name !== module.name) return true;
+            if (value.name !== module.name) {
+                return true;
+            }
             exports.platform.modulesLoader.unloadModule(value);
             return false;
         });
@@ -210,7 +224,7 @@ var git = require.once('../git.js'),
         try {
             var descriptor = exports.platform.modulesLoader.verifyModule(moduleLocation),
                 moduleList = getModuleList();
-        
+
             if (!descriptor) {
                 api.sendMessage('"' + name + '" is not a valid module/script.', event.thread_id);
                 cleanup();
@@ -222,7 +236,7 @@ var git = require.once('../git.js'),
                 cleanup();
                 return;
             }
-        
+
             descriptor.safeName = sanitize(descriptor.name);
             var instDir = path.resolve('./modules/kpm_' + descriptor.safeName);
             fs.copy(moduleLocation, instDir, function (err) {
@@ -232,7 +246,7 @@ var git = require.once('../git.js'),
                     cleanup();
                     return;
                 }
-            
+
                 descriptor.folderPath = instDir;
                 var m = exports.platform.modulesLoader.loadModule(descriptor);
                 if (m !== null) {
@@ -297,10 +311,51 @@ var git = require.once('../git.js'),
                     cleanup();
                     return api.sendMessage('Failed to install "' + cleaned + '"...', event.thread_id);
                 }
-                
+
                 fs.writeFileSync(path.join(dir, cleaned), body, 'utf8');
                 return installCommon(cleaned, dir, cleanup, api, event);
             });
+        });
+    },
+
+    refreshModuleTable = function (url, callback) {
+        var hr = 3600000;
+        if (moduleTable.lastUpdated != null && new Date() - moduleTable.lastUpdated < hr) {
+            return callback(url);
+        }
+
+        request.get('https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md', function (error, response) {
+            if (response.statusCode === 200 && response.body) {
+                var b = response.body;
+                if (b && b.length > 0) {
+                    var spl = b.split('\n'),
+                        shouldParse = false,
+                        foundModules = {};
+                    for (var i = 0; i < spl.length; i++) {
+                        if (!spl[i].startsWith('|')) {
+                            continue;
+                        }
+
+                        var items = spl[i].split('|');
+                        if (items.length !== 4) {
+                            continue;
+                        }
+                        if (!shouldParse) {
+                            if (items[1] === '---' && items[2] === '---') {
+                                shouldParse = true;
+                            }
+                            continue;
+                        }
+                        foundModules[items[1]] = items[2];
+                    }
+                    moduleTable.modules = foundModules;
+                    moduleTable.lastUpdated = new Date();
+                }
+                callback(url);
+            }
+            else {
+                callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
+            }
         });
     };
 
@@ -329,4 +384,3 @@ exports.run = function (api, event) {
 exports.help = function(commandPrefix) {
     return [[commandPrefix + 'kpm','Kassy Package Manager, for installing external kpm modules', 'For detailed help on specific kpm commands run ' + commandPrefix + 'kpm help']];
 };
-

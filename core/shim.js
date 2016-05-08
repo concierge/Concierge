@@ -65,6 +65,12 @@ exports.createPlatformModule = function(platform) {
         }
     }
 
+    if (!platform.sendPrivateMessage) {
+        platform.sendPrivateMessage = function (message, thread) {
+            platform.sendMessage(message, thread);
+        }
+    }
+
 	if (!platform.commandPrefix) {
 		if (platform.config && platform.config.commandPrefix) {
 			platform.commandPrefix = platform.config.commandPrefix;
@@ -81,7 +87,7 @@ exports.createEvent = function(thread, senderId, senderName, message) {
 	var event = {
 		thread_id: thread,
 		sender_id: senderId,
-		sender_name: senderName,
+		sender_name: senderName + "", // Accept sender_name  = null as a literal
 		body: message
     };
     event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);

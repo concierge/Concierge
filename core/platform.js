@@ -96,7 +96,13 @@ Platform.prototype.start = function() {
                 + 'Loading system configuration...');
 
     this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
-    this.integrationManager.setIntegrationConfigs(this);
+    for (var i = 0; i < this.modes.length; i++) {
+        this.modes[i].instance.platform = this;
+        this.modes[i].instance.config = this.config.loadOutputConfig(this.modes[i].name);
+        if (!this.modes[i].instance.config.commandPrefix) {
+            this.modes[i].instance.config.commandPrefix = this.defaultPrefix;
+        }
+    }
 
     // Load core modules
     console.warn('Loading core components...');

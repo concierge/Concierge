@@ -11,8 +11,9 @@
 
 var npm = require('npm'),
 	deasync = require('deasync'),
+	fs = require('fs'),
 	load = deasync(npm.load);
-	
+
 load({loglevel: "silent"});
 var inst = deasync(npm.commands.install),
 upd = deasync(npm.commands.update),
@@ -31,8 +32,14 @@ exports.requireOrInstall = function(req, name) {
 		if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
 			throw e;
 		}
+		try {
+			fs.statSync(name);
+		}
+		catch (p) {
+			install(name);
+		}
 	}
-	install(name);
+
 	return req(name);
 };
 

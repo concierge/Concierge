@@ -18,43 +18,27 @@
  *        MIT License. All code unless otherwise specified is
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
- 
+
 'use strict';
 
 // Load NodeJS Modifications/Variables
 require('./core/require.js');
 require('./core/prototypes.js');
 require('./core/status.js');
+require('./core/unsafe/console.js');
 
 var consolec = require('./core/unsafe/console.js'),
-    integf = require('./core/integrations/integrations.js'),
+    modesf = require('./core/modes.js'),
     startup = require('./core/startup.js'),
-    integ = integf.listIntegrations(),
+    modes = modesf.listModes(),
     args = process.argv;
 
 args.splice(0, 2);
 
-// Determine if debug output is enabled
-if (args[0] === 'debug') {
-    console.warn('Debug mode enabled.');
-    args.splice(0, 1);
-    consolec.setDebug(true);
-}
+// Parse optional arguments
+argp.runArguments(args);
 
-// Determine if logging output is enabled
-if (args[0] === 'log') {
-    console.warn('Logging mode enabled.');
-    args.splice(0, 1);
-    consolec.setLog(true);
-}
-
-if (!args || args.length === 0) {
-    console.info('No integrations specified, defaulting to \'test\'.');
-    args.push('test');
-}
-
-// Check startup integrations
-var startArgs = [];
+// Check startup modes
 for (var i = 0; i < args.length; i++) {
     args[i] = args[i].toLowerCase();
     var inte = integ.find(function(int) {

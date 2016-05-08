@@ -34,11 +34,11 @@ longDescription = function(moduleName, context) {
 		// Check loaded modules, as commnd not in core modules
 		module = checkIfModuleExists(this.loadedModules, moduleName);
 	}
-	
+
 	if (!module || module.length === 0) {
 		return 'Cannot provide help on module that was not found. Has it been disabled?';
 	}
-	
+
 	if (module.length > 1) {
 		return 'More than one module has the same name. Please fix this before continuing.';
 	}
@@ -47,7 +47,7 @@ longDescription = function(moduleName, context) {
         cmdHelp = module.ignoreHelpContext
             ? module.help(context.commandPrefix)
             : module.help.call(context, context.commandPrefix);
-		
+
 	for (var i = 0; i < cmdHelp.length; i++) {
 		var text = cmdHelp[i].length === 3 ? cmdHelp[i][2] : cmdHelp[i][1];
 		help += cmdHelp[i][0] + '\n--------------------\n' + text + '\n\n';
@@ -56,25 +56,24 @@ longDescription = function(moduleName, context) {
 };
 
 exports.match = function(event, commandPrefix) {
-    return event.arguments[0] === commandPrefix + this.packageInfo.name
+    return event.arguments[0] === commandPrefix + exports.platform.packageInfo.name
         || event.arguments[0] === commandPrefix + 'help';
 };
 
 exports.run = function(api, event) {
-    var commands = event.arguments,
+	var commands = event.arguments,
         context = {
             commandPrefix: api.commandPrefix
         },
 		help;
-		
 	if (commands.length === 1) {
-		help = shortSummary.call(this, context);
+		help = shortSummary.call(exports.platform, context);
 	}
 	else {
 		commands.splice(0, 1);
-		help = longDescription.call(this, commands.join(' '), context);
+		help = longDescription.call(exports.platform, commands.join(' '), context);
 	}
-	
+
 	api.sendPrivateMessage(help, event.thread_id, event.sender_id);
 	return false;
 };

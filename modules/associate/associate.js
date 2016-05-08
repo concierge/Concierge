@@ -18,7 +18,7 @@ exports.match = function (event, commandPrefix) {
 	return !!event.__associateCmd;
 };
 
-toggleAssociation = function(thread, hook, text) {
+var toggleAssociation = function(thread, hook, text) {
     hook = hook.toLowerCase();
     if (!text) {
         if (exports.config[thread] && exports.config[thread][hook]) {
@@ -32,7 +32,7 @@ toggleAssociation = function(thread, hook, text) {
 	}
 	exports.config[thread][hook] = text;
 	return true;
-};
+},
 
 printAssociations = function(api, event) {
 	var assoc = exports.config[event.thread_id];
@@ -42,7 +42,7 @@ printAssociations = function(api, event) {
 	}
 	message.trim();
 	api.sendMessage(message, event.thread_id);
-};
+},
 
 clear = function(api, event) {
 	exports.config[event.thread_id] = {};

@@ -1,4 +1,4 @@
-﻿var Message = function (event, prefix) {
+﻿var Message = function(event, prefix) {
     this.event = event;
     this.prefix = prefix;
 
