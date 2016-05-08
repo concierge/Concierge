@@ -1,5 +1,5 @@
 # Kassy
-(Karma + Sassy) * (Facebook + Slack + Skype + Hipchat) = Kassy
+(Karma + Sassy) * (Facebook + Slack + Skype + Hipchat + Telegram) = Kassy
 
 <i>It does way more than this now...</i>
 
