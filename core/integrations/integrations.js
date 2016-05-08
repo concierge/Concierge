@@ -60,6 +60,13 @@ exports.setIntegrationConfigs = function(platform) {
     for (var i = 0; i < selectedIntegrations.length; i++) {
         selectedIntegrations[i].instance.platform = platform;
         selectedIntegrations[i].instance.config = platform.config.loadOutputConfig(selectedIntegrations[i].name);
+
+        for (var name in selectedIntegrations[i].instance.config) {
+            if (name.startsWith("ENV_") && name === name.toUpperCase()) {
+                process.env[name.substr(4)] = selectedIntegrations[i].instance.config[name];
+            }
+        }
+
         if (!selectedIntegrations[i].instance.config.commandPrefix) {
             selectedIntegrations[i].instance.config.commandPrefix = platform.defaultPrefix;
         }
