@@ -5,7 +5,7 @@ var counterLimit = 3; // TODO Should be made configurable by sending /disable <c
 
 exports.load = function() {
 	prevTimeStamp = Date.now();
-}
+};
 
 exports.match = function(text, commandPrefix) {
 	if(text === commandPrefix + 'disable') {
