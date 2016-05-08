@@ -1,58 +1,43 @@
-var TelegramBot = require.safe('node-telegram-bot-api'),
-    bot = null,
-    shim = require('../shim.js'),
-    api = null;
+var options = {
+    // Used by the monkey patch to node-telegram-bot-api
+    stopPolling: true
+},
+TelegramBot = require.safe('node-telegram-bot-api'),
+bot = null,
+shim = require('../shim.js'),
+api = null;
 
-// This are the methods available from Kassy:
-// sendMessage(message, thread)
-// sendPrivateMessage(message, thread, senderId)
-// sendUrl(url, thread) 
-// sendImage(type, image, description, thread)
-// sendFile(type, file, description, thread)
-// sendTyping(thread)
-// setTitle(title, thread)
-// commandPrefix
+// Adds the missing stopPolling() method
+// https://github.com/yagop/node-telegram-bot-api/pull/51#issuecomment-217395990
+require.safe('monkey-patches-node-telegram-bot-api')(TelegramBot, options);
 
-sendMessage = function(message, thread) {
-    // TODO Explore how to send Telegram-specific options
-    var opts;
+var sendMessage = function(message, thread, opts) {
     bot.sendMessage(thread, message, opts);
 };
-
-sendUrl = function(url, thread)  {
-    // TODO
-};
-
-sendFile = function(type, file, description, thread) {
-    // TODO
-};
-
-sendTyping = function(thread) {
-    // TODO
-};
-
 
 exports.start = function(callback) {
     var token = exports.config.token;
     bot = new TelegramBot(token, {
         polling: true
     });
+
     api = shim.createPlatformModule({
         sendMessage: sendMessage,
-        sendPrivateMessage: sendMessage,
-        sendFile: sendFile,
-        sendTyping: sendTyping,
         commandPrefix: exports.config.commandPrefix
     });
 
     bot.on('message', function(msg) {
+        if (bot._polling.offset < exports.config.offset) {
+            // Fixes issue where a duplicate message is received after restart
+            return;
+        }
         var event = shim.createEvent(msg.chat.id, msg.from.id, msg.from.username, msg.text);
         callback(api, event);
     });
 };
 
 exports.stop = function() {
-    console.debug("Telegram -> start shutdown");
-    bot = null;
-    api = null;
+    console.debug('Telegram -> start shutdown');
+    exports.config.offset = bot._polling.offset + 1;
+    bot.stopPolling();
 };
