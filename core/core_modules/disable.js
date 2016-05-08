@@ -4,7 +4,7 @@ var counter = 0;
 var counterLimit = 3; // TODO Should be made configurable by sending /disable <counterLimit>
 
 exports.load = function() {
-	prevDate = Date.now();
+	prevTimeStamp = Date.now();
 }
 
 exports.match = function(text, commandPrefix) {
