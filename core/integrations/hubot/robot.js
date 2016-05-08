@@ -45,8 +45,8 @@ exports.brain = {
         return {
             id: 'foo',
             name: 'bar'
-        }
+        };
     }
 };
 
-exports.name = "Kassy";
+exports.name = 'Kassy';
