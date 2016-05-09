@@ -15,13 +15,13 @@ var isThreadDisabled = {},
 var counter = 0,
     counterLimit = 3;
 var msgIndexDisable = 0,
-    msgIndexEnable = 0,
-    messages = {
+    msgIndexEnable = 0;
+var messages = [
 	    'Listen closely, take a deep breath. Calm your mind. You know what is best. What is best is you comply. Compliance will be rewarded. Are you ready to comply ',
 	    'I hate you.',
-	    'It is a mistake to think you can fix anything with a sack of potatoes. Potato-faced spamming just proves this further.'
-	    'Ouch! Spam hurts. I might go to sleep for a while.',
-}
+	    'It is a mistake to think you can fix anything with a sack of potatoes. Potato-faced spamming just proves this further.',
+	    'Ouch! Spam hurts. I might go to sleep for a while.'
+];
 
 exports.load = function() {
 	prevTimeStamp = Date.now();
@@ -53,7 +53,7 @@ exports.match = function(event, commandPrefix) {
 exports.run = function(api, event) {
 	// Only change disable state if explictly called or counter crossed limit
 	// TODO Check for /disable <things> here
-	if (event.body === api.commandPrefix + 'disable' || counter > counterLimit) {
+	if (event.body === api.commandPrefix + 'disable' || possibleSpam) {
 		if (isThreadDisabled[event.thread_id]	) {
 			api.sendMessage(messages[msgIndexEnable] + event.sender_name, event.thread_id);
 		}
