@@ -57,7 +57,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-run');
 
-  grunt.registerTask('watch', ['run:kassy', 'watch:all']);
+  grunt.registerTask('wall', ['run:kassy', 'watch:all']);
   grunt.registerTask('wcore', ['run:kassy', 'watch:core']);
   grunt.registerTask('wtest', ['run:kassy', 'watch:test']);
   grunt.registerTask('test', ['run:kassy', 'mochacli:spec']);

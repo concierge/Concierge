@@ -1,5 +1,6 @@
 var shim = require.once('../shim.js'),
-    server = require.once('http').createServer();
+    Server = require.once('http'),
+    server = Server.createServer(),
     io = require.once('socket.io')(server),
     port = 49886,
     functions = null,
@@ -61,6 +62,8 @@ var shim = require.once('../shim.js'),
     },
 
     recMessage = function(data) {
+        var event = null;
+
         if (data) {
             if (!data.thread_id) {
                 data.thread_id = '-1';
@@ -75,10 +78,12 @@ var shim = require.once('../shim.js'),
                 data.content = '';
             }
 
-            var event = shim.createEvent(data.thread_id, data.sender_id, data.sender_name, data.content);
-            return callback(api, event);
+            event = shim.createEvent(data.thread_id, data.sender_id, data.sender_name, data.content);
+            callback(api, event);
         }
-        console.error('Received messsage with no content');
+        else {
+            console.error('Received messsage with no content');
+        }
     };
 
 exports.start = function(cb) {

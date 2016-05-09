@@ -35,7 +35,7 @@ Then start one or more of the available integrations:<br/>
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
 
 ### Testing
-See [Running and writing tests](doc/testing.md)
+See [Running and writing tests](doc/Testing.md)
 
 ## Disclaimer
 HERE BE DRAGONS!
