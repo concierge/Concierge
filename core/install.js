@@ -14,12 +14,12 @@ var npm = require('npm'),
 	fs = require('fs'),
 	load = deasync(npm.load);
 
-load({loglevel: "silent"});
+load({loglevel: 'silent'});
 var inst = deasync(npm.commands.install),
 upd = deasync(npm.commands.update),
 
 install = function(name) {
-	console.info('Installing "' + name + '" from npm.');
+	console.info('Installing \"' + name + '\" from npm.');
 	inst([name]);
 	console.info('Installation complete.');
 };
@@ -28,7 +28,7 @@ exports.requireOrInstall = function(req, name) {
 	try {
 		return req(name);
 	}
-	catch(e) {
+	catch (e) {
 		if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
 			throw e;
 		}

@@ -40,3 +40,7 @@ exports.getCurrentBranchName = function(callback) {
 exports.clone = function(url, dir, callback) {
     command(['clone', url, dir], callback);
 };
+
+exports.submoduleUpdate = function(callback) {
+    command(['submodule', 'update', '--init', '--recursive'], callback);
+};
