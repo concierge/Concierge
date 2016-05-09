@@ -6,7 +6,7 @@ Most grunt tasks will first launch a testing instance of Kassy, to perform accep
 
 | Command | Description | Launches Kassy testing Instance |
 | --- | --- | --- |
-| 'grunt' | Watches core for changes and runs tests | Yes |
+| `grunt` | Watches core for changes and runs tests | Yes |
 | `grunt test` | Runs all tests | Yes |
 | `grunt wall` | Watches core and tests folders for changes and runs tests | Yes |
 | `grunt wcore` | Watches core for changes and runs tests | Yes |
