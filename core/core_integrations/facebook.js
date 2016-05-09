@@ -129,7 +129,7 @@ exports.start = function(callback) {
 			switch(event.type) {
 				case "message": {
 					getSenderName(api, event, function(name) {
-						var data = shim.createEvent(event.threadID, event.senderID, name, event.body);
+						var data = shim.createEvent(event.threadID, event.senderID, name, event.body + '');
 						callback(platform, data);
 					});
 					break;

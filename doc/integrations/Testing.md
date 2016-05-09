@@ -6,4 +6,6 @@ To start in testing mode, run `node main.js` or `node main.js test`.
 
 Additional special commands exist in testing mode that are not in any other mode:
 
-- `/setuser <userName>` - changes your username.
+- `set senderName <userName>`
+- `set senderId <senderId>`
+- `set threadId <threadId>`
