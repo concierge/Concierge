@@ -1,7 +1,7 @@
 # Kassy
 (Karma + Sassy) * (Facebook + Slack + Skype + Hipchat + Telegram) = Kassy
 
-<i>It does way more than this now...</i>
+<i>It does **way** more than this now...</i>
 
 Kassy is a modular, easily extensible general purpose chat bot. Small node.js modules can be written for it then placed in the modules directory. They will load on startup (or restart) and become part of what the chat bot provides. Current pre-installed modules are located [here](https://github.com/mrkno/Kassy/tree/master/modules), additional modules can be created or installed through the built in package manager. Existing modules include a variety of functionality from getting animated gifs to running arbitrary sandboxed JavaScript code, voting and giving karma.
 
