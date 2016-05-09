@@ -1,14 +1,17 @@
 var assert = require('chai').assert,
-    c = require('../helpers/client.js');
+    Client = require('../helpers/client.js'),
+    client = null;
 
 describe('Test core modules', function() {
     this.timeout(5000);
     before(function(done) {
-        client = new c(done);
+        client = new Client(done);
     });
 
     after(function(done) {
-        client.shutdown(done);
+        if (client !== null) {
+            client.shutdown(done);
+        }
     });
 
     describe('/ping', function() {
