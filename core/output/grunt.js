@@ -111,7 +111,7 @@ io.on('connection', function(s) {
     socket = s;
 
     socket.on('message', function(data) {
-        console.debug("received message: " + data);
+        console.debug('received message: ' + data);
         recMessage(data);
     });
 
@@ -121,5 +121,5 @@ io.on('connection', function(s) {
 
     socket.on('disconnect', function() {
         console.debug('disconnected');
-    })
+    });
 });

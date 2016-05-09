@@ -33,7 +33,7 @@ Client.prototype.shutdown = function(cb) {
         content: '/shutdown'
     });
     stopCallback = cb;
-}
+};
 
 io.on('connect', function() {
     if (callback) {

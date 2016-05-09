@@ -4,7 +4,7 @@ module.exports = function(grunt) {
       mochacli: {
           options: {
               require: ['chai'],
-              files: 'test/'
+              files: ['test/acceptance/*.js', 'test/unit/*.js']
           },
           spec: {
               options: {
@@ -27,15 +27,15 @@ module.exports = function(grunt) {
       },
       watch: {
           test: {
-              files: ['test/'],
+              files: ['test/**/*.js'],
               tasks: ['mochacli:nyan']
           },
           core: {
-              files: ['core/'],
+              files: ['core/**/*.js', 'core/**/*.coffee'],
               tasks: ['mochacli:nyan']
           },
           all: {
-              files: ['core/', 'test/'],
+              files: ['core/**/*.js', 'core/**/*.coffee', 'test/**/*.js'],
               tasks: ['mochacli:spec']
           }
       },

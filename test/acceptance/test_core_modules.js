@@ -1,5 +1,5 @@
 var assert = require('chai').assert,
-    c = require('../client.js');
+    c = require('../helpers/client.js');
 
 describe('Test core modules', function() {
     this.timeout(5000);
