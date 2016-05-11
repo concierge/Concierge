@@ -61,6 +61,15 @@ addMessageToQueue = function(teamId, body, uri, callback) {
 	sendMessageWebAPI(teamId);
 },
 
+getChannelIdAndTeamId = function(thread) {
+	var thread_components = thread.split('\0', 2),
+	channelId = thread_components[0],
+	teamId = thread_components[1],
+	token = teamData[teamId].token;
+
+	return { channel_id: channelId, team_id: teamId, token: token };
+},
+
 sendMessage = function(message, thread) {
 	var teamInfo = getChannelIdAndTeamId(thread);
 
@@ -79,15 +88,6 @@ sendMessage = function(message, thread) {
 	else {
 		console.debug('slack-> No slack team found!!!');
 	}
-},
-
-getChannelIdAndTeamId = function(thread) {
-	var thread_components = thread.split('\0', 2),
-	channelId = thread_components[0],
-	teamId = thread_components[1],
-	token = teamData[teamId].token;
-
-	return { channel_id: channelId, team_id: teamId, token: token };
 },
 
 createThreadId = function(channelId, teamId) {
@@ -132,6 +132,23 @@ getNextMessageId = function(teamId) {
 	return teamData[teamId].event_id++;
 },
 
+sendSocketMessage = function(teamId, body, callback) {
+	var socket = sockets[teamId];
+	if (socket !== null) {
+		socket.send(body, function(response) {
+			if (response) {
+				console.debug('slack-> Error on socket sending message, error: ' + response);
+			}
+			if (callback) {
+				callback(response);
+			}
+		});
+	}
+	else {
+		console.debug('slack-> No socket available for given team id');
+	}
+},
+
 sendTyping = function(thread) {
 	var teamInfo = getChannelIdAndTeamId(thread),
 		teamId = teamInfo.team_id,
@@ -147,28 +164,35 @@ sendTyping = function(thread) {
 	sendSocketMessage(teamId, body);
 },
 
-sendSocketMessage = function(teamId, body, callback) {
-	var socket = sockets[teamId];
-	if (socket !== null) {
-		socket.send(body, undefined, function(response) {
-			if (response) {
-				console.debug('slack-> Error on socket sending message, error: ' + response);
-			}
-			if (callback) {
-				callback(response);
-			}
-		});
-	}
-	else {
-		console.debug('slack-> No socket available for given team id');
-	}
-},
-
 replaceUserIdWithUserName = function(userName, message, match) {
 	if (userName) {
 		var index = message.indexOf(match);
 		return message.substr(0, index) + userName + message.substr(index + match.length);
 	}
+},
+
+generateChannelsMap = function(data) {
+	var channels = {};
+
+	for (var i = 0; i < data.channels.length; i++) {
+		channels[data.channels[i].id] = data.channels[i];
+	}
+	for (var j = 0; j < data.groups.length; j++) {
+		channels[data.groups[j].id] = data.groups[j];
+	}
+	for (var k = 0; k < data.ims.length; k++) {
+		channels[data.ims[k].id] = data.ims[k];
+	}
+
+	return channels;
+},
+
+generateUserMap = function(data) {
+	var map = {};
+	for (var i = 0; i < data.users.length; i++) {
+		map[data.users[i].id] = data.users[i];
+	}
+	return map;
 },
 
 init = function(token, callback) {
@@ -193,7 +217,7 @@ init = function(token, callback) {
 		try {
 			body = JSON.parse(body);
 		}
-		catch(e) {
+		catch (e) {
 			console.debug('slack-> failed to parse message: ' + body);
 			console.critical(e);
 			callback(false);
@@ -215,7 +239,7 @@ init = function(token, callback) {
 			team.event_id = 1;
 			team.lastMessageSinceConnection = false;
 
-			//Generate user map
+			// Generate user map
 			team.users = generateUserMap(body);
 			team.allChannels = generateChannelsMap(body);
 
@@ -224,30 +248,6 @@ init = function(token, callback) {
 			callback({team_id: teamId, url: body.url});
 		}
 	});
-},
-
-startPingPongTimer = function(teamId) {
-	if (!Date.now) {
-		Date.now = function() {
-			return new Date().getTime();
-		}
-	}
-
-	var team = teamData[teamId],
-		messageId = ++team.ping_id;
-
-	if (!messageId) {
-		messageId = 1;
-		team.ping_id = messageId;
-	}
-
-	team.timeSincelastMessageRecieved = Date.now();
-	team.pingTimeout = setTimeout(function() {
-		if (Date.now() - team.timeSincelastMessageRecieved >= 60000 && messageId === team.ping_id && !shuttingDown) {
-			console.debug('slack-> sending ping');
-			sendPing(teamId);
-		}
-	}, 60000);
 },
 
 sendPing = function(teamId) {
@@ -275,6 +275,30 @@ sendPing = function(teamId) {
 	}, defaultPingResponseTimeout);
 },
 
+startPingPongTimer = function(teamId) {
+	if (!Date.now) {
+		Date.now = function() {
+			return new Date().getTime();
+		};
+	}
+
+	var team = teamData[teamId],
+		messageId = ++team.ping_id;
+
+	if (!messageId) {
+		messageId = 1;
+		team.ping_id = messageId;
+	}
+
+	team.timeSincelastMessageRecieved = Date.now();
+	team.pingTimeout = setTimeout(function() {
+		if (Date.now() - team.timeSincelastMessageRecieved >= 60000 && messageId === team.ping_id && !shuttingDown) {
+			console.debug('slack-> sending ping');
+			sendPing(teamId);
+		}
+	}, 60000);
+},
+
 pong = function(pong, teamId) {
 	console.debug('slack-> recieved pong');
 	teamData[teamId].timeSincelastMessageRecieved = Date.now();
@@ -290,28 +314,131 @@ findSlackBot = function(body, slackTeam) {
 	}
 },
 
-generateChannelsMap = function(data) {
-	var channels = {};
-
-	for (var i = 0; i < data.channels.length; i++) {
-		channels[data.channels[i].id] = data.channels[i];
-	}
-	for (var j = 0; j < data.groups.length; j++) {
-		channels[data.groups[j].id] = data.groups[j];
-	}
-	for (var k = 0; k < data.ims.length; k++) {
-		channels[data.ims[k].id] = data.ims[k];
-	}
-
-	return channels;
+teamRename = function(event, teamId) {
+	teamData[teamId].name = event.name;
 },
 
-generateUserMap = function(data) {
-	var map = {};
-	for (var i = 0; i < data.users.length; i++) {
-		map[data.users[i].id] = data.users[i];
+userChange = function(event, teamId) {
+	teamData[teamId].users[event.user.id] = event.user;
+},
+
+channelCreated = function(event, teamId) {
+	teamData[teamId].channels[event.channel.id] = event.channel;
+},
+
+channelDeleted = function(event, teamId) {
+	delete teamData[teamId].channels[event.channel];
+},
+
+channelRename = function(event, teamId) {
+	teamData[teamId].channels[event.channel.id].name = event.channel.name;
+},
+
+recMessage = function(event, teamId) {
+	var slackTeam = teamData[teamId],
+	userName,
+	message = event.text,
+	shimMessage;
+
+	if (!slackTeam.lastMessageSinceConnection) {
+		slackTeam.lastMessageSinceConnection = true;
+		if (event.reply_to) {
+			// throw away this message
+			return;
+		}
 	}
-	return map;
+
+	if (event.user !== slackTeam.bot_id) {
+		var matches = null,
+		lastMatchIndex = -1,
+		regex = /<@([^>\|]+)(\|[^>]+)?>:?/;
+
+		if (slackTeam) {
+			matches = regex.exec(message);
+			while (matches !== null) {
+				if (lastMatchIndex === matches.index) {
+					console.debug('slack-> broken beyond belief. GLHF');
+					break;
+				}
+				lastMatchIndex = matches.index;
+				var match = matches[1];
+				if (match !== null) {
+					userName = slackTeam.users[match].name;
+					if (!userName) {
+						// User not found
+						message = replaceUserIdWithUserName('unknown_user', message, matches[0]);
+						console.debug('slack-> User not found in team, with id: ' + match);
+					}
+					else {
+						message = replaceUserIdWithUserName(userName, message, matches[0]);
+					}
+				}
+				matches = regex.exec(message);
+			}
+		}
+		else {
+			console.debug('slack-> No slack team found matching: ' + teamId);
+		}
+
+		message = message.replace(/&lt;/g, '<');
+		message = message.replace(/&gt;/g, '>');
+		message = message.replace(/&amp;/g, '&');
+
+		event.body = message;
+		event.threadID = createThreadId(event.channel, teamId);
+		event.senderID = event.user;
+		event.senderName = slackTeam.users[event.user].name;
+		shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
+		eventReceivedCallback(platform, shimMessage);
+	}
+},
+
+eventReceived = function(event, teamId) {
+	if (shuttingDown) {
+		return;
+	}
+
+	switch (event.type) {
+		case 'message':
+			recMessage(event, teamId);
+			break;
+		case 'channel_created':
+			channelCreated(event, teamId);
+			break;
+		case 'channel_deleted':
+			channelDeleted(event, teamId);
+			break;
+		case 'channel_rename':
+			channelRename(event, teamId);
+			break;
+		case 'im_created':
+			channelCreated(event, teamId);
+			break;
+		case 'group_joined':
+			channelCreated(event, teamId);
+			break;
+		case 'group_close':
+			channelDeleted(event, teamId);
+			break;
+		case 'group_rename':
+			channelRename(event, teamId);
+			break;
+		case 'user_change':
+			userChange(event, teamId);
+			break;
+		case 'team_join':
+			userChange(event, teamId);
+			break;
+		case 'team_rename':
+			teamRename(event, teamId);
+			break;
+		case 'pong':
+			pong(event, teamId);
+			break;
+		default:
+			console.debug('slack-> Message of type ' + event.type + ' not supported');
+			break;
+	}
 },
 
 connect = function(connectionDetails) {
@@ -379,133 +506,6 @@ openPrivateMessage = function(message, thread, senderId) {
 	}
 },
 
-eventReceived = function(event, teamId) {
-	if (shuttingDown) {
-		return;
-	}
-
-	switch (event.type) {
-		case 'message':
-			recMessage(event, teamId);
-			break;
-		case 'channel_created':
-			channelCreated(event, teamId);
-			break;
-		case 'channel_deleted':
-			channelDeleted(event, teamId);
-			break;
-		case 'channel_rename':
-			channelRename(event, teamId);
-			break;
-		case 'im_created':
-			channelCreated(event, teamId);
-			break;
-		case 'group_joined':
-			channelCreated(event, teamId);
-			break;
-		case 'group_close':
-			channelDeleted(event, teamId);
-			break;
-		case 'group_rename':
-			channelRename(event, teamId);
-			break;
-		case 'user_change':
-			userChange(event, teamId);
-			break;
-		case 'team_join':
-			userChange(event, teamId);
-			break;
-		case 'team_rename':
-			teamRename(event, teamId);
-			break;
-		case 'pong':
-			pong(event, teamId);
-			break;
-		default:
-			console.debug('slack-> Message of type ' + event.type + ' not supported');
-			break;
-	}
-},
-
-teamRename = function(event, teamId) {
-	teamData[teamId].name = event.name;
-},
-
-userChange = function(event, teamId) {
-	teamData[teamId].users[event.user.id] = event.user;
-},
-
-channelCreated = function(event, teamId) {
-	teamData[teamId].channels[event.channel.id] = event.channel;
-},
-
-channelDeleted = function(event, teamId) {
-	delete teamData[teamId].channels[event.channel];
-},
-
-channelRename = function(event, teamId) {
-	teamData[teamId].channels[event.channel.id].name = event.channel.name;
-},
-
-recMessage = function(event, teamId) {
-	var slackTeam = teamData[teamId],
-	userName,
-	message = event.text,
-	shimMessage;
-
-	if (!slackTeam.lastMessageSinceConnection) {
-		slackTeam.lastMessageSinceConnection = true;
-		if (event.reply_to) {
-			//throw away this message
-			return;
-		}
-	}
-
-	if (event.user!== slackTeam.bot_id) {
-		var matches = null,
-		lastMatchIndex = -1,
-		regex = /<@([^>\|]+)(\|[^>]+)?>:?/;
-
-		if (slackTeam) {
-			matches = regex.exec(message);
-			while (matches !== null) {
-				if (lastMatchIndex === matches.index) {
-					console.debug('slack-> broken beyond belief. GLHF');
-					break;
-				}
-				lastMatchIndex = matches.index;
-				var match = matches[1];
-				if (match !== null) {
-					userName = slackTeam.users[match].name;
-					if (!userName) {
-						// User not found
-						message = replaceUserIdWithUserName('unknown_user', message, matches[0]);
-						console.debug('slack-> User not found in team, with id: ' + match);
-					}
-					else {
-						message = replaceUserIdWithUserName(userName, message, matches[0]);
-					}
-				}
-				matches = regex.exec(message);
-			}
-		}
-		else {
-			console.debug('slack-> No slack team found matching: ' + teamId);
-		}
-
-		message = message.replace(/&lt;/g, '<');
-		message = message.replace(/&gt;/g, '>');
-		message = message.replace(/&amp;/g, '&');
-
-		event.body = message;
-		event.threadID = createThreadId(event.channel, teamId);
-		event.senderID = event.user;
-		event.senderName = slackTeam.users[event.user].name;
-		shimMessage = shim.createEvent(event.threadID, event.senderID, event.senderName, event.body);
-		eventReceivedCallback(platform, shimMessage);
-	}
-},
-
 closeSockets = function(callback) {
 	console.debug('slack-> closing sockets');
 	Object.keys(sockets).forEach(function (element) {
@@ -524,7 +524,7 @@ clearMessageQueue = function(callback) {
 },
 
 clearTimeouts = function(callback) {
-	Object.keys(sockets).forEach(function (team, index) {
+	Object.keys(sockets).forEach(function (team) {
 		if (team.pingTimeout) {
 			clearTimeout(team.pingTimeout);
 			delete team.pingTimeout;
@@ -532,7 +532,7 @@ clearTimeouts = function(callback) {
 
 		if (team.pongTimeout) {
 			clearTimeout(team.pongTimeout);
-			delete team.pongTimeout
+			delete team.pongTimeout;
 		}
 	});
 	clearedTimeouts = true;
@@ -574,7 +574,7 @@ exports.stop = function() {
 	clearedMessageQueue = false;
 	clearedTimeouts = false;
 
-	//Finish Message queue
+	// Finish Message queue
 	// clear timeouts
 	// close sockets
 	async.series([
@@ -587,6 +587,7 @@ exports.stop = function() {
 			}
 			callback(null, 'finished');
 		}
-	], function(err, results) {
-	});
+	],
+	function() {}
+	);
 };
