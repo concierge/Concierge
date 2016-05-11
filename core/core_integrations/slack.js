@@ -536,7 +536,6 @@ clearTimeouts = function(callback) {
 		}
 	});
 	clearedTimeouts = true;
-	teamData = {};
 	callback(null, 'timeouts');
 };
 
