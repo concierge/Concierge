@@ -1,37 +1,83 @@
-const fs = require('fs'),
+var fs = require('fs'),
     restify = require('restify'),
-    skype = require('skype-sdk');
+    skype = require('skype-sdk'),
+    shim = require.once('../shim.js'),
+    callback = null,
+    server = null,
+    botService = null,
+    api = null,
 
-let callback = null,
-    server = null;
+    sendMessage = function(message, thread) {
+        console.log(message);
+        botService.send(thread, message, true);
+    },
+
+    sendFile = function(type, image, description, thread) {
+        console.log("sending attachment");
+        // Assumes the file type is always image, (only Image and Video supported atm)
+        botService.sendAttachment(thread, description, 'Image', image);
+    },
+
+    receiveMessage = function(bot, data) {
+        console.log(bot);
+        console.log(data);
+
+        var event = null,
+            message = {
+                thread_id: data.from,
+                sender_id: data.from,
+                sender_name: data.from,
+                content: data.content
+            };
+
+        event = shim.createEvent(message.thread_id, message.sender_id, message.sender_name, message.content);
+        callback(api, event);
+    };
 
 exports.start = function(cb) {
+    var config = exports.config;
     callback = cb;
-    const botService = new skype.BotService({
+    botService = new skype.BotService({
         messaging: {
-            botId: '28:<bot’s id="Concierge">',
+            botId: '28:<bot’s id="' + config.name + '">',
             serverUrl : 'https://apis.skype.com',
             requestTimeout : 15000,
-            appId: 'def78734-0ded-4d81-a401-765a8577e0e4',
-            appSecret: '8E3934132BAF06F5620DC5A72CBC2A227F9E4AD2'
+            appId: config.app_id,
+            appSecret: config.app_secret_password
         }
     });
 
-    botService.on('contactAdded', (bot, data) => {
-        bot.reply(`Hello ${data.fromDisplayName}!`, true);
+    botService.on('groupMessage', function(bot, data) {
+        data.from = data.to;
+        receiveMessage(bot, data);
     });
 
-    botService.on('personalMessage', (bot, data) => {
-        console.log(bot);
-        console.log(data);
-        bot.reply(`Hey ${data.from}. Thank you for your message: "${data.content}".`, true);
+    botService.on('personalMessage', function(bot, data) {
+        receiveMessage(bot, data);
     });
 
-    const server = restify.createServer();
+    // server = restify.createServer({
+    //     certificate: fs.readFileSync(config.cert),
+    //     key: fs.readFileSync(config.key),
+    //     httpsServerOptions: {
+    //         ca: fs.readFileSync(config.ca)
+    //     }
+    // });
+
+    server = restify.createServer();
+
+    api = shim.createPlatformModule({
+		sendMessage: sendMessage,
+		sendFile: sendFile,
+		commandPrefix: config.commandPrefix
+    });
+
     server.post('/v1/chat', skype.messagingHandler(botService));
-    const port = process.env.PORT || 4037;
+    server.use(skype.ensureHttps(true));
+    server.use(skype.verifySkypeCert());
+    const port = config.port || 8000;
     server.listen(port);
-    console.log('Listening for incoming requests on port ' + port);
+    console.debug('SkypeBot -> Listening for incoming requests on port ' + port);
 };
 
 exports.stop = function() {

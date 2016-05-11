@@ -19,7 +19,7 @@ exports.createPlatformModule = function(platform) {
 					platform.sendUrl(image, thread);
 					break;
 				case 'file': // fallback to sending a file
-					platform.sendFile(image, thread);
+					platform.sendFile(type, file, description, thread);
 					break;
 				default: // fallback to sending a message
 					platform.sendMessage(description, thread);
