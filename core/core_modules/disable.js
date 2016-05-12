@@ -16,102 +16,86 @@ var messages = [
   'Hmm, maybe I need to reconsider the meaning of spam.'
 ];
 
-if (!this.config.registeredThreads){
-  this.config.registeredThreads = {};
-}
-if (!this.config.isThreadDisabled){
-  this.config.isThreadDisabled = {};
-}
-if (!this.config.possibleSpam){
-  this.config.possibleSpam = {};
-}
-if (!this.config.counterLimit){
-  this.config.counterLimit = {};
-}
-if (!this.config.msgIndexEnable){
-  this.config.msgIndexEnable = {};
-}
-if (!this.config.msgIndexDisable){
-  this.config.msgIndexDisable = {};
-}
-
 exports.load = function() {
+  if (!exports.config){
+    exports.config = {};
+  }
+
   prevTimeStamp = Date.now();
 };
 
 exports.match = function(event, commandPrefix) {
   // Add disabled flag for thread if it doesn't already exists
-  if (!this.config.registeredThreads[event.thread_id]) {
-    this.config.registeredThreads[event.thread_id] = true;
-    this.config.isThreadDisabled[event.thread_id] = false;
-    this.config.possibleSpam[event.thread_id] = false;
-    this.config.counterLimit[event.thread_id] = 3;
-    this.config.msgIndexEnable[event.thread_id] = 0;
-    this.config.msgIndexDisable[event.thread_id] = 0;
+  if (!exports.config[event.thread_id]) {
+    exports.config[event.thread_id].isThreadDisabled = false;
+    exports.config[event.thread_id].possibleSpam = false;
+    exports.config[event.thread_id].counterLimit = 3;
+    exports.config[event.thread_id].msgIndexEnable = 0;
+    exports.config[event.thread_id].msgIndexDisable = 0;
   }
 
   if (event.body === commandPrefix + commands[0]) {
-    this.config.msgIndexEnable[event.thread_id] = 0;
-    this.config.msgIndexDisable[event.thread_id] = 1;
+    exports.config[event.thread_id].msgIndexEnable = 0;
+    exports.config[event.thread_id].msgIndexDisable = 1;
     return true;
-  } else if (!this.config.isThreadDisabled[event.thread_id] && event.body.startsWith(commandPrefix)) { // Avoids counting if already disabled
+  } else if (!exports.config[event.thread_id].isThreadDisabled && event.body.startsWith(commandPrefix)) { // Avoids counting if already disabled
     counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
     prevTimeStamp = Date.now();
 
-    this.config.possibleSpam[event.thread_id] = counter > this.config.counterLimit[event.thread_id];
-    if (this.config.possibleSpam[event.thread_id]) {
+    exports.config[event.thread_id].possibleSpam = counter > exports.config[event.thread_id].counterLimit;
+    if (exports.config[event.thread_id].possibleSpam) {
+      exports.config[event.thread_id].msgIndexEnable = 2;
+      exports.config[event.thread_id].msgIndexDisable = 3;
       counter = 0;
-      this.config.msgIndexEnable[event.thread_id] = 2;
-      this.config.msgIndexDisable[event.thread_id] = 3;
       return true;
     }
   }
-  return this.config.isThreadDisabled[event.thread_id];
+  return exports.config[event.thread_id].isThreadDisabled;
 };
 
 exports.run = function(api, event) {
   if (event.body === commandPrefix + commands[1] + commandPrefix + commands[2]) { // Command /disable /counter <value>
-    this.config.counterLimit[event.thread_id] = parseInt(event.body.substring(
+    exports.config[event.thread_id].counterLimit = parseInt(event.body.substring(
       (commandPrefix + commands[1] + commandPrefix + commands[2]).length, event.body.length));
-    if (isNaN(this.config.counterLimit[event.thread_id])){
-      this.config.counterLimit[event.thread_id] = 3;
-      api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
-    } else {
-      api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
+      if (isNaN(exports.config[event.thread_id].counterLimit)){
+        exports.config[event.thread_id].counterLimit = 3;
+        api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
+      } else {
+        api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
+      }
+      return false;
+
+    } else if (event.body === commandPrefix + commands[1] + commandPrefix + commands[3]) { // Command /disable /timer <seconds>
+      var seconds = parseFloat(event.body.substring((commandPrefix + commands[1] + commandPrefix + commands[3]).length, event.body.length));
+      if (isNaN(seconds)){
+        api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
+      } else {
+        setTimeout(function(){
+          exports.config[event.thread_id].isThreadDisabled = !exports.config[event.thread_id].isThreadDisabled;
+        }, seconds * 1000);
+        api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
+      }
+      return false;
+
+    } else if (event.body === commandPrefix + commands[1] + commandPrefix + commands[4]) { // Command /disable /default
+      exports.config[event.thread_id].counterLimit = 3;
+      return false;
+
+      // Only change disable state if explictly called or counter crossed limit
+    } else if (event.body === api.commandPrefix + commands[0] || exports.config[event.thread_id].possibleSpam) { // Main branch
+      if (exports.config[event.thread_id].isThreadDisabled	) {
+        api.sendMessage(messages[msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
+      }
+      else {
+        api.sendMessage(messages[msgIndexDisable], event.thread_id);
+      }
+      exports.config[event.thread_id].isThreadDisabled = !exports.config[event.thread_id].isThreadDisabled;
+      exports.config[event.thread_id].possibleSpam = false;
     }
     return false;
+  };
 
-  } else if (event.body === commandPrefix + commands[1] + commandPrefix + commands[3]) { // Command /disable /timer <seconds>
-    var seconds = parseFloat(event.body.substring((commandPrefix + commands[1] + commandPrefix + commands[3]).length, event.body.length));
-    if (isNaN(seconds)){
-      api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
-    } else {
-      setTimeout(function(){
-        this.config.isThreadDisabled[event.thread_id] = !this.config.isThreadDisabled[event.thread_id];
-      }, seconds * 1000);
-      api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
-    }
-    return false;
-
-  } else if (event.body === commandPrefix + commands[1] + commandPrefix + commands[4]) { // Command /disable /default
-    this.config.counterLimit[event.thread_id] = 3;
-    return false;
-
-    // Only change disable state if explictly called or counter crossed limit
-  } else if (event.body === api.commandPrefix + commands[0] || this.config.possibleSpam[event.thread_id]) { // Main branch
-    if (this.config.isThreadDisabled[event.thread_id]	) {
-      api.sendMessage(messages[msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
-    }
-    else {
-      api.sendMessage(messages[msgIndexDisable], event.thread_id);
-    }
-    this.config.isThreadDisabled[event.thread_id] = !this.config.isThreadDisabled[event.thread_id];
-    this.config.possibleSpam[event.thread_id] = false;
-  }
-  return false;
-};
-
-exports.help = function(commandPrefix) {
-  return [[commandPrefix + 'disable', 'Disables the platform',
-  'Stops the platform from responding to messages it receives based on message frequency (default 3/sec) or by the command.\nTo renable send the disable command again']];
-};
+  exports.help = function(commandPrefix) {
+    return [[commandPrefix + 'disable', 'Disables the platform',
+    'Stops the platform from responding to messages it receives based on message frequency (default 3/sec) or by the command.\nTo renable send the disable command again']];
+  };
