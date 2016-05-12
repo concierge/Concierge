@@ -34,6 +34,9 @@ Then start one or more of the available integrations:<br/>
 	- [Creating Integrations](doc/IntegrationCreation.md)
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
 
+### Testing
+See [Running and writing tests](doc/Testing.md)
+
 ## Disclaimer
 HERE BE DRAGONS!
 Written to see if it could be done, not written to be readable.<br><b>Enter at your own peril.</b>
