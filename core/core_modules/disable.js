@@ -39,19 +39,19 @@ exports.match = function(event, commandPrefix) {
         threads[event.thread_id].msgIndexEnable = 0;
         threads[event.thread_id].msgIndexDisable = 1;
         return true;
-  } else if (!threads[event.thread_id].isThreadDisabled && event.arguments[0].startsWith(commandPrefix)) { // Avoids counting if already disabled
-        counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
-        prevTimeStamp = Date.now();
+    } else if (!threads[event.thread_id].isThreadDisabled && event.arguments[0].startsWith(commandPrefix)) { // Avoids counting if already disabled
+          counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
+          prevTimeStamp = Date.now();
 
-        threads[event.thread_id].possibleSpam = counter > threads[event.thread_id].counterLimit;
-        if (threads[event.thread_id].possibleSpam) {
-            threads[event.thread_id].msgIndexEnable = 2;
-            threads[event.thread_id].msgIndexDisable = 3;
-            counter = 0;
-            return true;
-        }
-    }
-    return threads[event.thread_id].isThreadDisabled;
+      threads[event.thread_id].possibleSpam = counter > threads[event.thread_id].counterLimit;
+      if (threads[event.thread_id].possibleSpam) {
+          threads[event.thread_id].msgIndexEnable = 2;
+          threads[event.thread_id].msgIndexDisable = 3;
+          counter = 0;
+          return true;
+      }
+  }
+  return threads[event.thread_id].isThreadDisabled;
 };
 
 exports.run = function(api, event) {
@@ -64,36 +64,36 @@ exports.run = function(api, event) {
             if (isNaN(threads[event.thread_id].counterLimit)) {
                 threads[event.thread_id].counterLimit = 3;
                 api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
-          } else {
+            } else {
                 api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
             }
-        return false;
+          return false;
 
-                // Command /disable /timer <seconds>
-      } else if (event.arguments_body.startsWith(api.commandPrefix + commands[2])) {
-              var seconds = parseFloat(event.arguments_body.substring(
-                  (api.commandPrefix + commands[2]).length, event.arguments_body.length));
-                      if (isNaN(seconds)) {
-                        api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
-                    } else {
-                        setTimeout(function(){
-                            threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
-                        }, seconds * 1000); // Converting seconds to milliseconds
-                        api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
-                    }
-                    return false;
+    // Command /disable /timer <seconds>
+    } else if (event.arguments_body.startsWith(api.commandPrefix + commands[2])) {
+                var seconds = parseFloat(event.arguments_body.substring(
+                    (api.commandPrefix + commands[2]).length, event.arguments_body.length));
+                        if (isNaN(seconds)) {
+                          api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
+                      } else {
+                          setTimeout(function(){
+                              threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
+                          }, seconds * 1000); // Converting seconds to milliseconds
+                            api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
+                      }
+                      return false;
 
-                    // Command /disable /default
-              } else if (event.arguments_body === api.commandPrefix + commands[4]) {
-                  threads[event.thread_id].counterLimit = 3;
-                  return false;
+            // Command /disable /default
+            } else if (event.arguments_body === api.commandPrefix + commands[4]) {
+                threads[event.thread_id].counterLimit = 3;
+                return false;
 
-                  // Main Branch - only executed if no commands were matched
+                // Main Branch - only executed if no commands were matched
               } else if (threads[event.thread_id].isThreadDisabled	) {
-                  api.sendMessage(messages[msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
+                api.sendMessage(messages[msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
               }
               else {
-                  api.sendMessage(messages[msgIndexDisable], event.thread_id);
+                api.sendMessage(messages[msgIndexDisable], event.thread_id);
               }
         threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
         threads[event.thread_id].possibleSpam = false;
