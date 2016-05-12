@@ -35,14 +35,14 @@
         }
 
         switch (method) {
-            case 'grant': {
+        case 'grant': {
                 if (!exports.config.users[name][threadId].includes(action)) {
                     exports.config.users[name][threadId].push(action);
                     return true;
                 }
                 return false;
             }
-            case 'revoke': {
+        case 'revoke': {
                 var newArr = exports.config.users[name][threadId].filter(function(item) {
                     return item !== action;
                 });
@@ -65,23 +65,23 @@
         }
 
         switch (action) {
-			case 'create': {
-                if (!exports.config.modules[name].includes(permission)) {
-                    exports.config.modules[name].push(permission);
-                    return true;
-                }
-                return false;
-            }
-            case 'delete': {
-                var newArr = exports.config.modules[name].filter(function (item) {
-                    return item === action;
-                });
-                if (newArr.length === exports.config.modules[name].length) {
-                    return false;
-                }
-                exports.config.modules[name] = newArr;
+        case 'create': {
+            if (!exports.config.modules[name].includes(permission)) {
+                exports.config.modules[name].push(permission);
                 return true;
             }
+            return false;
+        }
+        case 'delete': {
+            var newArr = exports.config.modules[name].filter(function (item) {
+                return item === action;
+            });
+            if (newArr.length === exports.config.modules[name].length) {
+                return false;
+            }
+            exports.config.modules[name] = newArr;
+            return true;
+        }
         }
     },
 
@@ -121,7 +121,8 @@ exports.match = function (event, commandPrefix) {
 exports.help = function (commandPrefix) {
     return [
         [commandPrefix + 'admin <grant/revoke> <fullName/userId> <permissionName>', 'Grant or revoke a permission for a user.',
-            'Assigns/removes a permission from a user. Once a user has a permission they can use any core modules with the corresponding permission (and any that have no permissions/none configured).'],
+            'Assigns/removes a permission from a user. Once a user has a permission they can use any core modules with the ' +
+            'corresponding permission (and any that have no permissions/none configured).'],
         [commandPrefix + 'admin <create/delete> <coreModuleName> <permissionName>', 'Create or delete a permission for a core module.',
             'Creates/deletes a permission on a core module. A user with the corresponding permission can use the core module.']
     ];
