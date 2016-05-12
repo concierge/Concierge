@@ -105,6 +105,7 @@ Platform.prototype.start = function() {
     for (var i = 0; i < m.length; i++) {
         this.coreModules.push(this.coreLoader.loadCoreModule(this, m[i]));
     }
+    this.coreLoader.loadingComplete(this.coreModules);
 
     // Load Kassy modules
     console.warn('Loading modules...');
