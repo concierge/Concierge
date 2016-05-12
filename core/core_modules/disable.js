@@ -1,5 +1,5 @@
 var prevTimeStamp;
-var counter = 0,
+var counter = 0;
 var commands = [
   'disable',
   'disable ', // Needed for commands
