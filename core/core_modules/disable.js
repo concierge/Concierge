@@ -53,13 +53,13 @@ exports.match = function(event, commandPrefix) {
 };
 
 exports.run = function(api, event) {
-  if(event.arguments[0] === api.commandPrefix + commands[0] || exports.config[event.thread_id].possibleSpam){
+  if (event.arguments[0] === api.commandPrefix + commands[0] || exports.config[event.thread_id].possibleSpam) {
 
     // Command /disable /counter <value>
     if (event.arguments_body.startsWith(api.commandPrefix + commands[1])) {
       exports.config[event.thread_id].counterLimit = parseInt(event.arguments_body.substring(
         (api.commandPrefix + commands[1]).length, event.arguments_body.length));
-        if (isNaN(exports.config[event.thread_id].counterLimit)){
+        if (isNaN(exports.config[event.thread_id].counterLimit)) {
           exports.config[event.thread_id].counterLimit = 3;
           api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
         } else {
@@ -71,7 +71,7 @@ exports.run = function(api, event) {
       } else if (event.arguments_body.startsWith(api.commandPrefix + commands[2])) {
         var seconds = parseFloat(event.arguments_body.substring(
           (api.commandPrefix + commands[2]).length, event.arguments_body.length));
-          if (isNaN(seconds)){
+          if (isNaN(seconds)) {
             api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
           } else {
             setTimeout(function(){
@@ -95,7 +95,6 @@ exports.run = function(api, event) {
         }
         exports.config[event.thread_id].isThreadDisabled = !exports.config[event.thread_id].isThreadDisabled;
         exports.config[event.thread_id].possibleSpam = false;
-      }
     }
     return false;
   };
