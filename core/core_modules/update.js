@@ -74,10 +74,10 @@ exports.match = function(event, commandPrefix) {
 
 exports.load = function() {
 	var isEnabled = null,
-        branchName;
+		branchName;
 
 	isEnabled = this.config.getConfig('update').autoUpdateEnabled;
-    shutdown = this.shutdown;
+	shutdown = this.shutdown;
 
 	git.getCurrentBranchName(function (err, consoleOutput) {
 		if (err) {
@@ -113,10 +113,10 @@ exports.unload = function() {
 };
 
 exports.run = function (api, event) {
-    api.sendMessage('Updating from git...', event.thread_id);
+	api.sendMessage('Updating from git...', event.thread_id);
 	git.pull(function(err) {
-        if (err) {
-            console.critical(err);
+		if (err) {
+			console.critical(err);
 			api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
 		} else {
 			api.sendMessage('Updating submodules', event.thread_id);
