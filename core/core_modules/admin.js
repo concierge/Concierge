@@ -38,11 +38,9 @@ modify = function (name, threadId, action, method) {
         case 'grant':
         {
             if (!exports.config.users[name][threadId].includes(action)) {
-                console.log('grant');
                 exports.config.users[name][threadId].push(action);
                 return true;
             }
-            console.log('nope');
             return false;
         }
         case 'revoke':
@@ -55,10 +53,6 @@ modify = function (name, threadId, action, method) {
             }
             exports.config.users[name][threadId] = newArr;
             return true;
-        }
-        default:
-        {
-            console.log('WTF: ' + method);
         }
     }
 },
@@ -100,7 +94,6 @@ matchHook = function (moduleName, origionalMatch, config) {
         if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
             return origionalMatch(event, commandPrefix);
         }
-        console.log('no permission')
         return false;
     }
 },
@@ -129,9 +122,13 @@ exports.match = function (event, commandPrefix) {
     return event.arguments[0] === commandPrefix + 'admin';
 };
 
-exports.help = function () {
-    // Deliberately do not provide details on the usage of this, so users do not know of its existance.
-    return [];
+exports.help = function (commandPrefix) {
+    return [
+        [commandPrefix + 'admin <grant/revoke> <fullName/userId> <permissionName>', 'Grant or revoke a permission for a user.',
+            'Assigns/removes a permission from a user. Once a user has a permission they can use any core modules with the corresponding permission (and any that have no permissions/none configured).'],
+        [commandPrefix + 'admin <create/delete> <coreModuleName> <permissionName>', 'Create or delete a permission for a core module.',
+            'Creates/deletes a permission on a core module. A user with the corresponding permission can use the core module.']
+    ];
 };
 
 exports.run = function (api, event) {
