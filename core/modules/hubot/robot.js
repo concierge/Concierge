@@ -220,4 +220,6 @@ Robot.prototype.loadFile = function (scriptsPath, script) {
     this.instances.push(new Instance(this));
 };
 
+Robot.prototype.http = require('scoped-http-client').create;
+
 module.exports = Robot;

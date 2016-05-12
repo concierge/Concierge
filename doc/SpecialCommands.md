@@ -12,6 +12,10 @@ There are a number of special commands that will not be listed by help and canno
 - `/issue <title> <debugLevel>`. Posts an issue to github.
 - `/issue <title> <description> <debugLevel>`. Posts an issue to github with a description.
     * debugLevel, can be basic, detail or full, defaults to basic if not specified
+- `/admin <grant/revoke> "<fullNameOfUser>" "<permissionName>"`. Grants or revokes a permission for a user.
+- `/admin <create/delete> "<coreModuleName>" "<permissionName>". Creates or deletes a permission for a core module.
+
+Use `/help <commandName>` for more detail.
 
 ## Kassy Package Manager (KPM)
 Run `/kpm help [command]` for help with KPM. Also refer to the hello world example [here](https://github.com/mrkno/HelloKassy).

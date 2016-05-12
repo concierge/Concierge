@@ -1,111 +1,111 @@
 ﻿var config = require.once('../config.js'),
 
-getHasPermission = function (config, userId, name, threadId, moduleName) {
-    if (!config.modules || !config.modules[moduleName] || config.modules[moduleName].length === 0) {
-        return true;
-    }
+	getHasPermission = function (config, userId, name, threadId, moduleName) {
+		if (!config.modules || !config.modules[moduleName] || config.modules[moduleName].length === 0) {
+			return true;
+		}
 
-    if (!config.users || Object.keys(config.users).length === 0) {
-        return false;
-    }
+		if (!config.users || Object.keys(config.users).length === 0) {
+			return false;
+		}
 
-    var user = config.users[userId] || config.users[name];
-    if (!user || !user[threadId] || user[threadId].length === 0) {
-        return false;
-    }
+		var user = config.users[userId] || config.users[name];
+		if (!user || !user[threadId] || user[threadId].length === 0) {
+			return false;
+		}
 
-    var common = user[threadId].filter(function (p) {
-        return config.modules[moduleName].indexOf(p) !== -1;
-    });
+		var common = user[threadId].filter(function (p) {
+			return config.modules[moduleName].indexOf(p) !== -1;
+		});
 
-    return common.length >= 1;
-},
+		return common.length >= 1;
+	},
 
-modify = function (name, threadId, action, method) {
-    if (!exports.config.users) {
-        exports.config.users = {};
-    }
+	modify = function (name, threadId, action, method) {
+		if (!exports.config.users) {
+			exports.config.users = {};
+		}
 
-    if (!exports.config.users[name]) {
-        exports.config.users[name] = {};
-    }
+		if (!exports.config.users[name]) {
+			exports.config.users[name] = {};
+		}
 
-    if (!exports.config.users[name][threadId]) {
-        exports.config.users[name][threadId] = [];
-    }
+		if (!exports.config.users[name][threadId]) {
+			exports.config.users[name][threadId] = [];
+		}
 
-    switch (method) {
-        case 'grant':
-        {
-            if (!exports.config.users[name][threadId].includes(action)) {
-                exports.config.users[name][threadId].push(action);
-                return true;
-            }
-            return false;
-        }
-        case 'revoke':
-        {
-            var newArr = exports.config.users[name][threadId].filter(function(item) {
-                return item !== action;
-            });
-            if (newArr.length === exports.config.users[name][threadId].length) {
-                return false;
-            }
-            exports.config.users[name][threadId] = newArr;
-            return true;
-        }
-    }
-},
+		switch (method) {
+			case 'grant':
+			{
+				if (!exports.config.users[name][threadId].includes(action)) {
+					exports.config.users[name][threadId].push(action);
+					return true;
+				}
+				return false;
+			}
+			case 'revoke':
+			{
+				var newArr = exports.config.users[name][threadId].filter(function(item) {
+					return item !== action;
+				});
+				if (newArr.length === exports.config.users[name][threadId].length) {
+					return false;
+				}
+				exports.config.users[name][threadId] = newArr;
+				return true;
+			}
+		}
+	},
 
-setup = function (action, name, permission) {
-    if (!exports.config.modules) {
-        exports.config.modules = {};
-    }
+	setup = function (action, name, permission) {
+		if (!exports.config.modules) {
+			exports.config.modules = {};
+		}
 
-    if (!exports.config.modules[name]) {
-        exports.config.modules[name] = [];
-    }
+		if (!exports.config.modules[name]) {
+			exports.config.modules[name] = [];
+		}
 
-    switch (action) {
-        case 'create':
-            {
-                if (!exports.config.modules[name].includes(permission)) {
-                    exports.config.modules[name].push(permission);
-                    return true;
-                }
-                return false;
-            }
-        case 'delete':
-            {
-                var newArr = exports.config.modules[name].filter(function (item) {
-                    return item === action;
-                });
-                if (newArr.length === exports.config.modules[name].length) {
-                    return false;
-                }
-                exports.config.modules[name] = newArr;
-                return true;
-            }
-    }
-},
+		switch (action) {
+			case 'create':
+				{
+					if (!exports.config.modules[name].includes(permission)) {
+						exports.config.modules[name].push(permission);
+						return true;
+					}
+					return false;
+				}
+			case 'delete':
+				{
+					var newArr = exports.config.modules[name].filter(function (item) {
+						return item === action;
+					});
+					if (newArr.length === exports.config.modules[name].length) {
+						return false;
+					}
+					exports.config.modules[name] = newArr;
+					return true;
+				}
+		}
+	},
 
-matchHook = function (moduleName, origionalMatch, config) {
-    return function (event, commandPrefix) {
-        if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
-            return origionalMatch(event, commandPrefix);
-        }
-        return false;
-    }
-},
+	matchHook = function (moduleName, origionalMatch, config) {
+		return function(event, commandPrefix) {
+			if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
+				return origionalMatch(event, commandPrefix);
+			}
+			return false;
+		};
+	},
 
-helpHook = function (moduleName, origionalHelp, config) {
-    return function (commandPrefix) {
-        if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
-            return origionalHelp.call(this, commandPrefix);
-        }
-        return false;
-    }
-};
+	helpHook = function (moduleName, origionalHelp, config) {
+		return function(commandPrefix) {
+			if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
+				return origionalHelp.call(this, commandPrefix);
+			}
+			return false;
+		};
+	};
 
 exports.load = function () {
     exports.config = config.getConfig('admin');
@@ -162,6 +162,6 @@ exports.run = function (api, event) {
     else {
         api.sendMessage('Only grant, revoke, create and delete are avalible.', event.thread_id);
     }
-    
+
     return false;
 };
