@@ -1,3 +1,4 @@
+var threads;
 var prevTimeStamp;
 var counter = 0;
 var commands = [
@@ -16,51 +17,52 @@ var messages = [
 ];
 
 exports.load = function() {
-  if (!exports.config){
+  if (!exports.config) {
     exports.config = {};
   }
+  threads = exports.config;
 
   prevTimeStamp = Date.now();
 };
 
 exports.match = function(event, commandPrefix) {
   // Add disabled flag for thread if it doesn't already exists
-  if (!exports.config[event.thread_id]) {
-    exports.config[event.thread_id].isThreadDisabled = false;
-    exports.config[event.thread_id].possibleSpam = false;
-    exports.config[event.thread_id].counterLimit = 3;
-    exports.config[event.thread_id].msgIndexEnable = 0;
-    exports.config[event.thread_id].msgIndexDisable = 0;
+  if (!threads[event.thread_id]) {
+    threads[event.thread_id].isThreadDisabled = false;
+    threads[event.thread_id].possibleSpam = false;
+    threads[event.thread_id].counterLimit = 3;
+    threads[event.thread_id].msgIndexEnable = 0;
+    threads[event.thread_id].msgIndexDisable = 0;
   }
 
   if (event.arguments[0] === commandPrefix + commands[0]) {
-    exports.config[event.thread_id].msgIndexEnable = 0;
-    exports.config[event.thread_id].msgIndexDisable = 1;
+    threads[event.thread_id].msgIndexEnable = 0;
+    threads[event.thread_id].msgIndexDisable = 1;
     return true;
-  } else if (!exports.config[event.thread_id].isThreadDisabled && event.arguments[0].startsWith(commandPrefix)) { // Avoids counting if already disabled
+  } else if (!threads[event.thread_id].isThreadDisabled && event.arguments[0].startsWith(commandPrefix)) { // Avoids counting if already disabled
     counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
     prevTimeStamp = Date.now();
 
-    exports.config[event.thread_id].possibleSpam = counter > exports.config[event.thread_id].counterLimit;
-    if (exports.config[event.thread_id].possibleSpam) {
-      exports.config[event.thread_id].msgIndexEnable = 2;
-      exports.config[event.thread_id].msgIndexDisable = 3;
+    threads[event.thread_id].possibleSpam = counter > threads[event.thread_id].counterLimit;
+    if (threads[event.thread_id].possibleSpam) {
+      threads[event.thread_id].msgIndexEnable = 2;
+      threads[event.thread_id].msgIndexDisable = 3;
       counter = 0;
       return true;
     }
   }
-  return exports.config[event.thread_id].isThreadDisabled;
+  return threads[event.thread_id].isThreadDisabled;
 };
 
 exports.run = function(api, event) {
-  if (event.arguments[0] === api.commandPrefix + commands[0] || exports.config[event.thread_id].possibleSpam) {
+  if (event.arguments[0] === api.commandPrefix + commands[0] || threads[event.thread_id].possibleSpam) {
 
     // Command /disable /counter <value>
     if (event.arguments_body.startsWith(api.commandPrefix + commands[1])) {
-      exports.config[event.thread_id].counterLimit = parseInt(event.arguments_body.substring(
+      threads[event.thread_id].counterLimit = parseInt(event.arguments_body.substring(
         (api.commandPrefix + commands[1]).length, event.arguments_body.length));
-        if (isNaN(exports.config[event.thread_id].counterLimit)) {
-          exports.config[event.thread_id].counterLimit = 3;
+        if (isNaN(threads[event.thread_id].counterLimit)) {
+          threads[event.thread_id].counterLimit = 3;
           api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
         } else {
           api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
@@ -75,7 +77,7 @@ exports.run = function(api, event) {
             api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
           } else {
             setTimeout(function(){
-              exports.config[event.thread_id].isThreadDisabled = !exports.config[event.thread_id].isThreadDisabled;
+              threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
             }, seconds * 1000); // Converting seconds to milliseconds
             api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
           }
@@ -83,18 +85,18 @@ exports.run = function(api, event) {
 
           // Command /disable /default
         } else if (event.arguments_body === api.commandPrefix + commands[4]) {
-          exports.config[event.thread_id].counterLimit = 3;
+          threads[event.thread_id].counterLimit = 3;
           return false;
 
           // Main Branch - only executed if no commands were matched
-        } else if (exports.config[event.thread_id].isThreadDisabled	) {
+        } else if (threads[event.thread_id].isThreadDisabled	) {
           api.sendMessage(messages[msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
         }
         else {
           api.sendMessage(messages[msgIndexDisable], event.thread_id);
         }
-        exports.config[event.thread_id].isThreadDisabled = !exports.config[event.thread_id].isThreadDisabled;
-        exports.config[event.thread_id].possibleSpam = false;
+        threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
+        threads[event.thread_id].possibleSpam = false;
     }
     return false;
   };
