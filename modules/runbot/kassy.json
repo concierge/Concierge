@@ -1,0 +1,9 @@
+﻿{
+  "name": "runbot",
+  "version": 2.1,
+  "startup": "runbot.js",
+  "command": "runbot",
+  "help": [
+    [ "{{commandPrefix}}runbot <jscode>", "Runs javascript code.", "Takes typed code and executes it within a timed sandbox." ]
+  ]
+}

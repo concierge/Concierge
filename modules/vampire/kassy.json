@@ -1,0 +1,9 @@
+﻿{
+  "name": "vampire",
+  "version": 2.1,
+  "startup": "vampire.js",
+  "command": "vampire",
+  "help": [
+    [ "{{commandPrefix}}vampire", "Makes things sound like a vampire" ]
+  ]
+}

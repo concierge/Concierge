@@ -1,26 +1,48 @@
 # Kassy
-(Karma + Sassy) * Facebook - Hipchat = Kassy
+(Karma + Sassy) * (Facebook + Slack + Skype + Hipchat + Telegram) = Kassy
 
-## Usage
-Set the username and password inside the `server.js` file for a facebook account and start using `node server.js`.
-Inside a facebook chat involving the person who was logged in type `/kassy` for avalible commands.
+<i>It does **way** more than this now...</i>
+
+Kassy is a modular, easily extensible general purpose chat bot. Small node.js modules can be written for it then placed in the modules directory. They will load on startup (or restart) and become part of what the chat bot provides. Current pre-installed modules are located [here](https://github.com/mrkno/Kassy/tree/master/modules), additional modules can be created or installed through the built in package manager. Existing modules include a variety of functionality from getting animated gifs to running arbitrary sandboxed JavaScript code, voting and giving karma.
+
+## Basic Usage
+First clone the repository and install required npm packages:
+```
+git clone https://github.com/mrkno/Kassy.git
+cd Kassy
+npm install
+```
+Then start one or more of the available integrations:<br/>
+(eg. `node main.js facebook slack skype test` after configuring to start them all)
+
+### Modules
+- [Creating Modules](doc/ModuleCreation.md)
+- [KPM Modules List](https://github.com/mrkno/Kassy/wiki/KPM-Table)
+
+### All Documentation
+- [Creating Modules](doc/ModuleCreation.md)
+- [KPM Modules Table](https://github.com/mrkno/Kassy/wiki/KPM-Table)
+- [Special Commands](doc/SpecialCommands.md)
+- [Usage Example/Overview](https://github.com/mrkno/Kassy/issues/77#issuecomment-181676118)
+- Integrations (Integrations are chat platforms that Kassy integrates into)
+	- Existing Integrations. *Look here for documentation on how to set them up.*
+		- [Facebook Integration](doc/integrations/Facebook.md)
+		- [Slack Integration](doc/integrations/Slack.md)
+		- [Skype Integration](doc/integrations/Skype.md)
+		- [Telegram Integration](doc/integrations/Telegram.md)
+		- [Testing Mode](doc/integrations/Testing.md)
+	- [Creating Integrations](doc/IntegrationCreation.md)
+- [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
+
+### Testing
+See [Running and writing tests](doc/Testing.md)
+
+## Disclaimer
+HERE BE DRAGONS!
+Written to see if it could be done, not written to be readable.<br><b>Enter at your own peril.</b>
 
 ## Contributions
 Contributions welcome.
 
-### Creating New Modules
-Modules should be created as their own javascript files. They must expose the following methods:
-* `exports.match(text)` where text is the body of a facebook message. This method should return `true` if the module should be run on this message and `false` otherwise. For example, if you were creating a weather module that runs whenever the text `/weather` is written, `match(text)` would return `true` if text was `/weather some data here` and `false` if it was `not what you are wanting`.
-* `exports.help()`. This method should return a <b>non-newline terminated</b> string to be used with the `/kassy` command.
-* `exports.load()`. This method is called once when the program is first starting up. Facebook is not gaurenteed to be running at this point. Should be used to initialise variables or load files, etc as appropriate.
-* `exports.run(api,event)`. This method is called whenever the module should be run. `api` is an object that allows you to perform all the api methods outlined [here](https://github.com/Schmavery/facebook-chat-api). `event` is an object that contains information about the message received. Of particular note is `event.body` which contains text typed.
-
-Modules can be loaded into Kassy by first adding a require at the top of `server.js`, then adding the module to the array of modules within that file.
-
-## Disclaimer
-HERE BE DRAGONS!
-Written to see if it could be done, not written to be readable. Enter at your own peril.
-
 ## Copyright and License
-All code unless otherwise specified is Copyright Matthew Knox (c) 2015.
-Licensed under the MIT license.
+Licensed under the MIT license. Unless otherwise specified, code is Copyright (c) Matthew Knox 2015.

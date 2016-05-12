@@ -1,0 +1,9 @@
+﻿{
+  "name": "giphy",
+  "version": 2.2,
+  "startup": "giphy.js",
+  "command": "gif",
+  "help": [
+    [ "{{commandPrefix}}gif <query>", "Searches for animated GIF." ]
+  ]
+}

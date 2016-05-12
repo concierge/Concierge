@@ -1,0 +1,9 @@
+﻿{
+  "name": "quote",
+  "version": 2.1,
+  "startup": "quote.js",
+  "command": "quote",
+  "help": [
+    [ "{{commandPrefix}}quote <person>", "Attempts to get a quote by said person" ]
+  ]
+}
