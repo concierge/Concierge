@@ -1,13 +1,13 @@
 /**
- * A command that can check if Kassy is alive.
- *
- * Written By:
- * 		Matthew Knox
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * A command that can check if Kassy is alive.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var os = require("os");
 

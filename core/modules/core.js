@@ -1,13 +1,13 @@
 /**
- * Provides helper functions for handling user and system modules.
- *
- * Written By:
- * 		Matthew Knox
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * Provides helper functions for handling user and system modules.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var path            = require('path'),
     files           = require.once('./../files.js'),

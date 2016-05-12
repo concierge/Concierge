@@ -17,7 +17,7 @@ var request = require.safe('request');
    */
   exports.queryTitles = function(titles, success, failure) {
     var url = API_URL + "?format=json&action=query&redirects=&titles=" + titles;
-    request.get(url, 
+    request.get(url,
       function(error, response, body) {
         if (error || response.statusCode != 200) {
           failure("No results");
@@ -74,7 +74,7 @@ var request = require.safe('request');
    * Get all quotes for a given section.  Most sections will be of the format:
    * <h3> title </h3>
    * <ul>
-   *   <li> 
+   *   <li>
    *     Quote text
    *     <ul>
    *       <li> additional info on the quote </li>

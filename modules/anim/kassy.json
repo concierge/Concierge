@@ -1,9 +1,9 @@
 ﻿{
-  "name": "anim",
-  "version": 2.1,
-  "startup": "anim.js",
-  "command": "anim",
-  "help": [
-    [ "{{commandPrefix}}anim <query>", "Searches for animated GIF." ]
-  ]
+    "name": "anim",
+    "version": 2.1,
+    "startup": "anim.js",
+    "command": "anim",
+    "help": [
+        [ "{{commandPrefix}}anim <query>", "Searches for animated GIF." ]
+    ]
 }

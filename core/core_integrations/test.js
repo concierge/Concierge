@@ -54,7 +54,7 @@ exports.start = function (callback) {
         }
         return api.sendMessage(results, exports.config.thread);
     });
-	
+
     cli.on('close', function () {
         if (hasStartedShutdown) {
             return;

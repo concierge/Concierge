@@ -1,9 +1,9 @@
 ﻿{
-  "name": "insult",
-  "version": 2.1,
-  "startup": "insult.js",
-  "command": "insult",
-  "help": [
-    [ "{{commandPrefix}}insult", "Will almost certainly return profanity." ]
-  ]
+    "name": "insult",
+    "version": 2.1,
+    "startup": "insult.js",
+    "command": "insult",
+    "help": [
+        [ "{{commandPrefix}}insult", "Will almost certainly return profanity." ]
+    ]
 }

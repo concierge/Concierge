@@ -1,13 +1,13 @@
 /**
- * Creates an issue on github for kassy.
- *
- * Written By:
- * 		Dion Woolley
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Dion Woolley and Contributors 2016.
- */
+    * Creates an issue on github for kassy.
+    *
+    * Written By:
+    *              Dion Woolley
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Dion Woolley and Contributors 2016.
+    */
 
 var githubAPI = 'https://api.github.com/repos/mrkno/Kassy/issues',
     token = 'MjBlNGU3YzM0Mjk5MDI2MzI1Y2M4MDUyODBjZGE4YzAwYmQ0YjYzZQ==',
@@ -125,7 +125,7 @@ exports.run = function(api, event) {
         title = null,
         description = null,
         debugLevel = 'basic';
-    
+
     if (input.length !== 3 && input.length !== 4) {
         var helpMessage = '',
             helpMessages = exports.help(api.commandPrefix);

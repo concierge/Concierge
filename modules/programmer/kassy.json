@@ -1,9 +1,9 @@
 ﻿{
-  "name": "programmer",
-  "version": 2.1,
-  "startup": "programmer.js",
-  "command": "programmer",
-  "help": [
-    [ "{{commandPrefix}}programmer", "Reactions of a programmer." ]
-  ]
+    "name": "programmer",
+    "version": 2.1,
+    "startup": "programmer.js",
+    "command": "programmer",
+    "help": [
+        [ "{{commandPrefix}}programmer", "Reactions of a programmer." ]
+    ]
 }

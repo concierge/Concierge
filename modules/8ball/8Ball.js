@@ -37,6 +37,6 @@ exports.search = function (query, callback) {
 exports.run = function(api, event) {
     var query = event.arguments_body;
     exports.search(query, function(result) {
-		api.sendImage("url", result, "Hmmmmmmm", event.thread_id);
+        api.sendImage("url", result, "Hmmmmmmm", event.thread_id);
     });
 };

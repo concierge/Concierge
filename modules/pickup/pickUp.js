@@ -5,7 +5,7 @@ var reddit = require('./../common/reddit.js'),
 exports.joke = function(callback, waitCallback) {
     // If we have no stored pickups, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
-		waitCallback();
+        waitCallback();
         reddit.reddit('pickuplines', 200, function (err, data) {
             if (!err) {
                 results = data;
@@ -38,7 +38,7 @@ exports.run = function(api, event) {
     exports.joke(function(result) {
         api.sendMessage(result, event.thread_id);
     },
-	function() {
-		api.sendTyping(event.thread_id);
-	});
+    function() {
+        api.sendTyping(event.thread_id);
+    });
 };

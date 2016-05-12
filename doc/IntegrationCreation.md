@@ -11,7 +11,7 @@ Called when the integration should start up.
 
 Arguments:
 - `callback` - A function that should be called when a message is received. See below for details. Function.
-- <i>Return:</i> `undefined` 
+- <i>Return:</i> `undefined`
 
 ###### `callback(api, event)`
 Should be called when a message is received from your chat service.
@@ -53,7 +53,7 @@ exports.start = function(callback) {
     content = getMessageBody(),
     senderId = getSenderId(),
     senderName = getSenderName();
-  					
+
   var event = shim.createEvent(threadId, senderId, senderName, content);
   callback(api, event);
 ...
