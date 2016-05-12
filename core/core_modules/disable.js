@@ -13,7 +13,9 @@ var messages = [
     'Its a mistake to think you can fix anything with a sack of potatoes. Potato-faced spamming just proves this further.',
     'Ouch! Spam hurts. I might go to sleep for a while.',
     'Don\'t think that is a valid number.',
-    'Hmm, maybe I need to reconsider the meaning of spam.'
+    'Hmm, maybe I need to reconsider the meaning of spam.',
+    'I\'m done changing myself for you -sobs- '
+    'What exactly are you trying to say now?'
 ];
 
 exports.load = function () {
@@ -28,6 +30,7 @@ exports.load = function () {
 exports.match = function (event, commandPrefix) {
     // Add disabled flag for thread if it doesn't already exists
     if (!threads[event.thread_id]) {
+        threads[event.thread_id] = {};
         threads[event.thread_id].isThreadDisabled = false;
         threads[event.thread_id].possibleSpam = false;
         threads[event.thread_id].counterLimit = 3;
@@ -55,22 +58,23 @@ exports.match = function (event, commandPrefix) {
 };
 
 exports.run = function (api, event) {
-    if (event.arguments[0] === api.commandPrefix + commands[0] || threads[event.thread_id].possibleSpam) {
-
-        // Command /disable /counter <value>
-        if (event.arguments_body.startsWith(api.commandPrefix + commands[1])) {
+        // Command /disable /counter <value> (Stateless)
+        if (event.arguments[0] === api.commandPrefix + commands[0] &&
+            event.arguments_body.startsWith(api.commandPrefix + commands[1])) {
+                var tempCounterLimit = threads[event.thread_id].counterLimit;
             threads[event.thread_id].counterLimit = parseInt(event.arguments_body.substring(
                 (api.commandPrefix + commands[1]).length, event.arguments_body.length));
             if (isNaN(threads[event.thread_id].counterLimit)) {
-                threads[event.thread_id].counterLimit = 3;
+                threads[event.thread_id].counterLimit = tempCounterLimit;
                 api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
             } else {
                 api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
             }
             return false;
 
-            // Command /disable /timer <seconds>
-        } else if (event.arguments_body.startsWith(api.commandPrefix + commands[2])) {
+            // Command /disable /timer <seconds> (Stateless)
+        } else if (event.arguments[0] === api.commandPrefix + commands[0] &&
+            event.arguments_body.startsWith(api.commandPrefix + commands[2])) {
             var seconds = parseFloat(event.arguments_body.substring(
                 (api.commandPrefix + commands[2]).length, event.arguments_body.length));
             if (isNaN(seconds)) {
@@ -83,19 +87,28 @@ exports.run = function (api, event) {
             }
             return false;
 
-            // Command /disable /default
-        } else if (event.arguments_body === api.commandPrefix + commands[4]) {
+            // Command /disable /default (Stateless)
+        } else if (event.arguments[0] === api.commandPrefix + commands[0] &&
+            event.arguments_body === api.commandPrefix + commands[4]) {
             threads[event.thread_id].counterLimit = 3;
+                api.sendMessage(messages[6] + ' ' + event.sender_name, event.thread_id);
             return false;
 
-            // Main Branch - only executed if no commands were matched
-        } else if (threads[event.thread_id].isThreadDisabled) {
-            api.sendMessage(messages[msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
+
+                // Main Branch (State-dependent)
+        } else if (event.arguments[0] === api.commandPrefix + commands[0] ||
+             threads[event.thread_id].possibleSpam) {
+            if (threads[event.thread_id].isThreadDisabled) {
+            api.sendMessage(messages[threads[event.thread_id].msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
         } else {
-            api.sendMessage(messages[msgIndexDisable], event.thread_id);
+            api.sendMessage(messages[threads[event.thread_id].msgIndexDisable], event.thread_id);
         }
         threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
         threads[event.thread_id].possibleSpam = false;
+
+        // Error handling
+    } else {
+        api.sendMessage(messages[7] + ' ' + event.sender_name, event.thread_id);
     }
     return false;
 };
