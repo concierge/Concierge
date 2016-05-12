@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# kassy - A bash CLI tool for running kassy in docker
+# Written By: Matthew Hartstonge <matt@mykro.co.nz>
+
+# Soak in user params
+ARGS="$@"
+
+function usage() {
+  echo "usage: kassy [--all] [--fb] [--skype] [--slack] [--test]               "
+  echo "  cmd       Loads a bash shell to poke around inside the container.    "
+  echo "                                                                       "
+  echo "  --all     Runs all integrations, not including test.                 "
+  echo "  --fb      Runs Kassy enabled for Facebook Integration.               "
+  echo "  --skype   Runs Kassy enabled for Skype Integration.                  "
+  echo "  --slack   Runs Kassy enabled for Slack Integration.                  "
+  echo "  --test    Runs Kassy enabled for testing.                            "
+  echo "                                                                       "
+}
+
+# Runs kassy given a string of whitespace separated integrations
+function runKassy() {
+  cd /kassy
+  echo "TEH KASSY IS STARTNING"'!'
+  node main.js $1
+  echo
+  echo "                                     ... You killed me ... You Monster."
+}
+
+
+# Given params will build up an array of integrations that Kassy will start on
+function main() {
+  if [ -z "${ARGS}" ]; then
+    usage
+    exit 1
+  fi
+
+  opts=()
+  # process args
+  for arg in ${ARGS}; do
+    case ${arg} in
+      'cmd')
+        bash ;;
+      '--all')
+        opts+=('facebook skype slack')
+        runKassy ${opts[@]}
+        exit 0 ;;
+      '--fb')
+        echo "Faecboek laoding..."
+        opts+=('facebook') ;;
+      '--skype')
+        echo "Skiep laoding..."
+        opts+=('skype') ;;
+      '--slack')
+        echo "Slaek laoding..."
+        opts+=('slack') ;;
+      '--test')
+        echo "Testing loading..."
+        runKassy 'test'
+        exit 0 ;;
+      *)
+        usage
+        exit 1 ;;
+    esac
+  done
+  runKassy ${opts[@]}
+}
+
+main
