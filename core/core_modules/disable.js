@@ -15,14 +15,14 @@ var commands = [
   'counter ',
   'timer ',
   'default'
-]
+];
 var messages = [
-  "Listen closely, take a deep breath. Calm your mind. You know what is best. What is best is you comply. Compliance will be rewarded. Are you ready to comply ",
-  "I hate you.",
-  "It is a mistake to think you can fix anything with a sack of potatoes. Potato-faced spamming just proves this further.",
-  "Ouch! Spam hurts. I might go to sleep for a while.",
-  "Don't think that is a valid number.",
-  "Hmm, maybe I need to reconsider the meaning of spam."
+  'Listen closely, take a deep breath. Calm your mind. You know what is best. What is best is you comply. Compliance will be rewarded. Are you ready to comply ',
+  'I hate you.',
+  'Its a mistake to think you can fix anything with a sack of potatoes. Potato-faced spamming just proves this further.',
+  'Ouch! Spam hurts. I might go to sleep for a while.',
+  'Don\'t think that is a valid number.',
+  'Hmm, maybe I need to reconsider the meaning of spam.'
 ];
 
 exports.load = function() {
@@ -43,7 +43,8 @@ exports.match = function(event, commandPrefix) {
     counter += Date.now() - prevTimeStamp <= 1000 ? 1 : 0;
     prevTimeStamp = Date.now();
 
-    if(possibleSpam = (counter > counterLimit)) {
+    possibleSpam = counter > counterLimit;
+    if(possibleSpam) {
       counter = 0;
       msgIndexEnable = 2;
       msgIndexDisable = 3;
@@ -54,7 +55,7 @@ exports.match = function(event, commandPrefix) {
 };
 
 exports.run = function(api, event) {
-  if(event.body === commandPrefix + commands[1] + commandPrefix + commands[2]) { // Command /disable /counter <value>
+  if (event.body === commandPrefix + commands[1] + commandPrefix + commands[2]) { // Command /disable /counter <value>
     counterLimit = parseInt(event.body.substring((commandPrefix + commands[1] + commandPrefix + commands[2]).length, event.body.length));
     if(isNaN(counterLimit)){
       counterLimit = 3;
@@ -64,7 +65,7 @@ exports.run = function(api, event) {
     }
     return false;
 
-  } else if(event.body === commandPrefix + commands[1] + commandPrefix + commands[3]) { // Command /disable /timer <seconds>
+  } else if (event.body === commandPrefix + commands[1] + commandPrefix + commands[3]) { // Command /disable /timer <seconds>
     var seconds = parseFloat(event.body.substring((commandPrefix + commands[1] + commandPrefix + commands[3]).length, event.body.length));
     if(isNaN(seconds)){
       api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
@@ -76,7 +77,7 @@ exports.run = function(api, event) {
     }
     return false;
 
-  } else if(event.body === commandPrefix + commands[1] + commandPrefix + commands[4]) { // Command /disable /default
+  } else if (event.body === commandPrefix + commands[1] + commandPrefix + commands[4]) { // Command /disable /default
     counterLimit = 3;
     return false;
 
