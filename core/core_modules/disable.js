@@ -84,7 +84,7 @@ exports.run = function (api, event) {
             function (input) {
                 setTimeout(function () {
                     threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
-                }, seconds * 1000); // Converting seconds to milliseconds
+                }, input * 1000); // Converting seconds to milliseconds
                 api.sendMessage(messages[8] + ' ' + event.sender_name, event.thread_id);
             });
         return false;
