@@ -60,7 +60,7 @@ exports.match = function (event, commandPrefix) {
 
 function parseInput(api, event, input, callback) {
     if (parseFloat(input)) {
-        callback(parseFloat(input));
+        callback(parseFloat(input, api, event));
     } else { // parse exception
         api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
     }
@@ -71,7 +71,7 @@ exports.run = function (api, event) {
     if (event.arguments[0] === api.commandPrefix + commands[0] &&
         event.arguments_body.startsWith(api.commandPrefix + commands[1])) {
         parseInput(event.arguments_body.substring((api.commandPrefix + commands[1]).length, event.arguments_body.length),
-            function (input) {
+            function (input, api, event) {
                 threads[event.thread_id].counterLimit = input;
                 api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
             });
@@ -81,7 +81,7 @@ exports.run = function (api, event) {
     } else if (event.arguments[0] === api.commandPrefix + commands[0] &&
         event.arguments_body.startsWith(api.commandPrefix + commands[2])) {
         parseInput(event.arguments_body.substring((api.commandPrefix + commands[2]).length, event.arguments_body.length),
-            function (input) {
+            function (input, api, event) {
                 setTimeout(function () {
                     threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
                 }, input * 1000); // Converting seconds to milliseconds
