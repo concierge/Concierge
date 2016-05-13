@@ -98,7 +98,7 @@ exports.run = function (api, event) {
 
 
         // Main Branch (State-dependent)
-    } else if (event.arguments[0] === api.commandPrefix + commands[0] ||
+    } else if (event.arguments[0] === api.commandPrefix + commands[0] && event.arguments_body.length === 0 ||
         threads[event.thread_id].possibleSpam) {
         if (threads[event.thread_id].isThreadDisabled) {
             api.sendMessage(messages[threads[event.thread_id].msgIndexEnable] + ' ' + event.sender_name, event.thread_id);
