@@ -58,6 +58,14 @@ exports.match = function (event, commandPrefix) {
     return threads[event.thread_id].isThreadDisabled;
 };
 
+function parseInput(api, event, input, callback) {
+    if (parseFloat(input)) {
+        callback(parseFloat(input));
+    } else { // parse exception
+        api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
+    }
+}
+
 exports.run = function (api, event) {
     // Command /disable /counter <value> (Stateless)
     if (event.arguments[0] === api.commandPrefix + commands[0] &&
@@ -106,14 +114,6 @@ exports.run = function (api, event) {
     }
     return false;
 };
-
-function parseInput(api, event, input, callback) {
-    if (parseFloat(input)) {
-        callback(parseFloat(input));
-    } else { // parse exception
-        api.sendMessage(messages[4] + ' ' + event.sender_name, event.thread_id);
-    }
-}
 
 exports.help = function (commandPrefix) {
     return [
