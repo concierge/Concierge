@@ -19,7 +19,7 @@
     "node-telegram-bot-api": "^0.21.1",
     "npm": "^3.7.5",
     "redwrap": "*",
-    "request": "^2.72.1",
+    "request": "^2.72.0",
     "rimraf": "^2.4.4",
     "sandbox": "^0.8.6",
     "sanitize-filename": "^1.5.3",

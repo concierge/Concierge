@@ -221,11 +221,12 @@ var request = require.safe('request'),
         },
         function (error, response, body) {
             if (error) {
-                if (error.connect) {
+                if (error.connect || error.code === 'ENOTFOUND' || error.code === 'ETIMEDOUT') {
                     console.debug('slack-> server failed to respond attempting to reconnect');
                     setTimeout(function() {
-                        initialiseConnection(toke, callback);
+                        initialiseConnection(token, callback);
                     }, recconnetionTimeout *= 2);
+                    return;
                 }
                 else {
                     console.debug('slack-> failed to Initialise connection: ' + error);
@@ -545,7 +546,7 @@ exports.start = function (callback) {
     shuttingDown = false;
     eventReceivedCallback = callback;
 
-    console.debug('slack-> Starting slack output module');
+    console.debug('slack-> Starting slack');
     if (slackTokens) {
         for (var i = 0; i < slackTokens.length; i++) {
             initialiseConnection(slackTokens[i], connect);
