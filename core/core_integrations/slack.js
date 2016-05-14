@@ -6,6 +6,7 @@ var request = require.safe('request'),
     sockets = [],
     eventReceivedCallback = null,
     shuttingDown = false,
+    recconnetionTimeout = 15000,
     /**
     * Wait time between ping and pong response, in milliseconds.
     */
@@ -197,7 +198,7 @@ var request = require.safe('request'),
         }
         return map;
     },
-    
+
     findSlackBot = function(body, slackTeam) {
         for (var i = 0; i < body.users.length; i++) {
             if (body.users[i].name === 'slackbot') {
@@ -207,7 +208,7 @@ var request = require.safe('request'),
         }
     },
 
-    init = function(token, callback) {
+    initialiseConnection = function(token, callback) {
         var body = {
             token: token,
             mpim_aware: true
@@ -215,17 +216,27 @@ var request = require.safe('request'),
         request({
             uri: 'https://slack.com/api/rtm.start',
             method: 'GET',
-            qs: body
+            qs: body,
+            timeout: 30000
         },
         function (error, response, body) {
             if (error) {
-                console.debug('slack-> failed to Initialise connection: ' + error);
-                callback(false);
-                return;
+                if (error.connect) {
+                    console.debug('slack-> server failed to respond attempting to reconnect');
+                    setTimeout(function() {
+                        initialiseConnection(toke, callback);
+                    }, recconnetionTimeout *= 2);
+                }
+                else {
+                    console.debug('slack-> failed to Initialise connection: ' + error);
+                    callback(false);
+                    return;
+                }
             }
             var teamId = null,
                 team;
 
+                recconnetionTimeout = 15000;
             try {
                 body = JSON.parse(body);
             }
@@ -279,8 +290,8 @@ var request = require.safe('request'),
         team.pongTimeout = setTimeout(function() {
             if (team.pong_id === pongId && !shuttingDown) {
                 console.debug('slack-> terminating connection as socket failed to respond to ping request.');
-                exports.close();
-                init(team.token, connect);
+                sockets[teamId].terminate();
+                initialiseConnection(team.token, connect);
             }
         }, defaultPingResponseTimeout);
     },
@@ -299,7 +310,7 @@ var request = require.safe('request'),
                 console.debug('slack-> sending ping');
                 sendPing(teamId);
             }
-        }, 60000);
+        }, defaultPingResponseTimeout * 2);
     },
 
     pong = function(teamId) {
@@ -426,6 +437,9 @@ var request = require.safe('request'),
             case 'team_rename':
                 teamRename(event, teamId);
                 break;
+            case 'hello':
+                console.debug('slack-> Hello from slack servers');
+                break;
             default:
                 console.debug('slack-> Message of type ' + event.type + ' not supported');
                 break;
@@ -446,6 +460,7 @@ var request = require.safe('request'),
                 startPingPongTimer(connectionDetails.team_id);
                 eventReceived(JSON.parse(data), connectionDetails.team_id);
             }).on('ping', function() {
+                console.debug('slack-> Recieved ping, sending pong');
                 sendSocketMessage('pong', connectionDetails.team_id);
             }).on('pong', function() {
                 pong(connectionDetails.team_id);
@@ -533,7 +548,7 @@ exports.start = function (callback) {
     console.debug('slack-> Starting slack output module');
     if (slackTokens) {
         for (var i = 0; i < slackTokens.length; i++) {
-            init(slackTokens[i], connect);
+            initialiseConnection(slackTokens[i], connect);
         }
 
         platform = shim.createPlatformModule({
