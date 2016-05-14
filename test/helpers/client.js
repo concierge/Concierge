@@ -1,6 +1,8 @@
 var fs = require('fs'),
     WebSocket = require('ws'),
-    config = null,
+    config = JSON.parse(fs.readFileSync('config.json', 'utf8')),
+    port = config.output.grunt.port || 49886,
+    ws = new WebSocket('ws://localhost:' + port),
     callback = null,
     stopCallback = null,
     messageCallback = null,
@@ -36,9 +38,6 @@ Client.prototype.shutdown = function(cb) {
     }));
     stopCallback = cb;
 };
-
-config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
-ws = new WebSocket(`ws://localhost:${ config.output.grunt.port || 49886 }`);
 
 ws.on('open', function() {
     if (callback) {
