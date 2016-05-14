@@ -5,7 +5,6 @@ deasync = require.safe('deasync'),
 platform = null,
 sockets = [],
 eventReceivedCallback = null,
-numSocketsToShutDown = 0,
 shuttingDown = false,
 /**
 * Wait time between ping and pong response, in milliseconds.
@@ -263,16 +262,16 @@ sendPing = function(teamId) {
         pongId = ++team.pong_id;
 
     if (!pongId) {
-        pongId = 1;
-        team.pong_id = pongId;
+        pongId = team.pong_id = 1;
     }
 
-    sendSocketMessage('ping', teamId, body);
+    sendSocketMessage('ping', teamId);
 
     team.pongTimeout = setTimeout(function() {
         if (team.pong_id === pongId && !shuttingDown) {
             console.debug('slack-> terminating connection as socket failed to respond to ping request.');
-            sockets[teamId].terminate();
+            exports.close();
+            init(team.token, connect);
         }
     }, defaultPingResponseTimeout);
 },
@@ -294,7 +293,7 @@ startPingPongTimer = function(teamId) {
     }, 60000);
 },
 
-pong = function(pong, teamId) {
+pong = function(teamId) {
     console.debug('slack-> recieved pong');
     teamData[teamId].timeSincelastMessageRecieved = getTime();
     teamData[teamId].pong_id++;
@@ -446,20 +445,13 @@ connect = function(connectionDetails) {
         }).on('message', function(data) {
             startPingPongTimer(connectionDetails.team_id);
             eventReceived(JSON.parse(data), connectionDetails.team_id);
-        }).on('ping', function(data) {
-            sendSocketMessage('ping', connectionDetails.team_id);
-        }).on('pong', function(data) {
-            pong();
+        }).on('ping', function() {
+            console.log('got ping sending pong');
+            sendSocketMessage('pong', connectionDetails.team_id);
+        }).on('pong', function() {
+            pong(connectionDetails.team_id);
         }).on('close', function() {
             console.debug('slack-> Disconnected from team: ' + teamData[connectionDetails.team_id].team.name);
-
-            if (numSocketsToShutDown > 0) {
-                numSocketsToShutDown--;
-                return;
-            }
-            if (!shuttingDown) {
-                init(teamData[connectionDetails.team_id].token, connect);
-            }
         }).on('error', function(data) {
             console.debug('slack-> received error:\n' + data);
         });
@@ -563,7 +555,6 @@ exports.start = function (callback) {
 exports.stop = function() {
     console.debug('slack-> start shutdown');
     shuttingDown = true;
-    numSocketsToShutDown = Object.keys(sockets).length;
     clearedMessageQueue = false;
     clearedTimeouts = false;
 
@@ -573,7 +564,4 @@ exports.stop = function() {
     clearTimeouts();
     // close sockets
     closeSockets();
-    deasync.loopWhile(function() {
-        return numSocketsToShutDown === 0 && clearedMessageQueue && clearTimeouts;
-    });
 };
