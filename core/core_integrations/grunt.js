@@ -131,7 +131,7 @@ exports.start = function(cb) {
 
     wss.on('error', function(error) {
         console.error(error);
-    })
+    });
 };
 
 exports.stop = function() {

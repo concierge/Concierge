@@ -37,8 +37,8 @@ Client.prototype.shutdown = function(cb) {
     stopCallback = cb;
 };
 
-config = JSON.parse(fs.readFileSync('config.json', 'utf8')),
-ws = new WebSocket(`ws://localhost:${ config.output.grunt.port || 49886 }`),
+config = JSON.parse(fs.readFileSync('config.json', 'utf8'));
+ws = new WebSocket(`ws://localhost:${ config.output.grunt.port || 49886 }`);
 
 ws.on('open', function() {
     if (callback) {
