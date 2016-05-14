@@ -35,14 +35,14 @@
         }
 
         switch (method) {
-        case 'grant': {
+            case 'grant': {
                 if (!exports.config.users[name][threadId].includes(action)) {
                     exports.config.users[name][threadId].push(action);
                     return true;
                 }
                 return false;
             }
-        case 'revoke': {
+            case 'revoke': {
                 var newArr = exports.config.users[name][threadId].filter(function(item) {
                     return item !== action;
                 });
