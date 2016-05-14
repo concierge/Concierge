@@ -1,12 +1,10 @@
 var fs = require('fs'),
     WebSocket = require('ws'),
-    config = JSON.parse(fs.readFileSync('config.json', 'utf8')),
-    port = config.output.grunt.port || 49886,
-    ws = new WebSocket('ws://localhost:' + port),
     callback = null,
     stopCallback = null,
     messageCallback = null,
     threadId = 1,
+    ws = null,
 
 responsdWithCallback = function(data) {
     if (messageCallback && data.thread_id === threadId - 1) {
@@ -15,7 +13,28 @@ responsdWithCallback = function(data) {
 },
 
 Client = function(cb) {
+    var config = JSON.parse(fs.readFileSync('config.json', 'utf8')),
+        port = config.output.grunt.port || 49886;
+
     callback = cb;
+    ws = new WebSocket('ws://localhost:' + port);
+
+    ws.on('open', function() {
+        if (callback) {
+            callback();
+        }
+    });
+
+    ws.on('close', function() {
+        if (stopCallback) {
+            stopCallback();
+        }
+    });
+
+    ws.on('message', function(data) {
+        responsdWithCallback(JSON.parse(data));
+    });
+
 };
 
 Client.prototype.sendMessage = function(message) {
@@ -38,21 +57,5 @@ Client.prototype.shutdown = function(cb) {
     }));
     stopCallback = cb;
 };
-
-ws.on('open', function() {
-    if (callback) {
-        callback();
-    }
-});
-
-ws.on('close', function() {
-    if (stopCallback) {
-        stopCallback();
-    }
-});
-
-ws.on('message', function(data) {
-    responsdWithCallback(JSON.parse(data));
-});
 
 module.exports = Client;
