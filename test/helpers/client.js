@@ -5,6 +5,8 @@ var fs = require('fs'),
     messageCallback = null,
     threadId = 1,
     ws = null,
+    config = null,
+    port = 49886,
 
 responsdWithCallback = function(data) {
     if (messageCallback && data.thread_id === threadId - 1) {
@@ -13,11 +15,7 @@ responsdWithCallback = function(data) {
 },
 
 Client = function(cb) {
-    var config = JSON.parse(fs.readFileSync('config.json', 'utf8')),
-        port = config.output.grunt.port || 49886;
-
     callback = cb;
-    ws = new WebSocket('ws://localhost:' + port);
 
     ws.on('open', function() {
         if (callback) {
@@ -57,5 +55,19 @@ Client.prototype.shutdown = function(cb) {
     }));
     stopCallback = cb;
 };
+
+try {
+    var file =fs.readFileSync('config.json', 'utf8');
+    config = JSON.parse(file);
+}
+catch (e) {
+    console.info("config not found, continue with defaults");
+}
+
+if (config !== null && config.output.grunt) {
+    port = config.output.grunt.port;
+}
+
+ws = new WebSocket('ws://localhost:' + port);
 
 module.exports = Client;
