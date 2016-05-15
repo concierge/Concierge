@@ -60,15 +60,15 @@ Platform.prototype.messageRxd = function(api, event) {
 
     // Run user modules in protected mode
     for (var i = 0; i < this.loadedModules.length; i++) {
-    	var matchResult;
-    	try {
-    		matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
-    	}
-    	catch (e) {
-    		console.error('The module ' + this.loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
-    		console.critical(e);
-    		continue;
-    	}
+        var matchResult;
+        try {
+            matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
+        }
+        catch (e) {
+            console.error('The module ' + this.loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
+            console.critical(e);
+            continue;
+        }
 
         if (matchResult) {
             try {
@@ -105,6 +105,7 @@ Platform.prototype.start = function() {
     for (var i = 0; i < m.length; i++) {
         this.coreModules.push(this.coreLoader.loadCoreModule(this, m[i]));
     }
+    this.coreLoader.loadingComplete(this.coreModules);
 
     // Load Kassy modules
     console.warn('Loading modules...');
