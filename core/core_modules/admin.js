@@ -10,11 +10,23 @@
         }
 
         var user = config.users[userId] || config.users[name];
-        if (!user || !user[threadId] || user[threadId].length === 0) {
+        if (!user) {
             return false;
         }
 
-        var common = user[threadId].filter(function (p) {
+        var tId = null;
+        for (var thread in user) {
+            var test = new RegExp(thread);
+            if (test.test(threadId)) {
+                tId = thread;
+                break;
+            }
+        }
+        if (!tId || user[tId].length === 0) {
+            return false;
+        }
+
+        var common = user[tId].filter(function (p) {
             return config.modules[moduleName].indexOf(p) !== -1;
         });
 
