@@ -6,21 +6,31 @@
 ARGS="$@"
 
 function usage() {
-  echo "usage: kassy [--all] [--fb] [--skype] [--slack] [--test]               "
-  echo "  cmd       Loads a bash shell to poke around inside the container.    "
+  echo "usage: kassy [all][facebook][skype][slack][telegram]                   "
+  echo "             [--debug][--log][--test][--timestamp]                     "
   echo "                                                                       "
-  echo "  --all     Runs all integrations, not including test.                 "
-  echo "  --fb      Runs Kassy enabled for Facebook Integration.               "
-  echo "  --skype   Runs Kassy enabled for Skype Integration.                  "
-  echo "  --slack   Runs Kassy enabled for Slack Integration.                  "
-  echo "  --test    Runs Kassy enabled for testing.                            "
+  echo "  Commands:                                                            "
+  echo "    cmd            Starts a bash session inside the container.         "
+  echo "                                                                       "
+  echo "  Integrations:                                                        "
+  echo "    all            Runs all integrations, not including test.          "
+  echo "    facebook       Enables integration with Facebook.                  "
+  echo "    skype          Enables integration with Skype.                     "
+  echo "    slack          Enables integration with Slack.                     "
+  echo "    telegram       Enables integration with Telegram Integration.      "
+  echo "                                                                       "
+  echo "  Debugging and Testing:                                               "
+  echo "    --debug        Turns on verbose logging.                           "
+  echo "    --log          Writes to kassy.log in /kassy folder.               "
+  echo "    --test         Runs Kassy enabled for testing.                     "
+  echo "    --timestamp    Enables timestamps in the console and log files.    "
   echo "                                                                       "
 }
 
 # Runs kassy given a string of whitespace separated integrations
 function runKassy() {
   cd /kassy
-  echo "TEH KASSY IS STARTNING"'!'
+  echo "Starting Kassy"'!'
   node main.js $1
   echo
   echo "                                     ... You killed me ... You Monster."
@@ -38,25 +48,44 @@ function main() {
   # process args
   for arg in ${ARGS}; do
     case ${arg} in
+      # Provide a way to escape to bash *nicely*
       'cmd')
-        bash ;;
-      '--all')
-        opts+=('facebook skype slack')
+        bash
+        exit 0 ;;
+
+      # Integrations
+      'all')
+        opts+=('facebook skype slack telegram')
         runKassy ${opts[@]}
         exit 0 ;;
-      '--fb')
-        echo "Faecboek laoding..."
+      'facebook')
+        echo "Facebook loading..."
         opts+=('facebook') ;;
-      '--skype')
-        echo "Skiep laoding..."
+      'skype')
+        echo "Skype loading..."
         opts+=('skype') ;;
-      '--slack')
-        echo "Slaek laoding..."
+      'slack')
+        echo "Slack loading..."
         opts+=('slack') ;;
+      'telegram')
+        echo "Telegram loading..."
+        opts+=('telegram') ;;
+
+      # Debugging
+      '--debug')
+        echo "Debug enabled"
+        opts+=('--debug') ;;
+      '--log')
+        echo "Logging enabled"
+        opts+=('--log') ;;
       '--test')
         echo "Testing loading..."
-        runKassy 'test'
-        exit 0 ;;
+        opts+=('test') ;;
+      '--timestamp')
+        echo "Timestamps enabled"
+        opts+=('--timestamp') ;;
+
+      # Default case
       *)
         usage
         exit 1 ;;

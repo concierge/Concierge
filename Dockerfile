@@ -3,8 +3,7 @@ FROM mhart/alpine-node:4
 # -----------------------------------------------------------------------------
 # Alpine Linux containerised version of Kassy ready for deployment
 # -----------------------------------------------------------------------------
-# Make sure to map your config.json file into /kassy!
-# see: kassy/doc/integrations/Facebook.md for the file format
+# For documentation on how to work with docker-kassy see: docs/docker-kassy.md
 MAINTAINER Matt Hartstonge <matt@mykro.co.nz>
 
 COPY ./ /kassy
@@ -25,4 +24,3 @@ RUN apk --no-cache add \
 WORKDIR ["/kassy"]
 VOLUME ["/kassy/modules/"]
 ENTRYPOINT ["kassy"]
-CMD ["--fb"]
