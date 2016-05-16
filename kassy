@@ -5,27 +5,6 @@
 # Soak in user params
 ARGS="$@"
 
-function usage() {
-  echo "usage: kassy [all][facebook][skype][slack][telegram]                   "
-  echo "             [--debug][--log][--test][--timestamp]                     "
-  echo "                                                                       "
-  echo "  Commands:                                                            "
-  echo "    cmd            Starts a bash session inside the container.         "
-  echo "                                                                       "
-  echo "  Integrations:                                                        "
-  echo "    all            Runs all integrations, not including test.          "
-  echo "    facebook       Enables integration with Facebook.                  "
-  echo "    skype          Enables integration with Skype.                     "
-  echo "    slack          Enables integration with Slack.                     "
-  echo "    telegram       Enables integration with Telegram Integration.      "
-  echo "                                                                       "
-  echo "  Debugging and Testing:                                               "
-  echo "    --debug        Turns on verbose logging.                           "
-  echo "    --log          Writes to kassy.log in /kassy folder.               "
-  echo "    --test         Runs Kassy enabled for testing.                     "
-  echo "    --timestamp    Enables timestamps in the console and log files.    "
-  echo "                                                                       "
-}
 
 # Runs kassy given a string of whitespace separated integrations
 function runKassy() {
@@ -53,42 +32,9 @@ function main() {
         bash
         exit 0 ;;
 
-      # Integrations
-      'all')
-        opts+=('facebook skype slack telegram')
-        runKassy ${opts[@]}
-        exit 0 ;;
-      'facebook')
-        echo "Facebook loading..."
-        opts+=('facebook') ;;
-      'skype')
-        echo "Skype loading..."
-        opts+=('skype') ;;
-      'slack')
-        echo "Slack loading..."
-        opts+=('slack') ;;
-      'telegram')
-        echo "Telegram loading..."
-        opts+=('telegram') ;;
-
-      # Debugging
-      '--debug')
-        echo "Debug enabled"
-        opts+=('--debug') ;;
-      '--log')
-        echo "Logging enabled"
-        opts+=('--log') ;;
-      '--test')
-        echo "Testing loading..."
-        opts+=('test') ;;
-      '--timestamp')
-        echo "Timestamps enabled"
-        opts+=('--timestamp') ;;
-
       # Default case
       *)
-        usage
-        exit 1 ;;
+        opts+=(${arg}) ;;
     esac
   done
   runKassy ${opts[@]}

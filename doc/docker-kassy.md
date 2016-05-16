@@ -21,14 +21,19 @@ Once docker-engine is up and running, there are a number of switches to control 
 The docker -it switch will start an interactive teletype session where you can see everything that is happening within the container as Kassy starts up.
 
 ```sh
-docker run -it -v /path/to/config.json:/kassy/config.json concierge/docker-kassy facebook
+docker run -it \
+  -v /path/to/config.json:/kassy/config.json \
+  concierge/docker-kassy facebook
 ```
 
 #### Daemonised Start
 The -d switch will start Kassy daemonised and running in the background. Again, make sure to mount your specific config as needed, per integration.
 
 ```sh
-docker run -d --restart="always" -v /path/to/config.json:/kassy/config.json concierge/docker-kassy slack telegram
+docker run -d \
+  --restart="always" \
+  -v /path/to/config.json:/kassy/config.json \
+  concierge/docker-kassy slack telegram
 ```
 
 ## Build docker-kassy
@@ -42,7 +47,7 @@ $ docker build -t <youruser>/kassy:latest .
 This will give you a pristine Kassy, ready to make some 100% more productive while also allowing to make others 100% more unproductive.
 
 ### Customised build
-If you want to change what is available, change the dockerfile to suit, or bake your config into the image by using the copy command.
+If you want to change what is available, alter the dockerfile to suit, or bake your config into the image by using the copy command.
 
 ```sh
 ...
@@ -59,14 +64,18 @@ RUN apk --no-cache add \
 Kassy comes with all the tools to debug and test as per normal. Since container storage is ephemeral, using the docker image maybe advantageous to your testing workflow.
 
 ```sh
-docker run -it -v /path/to/config.json:/kassy/config.json concierge/docker-kassy --test --log --debug --timestamp
+docker run -it \
+  -v /path/to/config.json:/kassy/config.json \
+  concierge/docker-kassy test --log --debug --timestamp
 ```
 
 ### Getting terminal with docker-kassy
 Docker provides a way to start bash inside a running container using the 'exec' command. If you are starting with a fresh container, you can skip this and use the cmd command.
 
 ```sh
-docker -it -v /path/to/config.json:/kassy/config.json concierge/docker-kassy cmd
+docker -it \
+  -v /path/to/config.json:/kassy/config.json \
+  concierge/docker-kassy cmd
 c1asd1737-#bash-4.2 $ echo "hello kassy"
 hello kassy
 ```
@@ -84,7 +93,7 @@ hello kassy
 
 docker-kassy Version
 ----
-0.2.0
+0.3.0
 
 License
 ----
