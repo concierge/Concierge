@@ -6,103 +6,103 @@ var fs = require('fs'),
     https = require('https'),
     shim = require('../shim.js'),
     http = null,
-    api = null;
+    api = null,
 
-var getNameForId = function(id, callback) {
-    if (!exports.config.users) {
-        exports.config.users = {};
-    }
+	getNameForId = function(id, callback) {
+		if (!exports.config.users) {
+			exports.config.users = {};
+		}
 
-    if (exports.config.users[id]) {
-        return callback(exports.config.users[id].name);
-    }
+		if (exports.config.users[id]) {
+			return callback(exports.config.users[id].name);
+		}
 
-    request({
-        url: 'https://graph.facebook.com/v2.6/' + id,
-        qs: {access_token: exports.config.token, fields: 'first_name,last_name'},
-        method: 'GET'
-    },
-    function(error, response, body) {
-        if (error) {
-            return callback('UnknownUser');
-        }
-        body = JSON.parse(body);
-        if (!exports.config.users[id]) {
-            exports.config.users[id] = {};
-        }
-        exports.config.users[id].name = body.first_name + ' ' + body.last_name;
-        callback(exports.config.users[id].name);
-    });
-},
+		request({
+			url: 'https://graph.facebook.com/v2.6/' + id,
+			qs: {access_token: exports.config.token, fields: 'first_name,last_name'},
+			method: 'GET'
+		},
+		function(error, response, body) {
+			if (error) {
+				return callback('UnknownUser');
+			}
+			body = JSON.parse(body);
+			if (!exports.config.users[id]) {
+				exports.config.users[id] = {};
+			}
+			exports.config.users[id].name = body.first_name + ' ' + body.last_name;
+			callback(exports.config.users[id].name);
+		});
+	},
 
-sentenceSplitter = function(message) {
-    var spl = message.split('\n');
-    
-    for (var i = 0; i < spl.length; i++) {
-        var strs = [];
-        while (spl[i].length > 0) {
-            var str = spl[i].substr(0, 320);
-            var ind = str.lastIndexOf(' ');
-            if (ind >= 0 && str.length !== spl[i].length) {
-                str = str.substr(0, Math.min(str.length, ind + 1));
-            }
+	sentenceSplitter = function(message) {
+		var spl = message.split('\n');
 
-            strs.push(str);
-            spl[i] = spl[i].substr(str.length);
-        }
-        spl.splice(i, 1);
-        for (var j = 0; j < strs.length; j++) {
-            spl.splice(i + j, 0, strs[j]);
-        }
-        i += strs.length;
-    }
+		for (var i = 0; i < spl.length; i++) {
+			var strs = [];
+			while (spl[i].length > 0) {
+				var str = spl[i].substr(0, 320);
+				var ind = str.lastIndexOf(' ');
+				if (ind >= 0 && str.length !== spl[i].length) {
+					str = str.substr(0, Math.min(str.length, ind + 1));
+				}
 
-    for (var i = 0; i < spl.length; i++) {
-        var curr = spl[i];
-        for (var j = i + 1; j < spl.length; j++) {
-            if (curr + spl[j] + 1 < 320) {
-                curr += '\n' + spl[j];
-                spl.splice(j, 1);
-            }
-            else {
-                break;
-            }
-        }
-        spl[i] = curr;
-    }
+				strs.push(str);
+				spl[i] = spl[i].substr(str.length);
+			}
+			spl.splice(i, 1);
+			for (var j = 0; j < strs.length; j++) {
+				spl.splice(i + j, 0, strs[j]);
+			}
+			i += strs.length;
+		}
 
-    return spl;
-},
+		for (var i = 0; i < spl.length; i++) {
+			var curr = spl[i];
+			for (var j = i + 1; j < spl.length; j++) {
+				if (curr + spl[j] + 1 < 320) {
+					curr += '\n' + spl[j];
+					spl.splice(j, 1);
+				}
+				else {
+					break;
+				}
+			}
+			spl[i] = curr;
+		}
 
-genericMessageRequest = function(message, recipientId, callback) {
-    request({
-        url: 'https://graph.facebook.com/v2.6/me/messages',
-        qs: {access_token: exports.config.token},
-        method: 'POST',
-        json: {
-            recipient: {id: recipientId},
-            message: message
-        }
-    },
-    function(error) {
-        if (error) {
-            throw error;
-        }
-        if (callback) {
-            callback();
-        }
-    });
-},
+		return spl;
+	},
 
-listGenericMessageRequest = function(list, property, threadId) {
-    if (!list || list.length <= 0) {
-        return;
-    }
-    var arg = {};
-    arg[property] = list[0];
-    list.splice(0, 1);
-    genericMessageRequest(arg, threadId, listGenericMessageRequest.bind(this, list, property, threadId));
-};
+	genericMessageRequest = function(message, recipientId, callback) {
+		request({
+			url: 'https://graph.facebook.com/v2.6/me/messages',
+			qs: {access_token: exports.config.token},
+			method: 'POST',
+			json: {
+				recipient: {id: recipientId},
+				message: message
+			}
+		},
+		function(error) {
+			if (error) {
+				throw error;
+			}
+			if (callback) {
+				callback();
+			}
+		});
+	},
+
+	listGenericMessageRequest = function(list, property, threadId) {
+		if (!list || list.length <= 0) {
+			return;
+		}
+		var arg = {};
+		arg[property] = list[0];
+		list.splice(0, 1);
+		genericMessageRequest(arg, threadId, listGenericMessageRequest.bind(this, list, property, threadId));
+	};
 
 exports.start = function(callback) {
     api = shim.createPlatformModule({
