@@ -30,6 +30,7 @@ Then start one or more of the available integrations:<br/>
 		- [Slack Integration](doc/integrations/Slack.md)
 		- [Skype Integration](doc/integrations/Skype.md)
 		- [Telegram Integration](doc/integrations/Telegram.md)
+		- [Messenger Bots](doc/integrations/Messenger.md)
 		- [Testing Mode](doc/integrations/Testing.md)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)

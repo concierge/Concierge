@@ -12,7 +12,7 @@ var getNameForId = function(id, callback) {
 	if (!exports.config.users) {
 		exports.config.users = {};
 	}
-	
+
 	if (exports.config.users[id]) {
 		return callback(exports.config.users[id].name);
 	}
@@ -43,7 +43,7 @@ sentenceSplitter = function(message) {
 		while (spl[i].length > 0) {
 			var str = spl[i].substr(0, 320);
 			var ind = str.lastIndexOf(' ');
-			if (ind >= 0 && str.length != spl[i].length) {
+			if (ind >= 0 && str.length !== spl[i].length) {
 				str = str.substr(0, Math.min(str.length, ind + 1));
 			}
 			
@@ -52,7 +52,7 @@ sentenceSplitter = function(message) {
 		}
 		spl.splice(i, 1);
 		for (var j = 0; j < strs.length; j++) {
-			spl.splice(i+j, 0, strs[j]);
+			spl.splice(i + j, 0, strs[j]);
 		}
 		i += strs.length;
 	}
@@ -81,10 +81,10 @@ genericMessageRequest = function(message, recipientId, callback) {
 		method: 'POST',
 		json: {
 			recipient: {id: recipientId},
-			message: message,
+			message: message
 		}
 	},
-	function(error, response, body) {
+	function(error) {
 		if (error) {
 			throw error;
 		}
@@ -117,7 +117,7 @@ exports.start = function(callback) {
 			if (description) {
 				this.sendMessage(description, thread);
 			}
-			switch(type) {
+			switch (type) {
 				case 'url':
 					genericMessageRequest({
 						attachment: {
