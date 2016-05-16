@@ -1,8 +1,12 @@
-var io = require('socket.io-client')('http://localhost:49886'),
+var fs = require('fs'),
+    WebSocket = require('ws'),
     callback = null,
     stopCallback = null,
     messageCallback = null,
     threadId = 1,
+    ws = null,
+    config = null,
+    port = 49886,
 
 responsdWithCallback = function(data) {
     if (messageCallback && data.thread_id === threadId - 1) {
@@ -12,13 +16,30 @@ responsdWithCallback = function(data) {
 
 Client = function(cb) {
     callback = cb;
+
+    ws.on('open', function() {
+        if (callback) {
+            callback();
+        }
+    });
+
+    ws.on('close', function() {
+        if (stopCallback) {
+            stopCallback();
+        }
+    });
+
+    ws.on('message', function(data) {
+        responsdWithCallback(JSON.parse(data));
+    });
+
 };
 
 Client.prototype.sendMessage = function(message) {
-    io.emit('message', {
+    ws.send(JSON.stringify({
         content: message,
         thread_id: threadId++
-    });
+    }));
 };
 
 Client.prototype.receiveMessage = function(cb, done) {
@@ -29,57 +50,24 @@ Client.prototype.receiveMessage = function(cb, done) {
 };
 
 Client.prototype.shutdown = function(cb) {
-    io.emit('message', {
+    ws.send(JSON.stringify({
         content: '/shutdown'
-    });
+    }));
     stopCallback = cb;
 };
 
-io.on('connect', function() {
-    if (callback) {
-        callback();
-    }
-});
+try {
+    var file =fs.readFileSync('config.json', 'utf8');
+    config = JSON.parse(file);
+}
+catch (e) {
+    console.info("config not found, continue with defaults");
+}
 
-io.on('disconnect', function() {
-    if (stopCallback) {
-        stopCallback();
-    }
-});
+if (config !== null && config.output.grunt) {
+    port = config.output.grunt.port;
+}
 
-io.on('message', function(data) {
-    data.__type = 'message';
-    responsdWithCallback(data);
-});
-
-io.on('privateMessage', function(data) {
-    data.__type = 'privateMessage';
-    responsdWithCallback(data);
-});
-
-io.on('url', function(data) {
-    data.__type = 'url';
-    responsdWithCallback(data);
-});
-
-io.on('image', function(data) {
-    data.__type = 'image';
-    responsdWithCallback(data);
-});
-
-io.on('file', function(data) {
-    data.__type = 'file';
-    responsdWithCallback(data);
-});
-
-io.on('typing', function(data) {
-    data.__type = 'typing';
-    responsdWithCallback(data);
-});
-
-io.on('title', function(data) {
-    data.__type = 'title';
-    responsdWithCallback(data);
-});
+ws = new WebSocket('ws://localhost:' + port);
 
 module.exports = Client;
