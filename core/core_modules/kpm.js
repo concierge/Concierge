@@ -26,6 +26,13 @@ var git = require.once('../git.js'),
         return moduleCache;
     },
 
+    isModuleName = function(name) {
+        if (getModuleList()[name]) {
+            return true;
+        }
+        return false;
+    },
+
     parseRuntimeModuleList = function(args, cmd, api, event) {
         var updateMods = getModuleList();
         if (args.length > 0) {
@@ -164,13 +171,6 @@ var git = require.once('../git.js'),
             help: 'Lists all installed modules (except preinstalled ones).',
             detailedHelp: 'Lists all modules that have been installed using Kassy Package Manager.'
         }
-    },
-
-    isModuleName = function(name) {
-        if (getModuleList()[name]) {
-            return true;
-        }
-        return false;
     },
 
     update = function (module, api, event) {
