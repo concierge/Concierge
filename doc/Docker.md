@@ -1,4 +1,4 @@
-# docker-kassy
+# Docker
 
 Thanks to docker, your personal chat-bot can be contained and readily deployed wherever for an experiance the is consistent on all platforms!
 
