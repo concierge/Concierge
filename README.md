@@ -34,6 +34,7 @@ Then start one or more of the available integrations:<br/>
 		- [Testing Mode](doc/integrations/Testing.md)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
+- [Admin Controls](doc/AdminControls.md)
 
 ### Testing
 See [Running and writing tests](doc/Testing.md)
