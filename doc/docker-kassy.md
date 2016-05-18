@@ -7,10 +7,11 @@ Thanks to docker, your personal chat-bot can be contained and readily deployed w
 First, ensure you have docker-engine installed for your platform. See the [Docker installation docs][did].
 
 ### Configuration
-Once docker-engine is up and running, there are a number of switches to control the platforms that Kassy will integrate with. For each specific platform see the relevant documentation. To get started, all Kassy needs is a valid config.json file plus a switch that references a given platform.
+Once docker-engine is up and running, there are a number of arguments to control the platforms that Kassy will integrate with. For each specific platform see the relevant documentation. To get started, all Kassy needs is a valid config.json file plus a switch that references a given platform.
 
-#### Platform integration documentation
+#### Platform config.json specification documentation
 * [Facebook][fb]
+* [Messenger][me]
 * [Skype][sk]
 * [Slack][sl]
 * [Telegram][tg]
@@ -103,6 +104,7 @@ MIT
 
 [//]: # (Local docs)
 [fb]: <integrations/Facebook.md>
+[me]: <integrations/Messenger.md>
 [sk]: <integrations/Skype.md>
 [sl]: <integrations/Slack.md>
 [tg]: <integrations/Telegram.md>
