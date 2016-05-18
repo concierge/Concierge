@@ -18,8 +18,8 @@ exports.checkPerson = function(karma, person) {
     var ps = person.split(' '),
         ks = karma.split(' '),
         overlap = ps.filter(function(n) {
-        return ks.indexOf(n) != -1
-    });
+            return ks.indexOf(n) != -1
+        });
     return overlap.length != 0;
 };
 

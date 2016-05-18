@@ -26,7 +26,7 @@ exports.start = function (callback) {
     api = api = shim.createPlatformModule({
         commandPrefix: exports.config.commandPrefix,
         sendMessage: function (text) {
-            console.log(chalk.bold("" + text));
+            console.log(chalk.bold('' + text));
         }
     });
 

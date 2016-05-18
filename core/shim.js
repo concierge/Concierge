@@ -43,12 +43,11 @@ exports.createPlatformModule = function(platform) {
                     platform.sendMessage('I have something to send you but cant seem to do so...', thread);
                     break;
             }
-        }
+        };
     }
 
     if (!platform.sendTyping) {
         platform.sendTyping = function(thread) {
-            //TODO fix me
             platform.sendMessage('Working on it...', thread); // fallback to sending a message
         }
     }

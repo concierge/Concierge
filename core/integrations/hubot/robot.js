@@ -50,7 +50,7 @@ exports.brain = {
 };
 
 exports.shutdown = function () {
-    exports.logger.warning("Integrations should not invoke a safe shutdown. Please use the shutdown command itself.");
+    exports.logger.warning('Integrations should not invoke a safe shutdown. Please use the shutdown command itself.');
     exports.platform.shutdown();
 };
 

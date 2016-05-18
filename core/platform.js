@@ -75,7 +75,7 @@ Platform.prototype.messageRxd = function(api, event) {
                 this.handleTransaction(this.loadedModules[i], runArgs);
             }
             catch (e) {
-                api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
+                api.sendMessage(event.body + ' is boken. Damn you ' + event.sender_name + '.', event.thread_id);
                 console.critical(e);
             }
             return;
@@ -93,8 +93,7 @@ Platform.prototype.start = function() {
 
     console.title(' ' + this.packageInfo.version);
     console.info('------------------------------------');
-    console.warn('Starting system...\n'
-                + 'Loading system configuration...');
+    console.warn('Starting system...\nLoading system configuration...');
 
     this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
     this.integrationManager.setIntegrationConfigs(this);
@@ -151,7 +150,7 @@ Platform.prototype.shutdown = function(flag) {
     this.config.saveSystemConfig();
     this.statusFlag = flag ? flag : StatusFlag.Shutdown;
 
-    console.warn(this.packageInfo.name + " has shutdown.");
+    console.warn(this.packageInfo.name + ' has shutdown.');
     if (this.onShutdown && this.onShutdown != null) {
         this.onShutdown(this.statusFlag);
     }

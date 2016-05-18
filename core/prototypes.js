@@ -14,35 +14,35 @@ require.once('babel-register', true);
 require.once('babel-polyfill', true);
 
 // string.startsWith
-if (typeof String.prototype.startsWith != 'function') {
+if (typeof String.prototype.startsWith !== 'function') {
     String.prototype.startsWith = function (str){
         return this.indexOf(str) === 0;
     };
 }
 
 // string.toProperCase
-if (typeof String.prototype.toProperCase != 'function') {
+if (typeof String.prototype.toProperCase !== 'function') {
     String.prototype.toProperCase = function () {
         return this.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
     };
 }
 
 // string.endsWith
-if (typeof String.prototype.endsWith != 'function') {
+if (typeof String.prototype.endsWith !== 'function') {
     String.prototype.endsWith = function(suffix) {
         return this.indexOf(suffix, this.length - suffix.length) !== -1;
     };
 }
 
 // string.contains
-if (typeof String.prototype.contains != 'function') {
+if (typeof String.prototype.contains !== 'function') {
     String.prototype.contains = function(str) {
         return this.indexOf(str) !== -1;
     };
 }
 
 // string.capitaliseFirst
-if (typeof String.prototype.capitiliseFirst != 'function') {
+if (typeof String.prototype.capitiliseFirst !== 'function') {
     String.prototype.capitiliseFirst = function () {
         if (this.length >= 2) {
             return this[0].toUpperCase() + this.substring(1);
@@ -53,7 +53,7 @@ if (typeof String.prototype.capitiliseFirst != 'function') {
 
 // array.includes
 if (!Array.prototype.includes) {
-    Array.prototype.includes = function(searchElement /*, fromIndex*/ ) {
+    Array.prototype.includes = function(searchElement) {
         'use strict';
         var O = Object(this);
         var len = parseInt(O.length) || 0;
@@ -84,7 +84,7 @@ if (!Array.prototype.includes) {
 }
 
 //array fill
-if (typeof Array.prototype.fill != 'function') {
+if (typeof Array.prototype.fill !== 'function') {
     Array.prototype.fill = function(value) {
 
         // Steps 1-2.

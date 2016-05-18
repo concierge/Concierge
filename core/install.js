@@ -14,35 +14,35 @@ var npm = require('npm'),
     fs = require('fs'),
     load = deasync(npm.load);
 
-load({loglevel: "silent"});
+load({loglevel: 'silent'});
 var inst = deasync(npm.commands.install),
 upd = deasync(npm.commands.update),
 
 install = function(name) {
-        console.info('Installing "' + name + '" from npm.');
-        inst([name]);
-        console.info('Installation complete.');
+    console.info('Installing "' + name + '" from npm.');
+    inst([name]);
+    console.info('Installation complete.');
 };
 
 exports.requireOrInstall = function(req, name) {
-        try {
-                return req(name);
-        }
-        catch(e) {
-                if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
-                        throw e;
-                }
-                try {
-                        fs.statSync(name);
-                }
-                catch (p) {
-                        install(name);
-                }
-        }
-
+    try {
         return req(name);
+    }
+    catch (e) {
+        if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
+            throw e;
+        }
+        try {
+            fs.statSync(name);
+        }
+        catch (p) {
+            install(name);
+        }
+    }
+
+    return req(name);
 };
 
 exports.update = function() {
-        upd([]);
+    upd([]);
 };

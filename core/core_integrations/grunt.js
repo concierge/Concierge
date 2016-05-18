@@ -1,6 +1,6 @@
 var shim = require.once('../shim.js'),
     WebSocketServer = require.once('ws').Server,
-    wss = null;
+    wss = null,
     functions = null,
     api = null,
     callback = null,
@@ -105,7 +105,7 @@ exports.start = function(cb) {
     };
     api = shim.createPlatformModule(functions);
 
-    wss = new WebSocketServer({ port: exports.config.port || 49886 })
+    wss = new WebSocketServer({ port: exports.config.port || 49886 });
 
     wss.on('connection', function(s) {
         console.debug('connection received');

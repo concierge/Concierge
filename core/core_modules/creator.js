@@ -16,5 +16,7 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-        return [[commandPrefix + 'creator','Lists contributors to this platform', 'Does not list all contributors only a few of the people that helped build me when I was still finding my feet.\n And you should insult Matthew whenever you want,\nor maybe not,\nno pls,\nstap,\n......\n......\nA wild Marvin appears']];
+        return [[commandPrefix + 'creator', 'Lists contributors to this platform',
+        'Does not list all contributors only a few of the people that helped build me when I was still finding my feet.\n ' +
+        'And you should insult Matthew whenever you want,\nor maybe not,\nno pls,\nstap,\n......\n......\nA wild Marvin appears']];
 };

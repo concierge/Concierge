@@ -27,7 +27,7 @@ exports.run = function() {
         platform.setOnShutdown(checkShutdownCode);
         platform.start();
     }
-    catch(e) {
+    catch (e) {
         console.critical(e);
         console.error('A critical error occurred while running. Please check your configuration or report a bug.');
         process.exit(-3);

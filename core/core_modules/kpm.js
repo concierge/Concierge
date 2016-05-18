@@ -1,6 +1,4 @@
 var git = require.once('../git.js'),
-    files = require.once('../files.js'),
-    cfg = require.once('../config.js'),
     path = require('path'),
     fs = require.safe('fs-extra'),
     rmdir = require.safe('rimraf'),
@@ -13,6 +11,41 @@ var git = require.once('../git.js'),
         lastUpdated: null,
         modules: {}
     },
+
+    getModuleList = function(cacheOverride) {
+        if (cacheOverride === true || moduleCache === null) {
+            var mods = exports.platform.modulesLoader.listModules(true);
+            for (var m in mods) {
+                var s = mods[m].folderPath.split(path.sep);
+                if (!s[s.length - 1].startsWith('kpm_')) {
+                    delete mods[m];
+                }
+            }
+            moduleCache = mods;
+        }
+        return moduleCache;
+    },
+
+    parseRuntimeModuleList = function(args, cmd, api, event) {
+        var updateMods = getModuleList();
+        if (args.length > 0) {
+            var m = {};
+            for (var i = 0; i < args.length; i++) {
+                if (!isModuleName(args[i])) {
+                    api.sendMessage('"' + args[i] + '" is not an installed module.', event.thread_id);
+                    return null;
+                }
+                m[args[i]] = updateMods[args[i]];
+            }
+            updateMods = m;
+        }
+        if (Object.keys(updateMods).length === 0) {
+            api.sendMessage('No modules are installed to ' + cmd + '.', event.thread_id);
+            return null;
+        }
+        return updateMods;
+    },
+
     opts = {
         help: {
             run: function(args, api, event) {
@@ -32,7 +65,9 @@ var git = require.once('../git.js'),
                 else {
                     msg = '';
                     for (var opt in opts) {
-                        if (opt === 'help') continue;
+                        if (opt === 'help') {
+                            continue;
+                        }
                         msg += opts[opt].command + '\n\t' + opts[opt].help + '\n';
                     }
                     api.sendMessage(msg, event.thread_id);
@@ -92,7 +127,8 @@ var git = require.once('../git.js'),
             },
             command: 'uninstall [<moduleName> [<moduleName> [...]]]',
             help: 'Uninstalls one or more modules.',
-            detailedHelp: 'Uninstalls one or more modules that were installed using Kassy Package Manager or uninstalls all modules if a list was not provided. Will not uninstall preinstalled modules.'
+            detailedHelp: 'Uninstalls one or more modules that were installed using Kassy Package Manager' +
+            'or uninstalls all modules if a list was not provided. Will not uninstall preinstalled modules.'
         },
 
         update: {
@@ -130,42 +166,11 @@ var git = require.once('../git.js'),
         }
     },
 
-    getModuleList = function(cacheOverride) {
-        if (cacheOverride === true || moduleCache === null) {
-            var mods = exports.platform.modulesLoader.listModules(true);
-            for (var m in mods) {
-                var s = mods[m].folderPath.split(path.sep);
-                if (!s[s.length - 1].startsWith('kpm_')) {
-                    delete mods[m];
-                }
-            }
-            moduleCache = mods;
-        }
-        return moduleCache;
-    },
-
-    parseRuntimeModuleList = function(args, cmd, api, event) {
-        var updateMods = getModuleList();
-        if (args.length > 0) {
-            var m = {};
-            for (var i = 0; i < args.length; i++) {
-                if (!isModuleName(args[i])) {
-                    api.sendMessage('"' + args[i] + '" is not an installed module.', event.thread_id);
-                    return null;
-                }
-                m[args[i]] = updateMods[args[i]];
-            }
-            updateMods = m;
-        }
-        if (Object.keys(updateMods).length === 0) {
-            api.sendMessage('No modules are installed to ' + cmd + '.', event.thread_id);
-            return null;
-        }
-        return updateMods;
-    };
-
     isModuleName = function(name) {
-        return getModuleList()[name] ? true : false;
+        if (getModuleList()[name]) {
+            return true;
+        }
+        return false;
     },
 
     update = function (module, api, event) {
@@ -220,6 +225,7 @@ var git = require.once('../git.js'),
             }
         });
     },
+
     installCommon = function (name, moduleLocation, cleanup, api, event) {
         try {
             var descriptor = exports.platform.modulesLoader.verifyModule(moduleLocation),
@@ -273,7 +279,9 @@ var git = require.once('../git.js'),
     gitInstall = function(url, api, event) {
         api.sendMessage('Attempting to install module from "' + url + '"...', event.thread_id);
         tmp.dir(function (err, dir, cleanupCallback) {
-            if (err) throw err;
+            if (err) {
+                throw err;
+            }
             var cleanup = function(){
                 fs.emptyDir(dir, function () {
                     cleanupCallback(); // not a lot we can do about errors here.
@@ -382,5 +390,5 @@ exports.run = function (api, event) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'kpm','Kassy Package Manager, for installing external kpm modules', 'For detailed help on specific kpm commands run ' + commandPrefix + 'kpm help']];
+    return [[commandPrefix + 'kpm', 'Kassy Package Manager, for installing external kpm modules', 'For detailed help on specific kpm commands run ' + commandPrefix + 'kpm help']];
 };
