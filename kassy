@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# kassy - A bash CLI tool for running kassy in docker
+# Written By: Matthew Hartstonge <matt@mykro.co.nz>
+
+# Soak in user params
+ARGS="$@"
+
+
+# Runs kassy given a string of whitespace separated integrations
+function runKassy() {
+  cd /kassy
+  echo "Starting Kassy"'!'
+  node main.js $1
+  echo
+  echo "                                     ... You killed me ... You Monster."
+}
+
+
+# Given params will build up an array of integrations that Kassy will start on
+function main() {
+  if [ -z "${ARGS}" ]; then
+    usage
+    exit 1
+  fi
+
+  opts=()
+  # process args
+  for arg in ${ARGS}; do
+    case ${arg} in
+      # Provide a way to escape to bash *nicely*
+      'cmd')
+        bash
+        exit 0 ;;
+
+      # Default case
+      *)
+        opts+=(${arg}) ;;
+    esac
+  done
+  runKassy ${opts[@]}
+}
+
+main
