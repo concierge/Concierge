@@ -2,11 +2,11 @@
  * Provides helper functions for handling user and system modules.
  *
  * Written By:
- * 		Matthew Knox
+ *         Matthew Knox
  *
  * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2015.
  */
 
 var path            = require('path'),

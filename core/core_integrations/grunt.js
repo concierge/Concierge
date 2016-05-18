@@ -1,64 +1,69 @@
 var shim = require.once('../shim.js'),
-    Server = require.once('http'),
-    server = Server.createServer(),
-    io = require.once('socket.io')(server),
-    port = 49886,
+    WebSocketServer = require.once('ws').Server,
+    wss = null;
     functions = null,
     api = null,
     callback = null,
     socket = null,
 
     sendMessage = function(message, thread) {
-        socket.emit('message', {
+        socket.send(JSON.stringify({
+            __type: 'message',
             content: message,
             thread_id: thread
-        });
+        }));
     },
 
     sendPrivateMessage = function(message, thread, senderId) {
-        socket.broadcast.emit('privateMessage', {
+        socket.send(JSON.stringify({
+            __type: 'privateMessage',
             content: message,
             thread_id: thread,
             sender_id: senderId
-        });
+        }));
     },
 
     sendUrl = function(url, thread) {
-        socket.broadcast.emit('url', {
+        socket.send(JSON.stringify({
+            __type: 'url',
             content: url,
             thread_id: thread
-        });
+        }));
     },
 
     sendImage = function(type, image, description, thread) {
-        socket.broadcast.emit('image', {
+        socket.send(JSON.stringify({
+            __type: 'privateMessage',
             type: type,
             content: image,
             thread_id: thread,
             description: description
-        });
+        }));
     },
 
     sendFile = function(type, file, description, thread) {
-        socket.broadcast.emit('file', {
+        socket.send(JSON.stringify({
+            __type: 'privateMessage',
             type: type,
             content: file,
             thread_id: thread,
             description: description
-        });
+        }));
     },
 
     sendTyping = function(thread) {
-        socket.broadcast.emit('typing', {
+        socket.send(JSON.stringify({
+            __type: 'typing',
             thread_id: thread
-        });
+        }));
     },
 
     setTitle = function(title, thread) {
-        socket.broadcast.emit('title', {
+        socket.send(JSON.stringify({
+            __type: 'title',
             content: title,
             thread_id: thread
-        });
+        }));
     },
 
     recMessage = function(data) {
@@ -100,31 +105,38 @@ exports.start = function(cb) {
     };
     api = shim.createPlatformModule(functions);
 
-    server.listen(port);
+    wss = new WebSocketServer({ port: exports.config.port || 49886 })
+
+    wss.on('connection', function(s) {
+        console.debug('connection received');
+        if (socket !== null) {
+            throw 'existing connection already established';
+        }
+        socket = s;
+
+        socket.on('message', function(data) {
+            data = JSON.parse(data);
+            console.debug('received message: ' + data);
+            recMessage(data);
+        });
+
+        socket.on('error', function(error) {
+            console.error(error);
+        });
+
+        socket.on('close', function() {
+            console.debug('Client disconnected');
+        });
+    });
+
+    wss.on('error', function(error) {
+        console.error(error);
+    });
 };
 
 exports.stop = function() {
-    io.close();
-    server.close();
-};
-
-io.on('connection', function(s) {
-    console.debug('connection received');
-    if (socket !== null) {
-        throw 'existing connection already established';
+    if (socket) {
+        socket.terminate();
     }
-    socket = s;
-
-    socket.on('message', function(data) {
-        console.debug('received message: ' + data);
-        recMessage(data);
-    });
-
-    socket.on('error', function(error) {
-        console.error(error);
-    });
-
-    socket.on('disconnect', function() {
-        console.debug('disconnected');
-    });
-});
+    wss.close();
+};
