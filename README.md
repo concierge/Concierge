@@ -25,14 +25,17 @@ Then start one or more of the available integrations:<br/>
 - [Special Commands](doc/SpecialCommands.md)
 - [Usage Example/Overview](https://github.com/mrkno/Kassy/issues/77#issuecomment-181676118)
 - Integrations (Integrations are chat platforms that Kassy integrates into)
-    - Existing Integrations. *Look here for documentation on how to set them up.*
-        - [Facebook Integration](doc/integrations/Facebook.md)
-        - [Slack Integration](doc/integrations/Slack.md)
-        - [Skype Integration](doc/integrations/Skype.md)
-        - [Telegram Integration](doc/integrations/Telegram.md)
-        - [Testing Mode](doc/integrations/Testing.md)
-    - [Creating Integrations](doc/IntegrationCreation.md)
+	- Existing Integrations. *Look here for documentation on how to set them up.*
+		- [Facebook Integration](doc/integrations/Facebook.md)
+		- [Slack Integration](doc/integrations/Slack.md)
+		- [Skype Integration](doc/integrations/Skype.md)
+		- [Telegram Integration](doc/integrations/Telegram.md)
+		- [Messenger Bots](doc/integrations/Messenger.md)
+		- [Testing Mode](doc/integrations/Testing.md)
+	- [Creating Integrations](doc/IntegrationCreation.md)
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
+- [Admin Controls](doc/AdminControls.md)
+- [Docker](doc/Docker.md)
 
 ### Testing
 See [Running and writing tests](doc/Testing.md)

@@ -1,13 +1,13 @@
 /**
-    * Provides helper functions for handling user and system modules.
-    *
-    * Written By:
-    *              Matthew Knox
-    *
-    * License:
-    *              MIT License. All code unless otherwise specified is
-    *              Copyright (c) Matthew Knox and Contributors 2015.
-    */
+ * Provides helper functions for handling user and system modules.
+ *
+ * Written By:
+ *         Matthew Knox
+ *
+ * License:
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2015.
+ */
 
 var path            = require('path'),
     files           = require.once('./../files.js'),
@@ -27,10 +27,15 @@ exports.loadCoreModule = function(platform, module) {
         m = index !== -1 ? require.reload(fp) : require.once(fp);
     m.platform = exports.platform;
     m.name = module.split('.')[0];
-    if (m.load) {
-        m.load.call(platform);
-    }
     return m;
+};
+
+exports.loadingComplete = function (modules) {
+    for (var i = 0; i < modules.length; i++) {
+        if (modules[i].load) {
+            modules[i].load.call(modules[i].platform);
+        }
+    }
 };
 
 exports.unloadCoreModule = function(mod) {
