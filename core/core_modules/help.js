@@ -64,7 +64,7 @@ exports.run = function(api, event) {
             commandPrefix: api.commandPrefix
         },
         help;
-        
+
     if (commands.length === 1) {
         help = shortSummary.call(exports.platform, context);
     }

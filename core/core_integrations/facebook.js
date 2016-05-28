@@ -82,7 +82,7 @@ exports.start = function(callback) {
                     case 'url':
                         api.sendMessage({body: description, url: image}, thread, function(err) {
                             if (err) {
-                                api.sendMessage(description + " " + image, thread);
+                                api.sendMessage(description + ' ' + image, thread);
                             }
                         });
                         break;

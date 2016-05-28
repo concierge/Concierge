@@ -144,7 +144,7 @@ if (!Array.prototype.find) {
         for (var i = 0; i < length; i++) {
             value = list[i];
             if (predicate.call(thisArg, value, i, list)) {
-            return value;
+                return value;
             }
         }
         return undefined;
