@@ -75,7 +75,7 @@ Platform.prototype.messageRxd = function(api, event) {
                 this.handleTransaction(this.loadedModules[i], runArgs);
             }
             catch (e) {
-                api.sendMessage(event.body + ' is boken. Damn you ' + event.sender_name + '.', event.thread_id);
+                api.sendMessage(event.body + ' threw up.' + event.sender_name + ' is now covered in sick.', event.thread_id);
                 console.critical(e);
             }
             return;

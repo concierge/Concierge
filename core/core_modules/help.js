@@ -60,10 +60,11 @@ exports.match = function(event, commandPrefix) {
 
 exports.run = function(api, event) {
     var commands = event.arguments,
-    context = {
-        commandPrefix: api.commandPrefix
-    },
-            help;
+        context = {
+            commandPrefix: api.commandPrefix
+        },
+        help;
+        
     if (commands.length === 1) {
         help = shortSummary.call(exports.platform, context);
     }
