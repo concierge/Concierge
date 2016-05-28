@@ -9,7 +9,7 @@ var exec = require('child_process').execSync,
 			var stdOut = exec(cmd, {cwd:path});
 			return callback(null, stdOut.toString());
 		}
-		catch(error) {
+		catch (error) {
 			return callback(error.stderr.toString(), null);
 		}
     },
