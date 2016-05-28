@@ -14,7 +14,7 @@ findContactName = function(id) {
 
 exports.start = function(callback) {
     skype = new skyweb();
-    skype.login(exports.config.username, exports.config.password).then(function () {
+    skype.login(exports.config.username, exports.config.password).then(function (account) {
         var scontacts = skype.contactsService.contacts;
         for (var i = 0; i < scontacts.length; i++) {
             var name = scontacts[i].display_name;
@@ -31,7 +31,7 @@ exports.start = function(callback) {
 
         skype.messagesCallback = function (messages) {
             messages.forEach(function (message) {
-                if (message.resource.messagetype === 'Text') {
+                if (message.resource.messagetype === 'Text' || message.resource.messagetype === 'RichText') {
                     var threadLink = message.resource.conversationLink,
                         threadId = threadLink.substring(threadLink.lastIndexOf('/') + 1),
                         content = message.resource.content,
