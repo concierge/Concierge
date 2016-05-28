@@ -5,13 +5,13 @@ var exec = require('child_process').execSync,
     commandWithPath = function(path, args, callback) {
         args.unshift('git');
         var cmd = args.join(' ');
-		try {
-			var stdOut = exec(cmd, {cwd:path});
-			return callback(null, stdOut.toString());
-		}
-		catch (error) {
-			return callback(error.stderr.toString(), null);
-		}
+        try {
+            var stdOut = exec(cmd, {cwd:path});
+            return callback(null, stdOut.toString());
+        }
+        catch (error) {
+            return callback(error.stderr.toString(), null);
+        }
     },
 
     command = function(args, callback) {

@@ -43,7 +43,7 @@ var git = require.once('../git.js'),
                 }
                 else {
                     git.submoduleUpdate(function(err) {
-                        if (err, consoleOutput) {
+                        if (err) {
                             console.critical(err);
                             console.debug('Periodic auto git submodule update failed. Manual intervention is probably required.\n Error: ' + consoleOutput);
                         }
@@ -67,7 +67,7 @@ var git = require.once('../git.js'),
             });
         }, updatePeriod);
     };
-	
+
 exports.match = function(event, commandPrefix) {
     return event.body === commandPrefix + 'update';
 };
@@ -89,7 +89,7 @@ exports.load = function() {
 
     // Only allow auto update to be run on the master branch.
     // By default auto update is enabled but can be turned off in the config.
-    if (branchName === 'master' && (isEnabled || isEnabled === null)) {
+    if (branchName === 'master' && isEnabled) {
         var configUpdatePeriod = this.config.getConfig('update').autoUpdatePeriod;
         if (configUpdatePeriod) {
             updatePeriod = configUpdatePeriod;
@@ -139,7 +139,7 @@ exports.run = function (api, event) {
             });
         }
     });
-	
+
     return false;
 };
 
