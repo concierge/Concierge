@@ -1,16 +1,17 @@
-var exec = require('child_process').exec,
+var exec = require('child_process').execSync,
     path = require('path'),
     gitRootDir = '../',
 
     commandWithPath = function(path, args, callback) {
         args.unshift('git');
         var cmd = args.join(' ');
-        exec(cmd, {cwd: path }, function(error, stdout, stderr) {
-            if (error) {
-                return callback(error, stderr);
-            }
-            callback(null, stdout);
-        });
+		try {
+			var stdOut = exec(cmd, {cwd:path});
+			return callback(null, stdOut.toString());
+		}
+		catch(error) {
+			return callback(error.stderr.toString(), null);
+		}
     },
 
     command = function(args, callback) {

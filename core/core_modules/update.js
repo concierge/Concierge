@@ -67,7 +67,7 @@ var git = require.once('../git.js'),
             });
         }, updatePeriod);
     };
-
+	
 exports.match = function(event, commandPrefix) {
     return event.body === commandPrefix + 'update';
 };
@@ -119,7 +119,7 @@ exports.run = function (api, event) {
             console.critical(err);
             api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
         } else {
-            api.sendMessage('Updating submodules', event.thread_id);
+            api.sendMessage('Updating submodules...', event.thread_id);
             git.submoduleUpdate(function(err) {
                 if (err) {
                     console.critical(err);
@@ -139,6 +139,7 @@ exports.run = function (api, event) {
             });
         }
     });
+	
     return false;
 };
 
