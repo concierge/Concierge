@@ -3,13 +3,13 @@
  * without doing a hard reset on the application.
  *
  * Written By:
- * 		Matthew Knox
+ *         Matthew Knox
  *
  * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2015.
  */
- 
+
 'use strict';
 
 var hook = require('./unsafe/hook.js'),
@@ -55,17 +55,17 @@ global.requireHook = function (req) {
     };
 
     func.once = function (moduleName, preventRerequire) {
-    	if (preventCache.indexOf(moduleName) !== -1) {
-    		return;
-    	}
-    
+        if (preventCache.indexOf(moduleName) !== -1) {
+            return;
+        }
+
         var mod = func(moduleName);
         func.uncache(moduleName);
-        
+
         if (preventRerequire) {
-        	preventCache.push(moduleName);
+            preventCache.push(moduleName);
         }
-        
+
         return mod;
     };
 

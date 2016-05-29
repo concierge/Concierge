@@ -1,13 +1,13 @@
 ﻿/**
- * Provides helper functions for handling output integrations.
- *
- * Written By:
- * 		Matthew Knox
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * Provides helper functions for handling output integrations.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var files                   = require.once('../files.js'),
     fs                      = require('fs'),
@@ -62,7 +62,7 @@ exports.setIntegrationConfigs = function(platform) {
         selectedIntegrations[i].instance.config = platform.config.loadOutputConfig(selectedIntegrations[i].name);
 
         for (var name in selectedIntegrations[i].instance.config) {
-            if (name.startsWith("ENV_") && name === name.toUpperCase()) {
+            if (name.startsWith('ENV_') && name === name.toUpperCase()) {
                 process.env[name.substr(4)] = selectedIntegrations[i].instance.config[name];
             }
         }

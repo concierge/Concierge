@@ -1,13 +1,13 @@
 /**
- * Provides a means to install missing dependencies at runtime.
- *
- * Written By:
- *         Matthew Knox
- *
- * License:
- *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * Provides a means to install missing dependencies at runtime.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var npm = require('npm'),
     deasync = require('deasync'),

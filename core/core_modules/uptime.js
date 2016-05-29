@@ -12,7 +12,7 @@ difference = function (dateFrom, dateTo) {
     diff.Hours = Math.floor(remHrs / 3600000);
     diff.Minutes = Math.floor(remMin / 60000);
     diff.Seconds = Math.floor(remS / 1000);
-    //diff.Milliseconds = Math.floor(remS % 1000);
+    // diff.Milliseconds = Math.floor(remS % 1000);
     return diff;
 };
 
@@ -32,5 +32,5 @@ exports.load = function() {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'uptime','Shows how long the platform has been alive', 'Displays to the nearest second and days.']];
+    return [[commandPrefix + 'uptime', 'Shows how long the platform has been alive', 'Displays to the nearest second and days.']];
 };

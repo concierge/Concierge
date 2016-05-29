@@ -118,7 +118,8 @@ exports.run = function (api, event) {
         if (err) {
             console.critical(err);
             api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
-        } else {
+        }
+        else {
             api.sendMessage('Updating submodules...', event.thread_id);
             git.submoduleUpdate(function(err) {
                 if (err) {

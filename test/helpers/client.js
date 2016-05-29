@@ -8,32 +8,32 @@ var fs = require('fs'),
     config = null,
     port = 49886,
 
-responsdWithCallback = function(data) {
-    if (messageCallback && data.thread_id === threadId - 1) {
-        messageCallback.callback(data, messageCallback.done);
-    }
-},
-
-Client = function(cb) {
-    callback = cb;
-
-    ws.on('open', function() {
-        if (callback) {
-            callback();
+    responsdWithCallback = function(data) {
+        if (messageCallback && data.thread_id === threadId - 1) {
+            messageCallback.callback(data, messageCallback.done);
         }
-    });
+    },
 
-    ws.on('close', function() {
-        if (stopCallback) {
-            stopCallback();
-        }
-    });
+    Client = function(cb) {
+        callback = cb;
 
-    ws.on('message', function(data) {
-        responsdWithCallback(JSON.parse(data));
-    });
+        ws.on('open', function() {
+            if (callback) {
+                callback();
+            }
+        });
 
-};
+        ws.on('close', function() {
+            if (stopCallback) {
+                stopCallback();
+            }
+        });
+
+        ws.on('message', function(data) {
+            responsdWithCallback(JSON.parse(data));
+        });
+
+    };
 
 Client.prototype.sendMessage = function(message) {
     ws.send(JSON.stringify({
@@ -57,11 +57,11 @@ Client.prototype.shutdown = function(cb) {
 };
 
 try {
-    var file =fs.readFileSync('config.json', 'utf8');
+    var file = fs.readFileSync('config.json', 'utf8');
     config = JSON.parse(file);
 }
 catch (e) {
-    console.info("config not found, continue with defaults");
+    console.info('config not found, continue with defaults');
 }
 
 if (config !== null && config.output.grunt) {
