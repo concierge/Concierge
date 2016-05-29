@@ -79,20 +79,20 @@ exports.start = function(callback) {
             sendImage: function(type, image, description, thread) {
                 stopTyping();
                 switch (type) {
-                    case 'url':
-                        api.sendMessage({body: description, url: image}, thread, function(err) {
-                            if (err) {
-                                api.sendMessage(description + ' ' + image, thread);
-                            }
-                        });
-                        break;
-                    case 'file':
-                        api.sendMessage({body: description, attachment: fs.createReadStream(image)}, thread);
-                        break;
-                    default:
-                        api.sendMessage(description, thread);
-                        api.sendMessage(image, thread);
-                        break;
+                case 'url':
+                    api.sendMessage({body: description, url: image}, thread, function(err) {
+                        if (err) {
+                            api.sendMessage(description + ' ' + image, thread);
+                        }
+                    });
+                    break;
+                case 'file':
+                    api.sendMessage({body: description, attachment: fs.createReadStream(image)}, thread);
+                    break;
+                default:
+                    api.sendMessage(description, thread);
+                    api.sendMessage(image, thread);
+                    break;
                 }
             },
             sendFile: this.sendImage,
@@ -127,35 +127,35 @@ exports.start = function(callback) {
             }
 
             switch (event.type) {
-                case 'message': {
-                    getSenderName(api, event, function(name) {
-                        var data = shim.createEvent(event.threadID, event.senderID, name, event.body + '');
-                        callback(platform, data);
-                    });
-                    break;
-                }
-                case 'event': {
-                    switch (event.logMessageType) {
-                        case 'log:unsubscribe': {
-                            var usrs = event.logMessageData.removed_participants;
-                            for (var i = 0; i < usrs.length; i++) {
-                                usrs[i] = usrs[i].split(':')[1];
-                                if (threadInfo[event.threadID] && threadInfo[event.threadID][usrs[i]]) {
-                                    delete threadInfo[event.threadID][usrs[i]];
-                                }
-                            }
-                            break;
-                        }
-                        case 'log:subscribe': {
-                            var usrs = event.logMessageData.added_participants;
-                            for (var i = 0; i < usrs.length; i++) {
-                                usrs[i] = usrs[i].split(':')[1];
-                            }
-                            getSenderInfo(usrs, api, event, function(){});
-                            break;
+            case 'message': {
+                getSenderName(api, event, function(name) {
+                    var data = shim.createEvent(event.threadID, event.senderID, name, event.body + '');
+                    callback(platform, data);
+                });
+                break;
+            }
+            case 'event': {
+                switch (event.logMessageType) {
+                case 'log:unsubscribe': {
+                    var usrs = event.logMessageData.removed_participants;
+                    for (var i = 0; i < usrs.length; i++) {
+                        usrs[i] = usrs[i].split(':')[1];
+                        if (threadInfo[event.threadID] && threadInfo[event.threadID][usrs[i]]) {
+                            delete threadInfo[event.threadID][usrs[i]];
                         }
                     }
                     break;
+                    }
+                    case 'log:subscribe': {
+                        usrs = event.logMessageData.added_participants;
+                        for (var i = 0; i < usrs.length; i++) {
+                            usrs[i] = usrs[i].split(':')[1];
+                        }
+                        getSenderInfo(usrs, api, event, function(){});
+                        break;
+                    }
+                }
+                break;
                 }
             }
         });

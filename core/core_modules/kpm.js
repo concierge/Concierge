@@ -53,164 +53,6 @@ var git = require.once('../git.js'),
         return updateMods;
     },
 
-    opts = {
-        help: {
-            run: function(args, api, event) {
-                if (args.length > 1) {
-                    api.sendMessage('You can only show detailed help for one command at a time.', event.thread_id);
-                    return;
-                }
-                var msg;
-                if (args.length === 1) {
-                    if (!opts[args[0]] || args[0] === 'help') {
-                        api.sendMessage('No such command to show help for.', event.thread_id);
-                        return;
-                    }
-                    msg = opts[args[0]].command + '\n--------------------\n' + opts[args[0]].detailedHelp;
-                    api.sendMessage(msg, event.thread_id);
-                }
-                else {
-                    msg = '';
-                    for (var opt in opts) {
-                        if (opt === 'help') {
-                            continue;
-                        }
-                        msg += opts[opt].command + '\n\t' + opts[opt].help + '\n';
-                    }
-                    api.sendMessage(msg, event.thread_id);
-                }
-            },
-            command: 'help [<command>]'
-        },
-        install: {
-            run: function(args, api, event) {
-                if (args.length === 0) {
-                    api.sendMessage('Nothing provided to install!', event.thread_id);
-                    return;
-                }
-
-                for (var i = 0; i < args.length; i++) {
-                    var url = args[i];
-                    if (url.startsWith('ssh') || url.endsWith('.git')) {
-                        gitInstall.call(this, url, api, event);
-                        continue;
-                    }
-                    else if (url.startsWith('http') && (url.endsWith('.coffee') || url.endsWith('.js'))) {
-                        scriptInstall.call(this, url, api, event);
-                        continue;
-                    }
-
-                    var spl = url.split('/');
-                    if (spl.length === 1) {
-                        refreshModuleTable(url, function(url, err) {
-                            if (err || !moduleTable.modules[url]) {
-                                api.sendMessage('Invalid KPM table reference provided "' + url + '". Skipping...', event.thread_id);
-                                return;
-                            }
-                            url = moduleTable.modules[url];
-                            gitInstall.call(this, url, api, event);
-                        }.bind(this));
-                    }
-                    else if (spl.length === 2) {
-                        url = 'https://github.com/' + url.trim();
-                        gitInstall.call(this, url, api, event);
-                    }
-                    else {
-                        api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
-                    }
-                }
-            },
-            command: 'install <url|ref> [<url|ref> [<url|ref> [...]]]',
-            help: 'Installs one or more modules from exising git repositories or github references.',
-            detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
-        },
-
-        uninstall: {
-            run: function(args, api, event) {
-                var uninstallMods = parseRuntimeModuleList(args, 'uninstall', api, event);
-                for (var m in uninstallMods) {
-                    uninstall.call(this, uninstallMods[m], api, event);
-                }
-            },
-            command: 'uninstall [<moduleName> [<moduleName> [...]]]',
-            help: 'Uninstalls one or more modules.',
-            detailedHelp: 'Uninstalls one or more modules that were installed using Kassy Package Manager' +
-            'or uninstalls all modules if a list was not provided. Will not uninstall preinstalled modules.'
-        },
-
-        update: {
-            run: function(args, api, event) {
-                var updateMods = parseRuntimeModuleList(args, 'update', api, event);
-                for (var m in updateMods) {
-                    update.call(this, updateMods[m], api, event);
-                }
-            },
-            command: 'update [<moduleName> [<moduleName> [...]]]',
-            help: 'Updates one or all modules.',
-            detailedHelp: 'Updates all modules that were installed using Kassy Package Manager or if a module name was provided updates that module.'
-        },
-
-        list: {
-            run: function(args, api, event) {
-                if (args.length > 0) {
-                    api.sendMessage('List does not take any arguments', event.thread_id);
-                    return;
-                }
-
-                var l = 'Installed KPM modules are:\n';
-                var mods = Object.keys(getModuleList());
-                for (var i = 0; i < mods.length; i++) {
-                    l += '\t- ' + mods[i] + '\n';
-                }
-                if (mods.length === 0) {
-                    l += 'No modules currently installed using KPM.\n';
-                }
-                api.sendMessage(l, event.thread_id);
-            },
-            command: 'list',
-            help: 'Lists all installed modules (except preinstalled ones).',
-            detailedHelp: 'Lists all modules that have been installed using Kassy Package Manager.'
-        }
-    },
-
-    getModuleList = function(cacheOverride) {
-        if (cacheOverride === true || moduleCache === null) {
-            var mods = exports.platform.modulesLoader.listModules(true);
-            for (var m in mods) {
-                var s = mods[m].folderPath.split(path.sep);
-                if (!s[s.length - 1].startsWith('kpm_')) {
-                    delete mods[m];
-                }
-            }
-            moduleCache = mods;
-        }
-        return moduleCache;
-    },
-
-    parseRuntimeModuleList = function(args, cmd, api, event) {
-        var updateMods = getModuleList();
-        if (args.length > 0) {
-            var m = {};
-            for (var i = 0; i < args.length; i++) {
-                if (!isModuleName(args[i])) {
-                    api.sendMessage('"' + args[i] + '" is not an installed module.', event.thread_id);
-                    return null;
-                }
-                m[args[i]] = updateMods[args[i]];
-            }
-            updateMods = m;
-        }
-        if (Object.keys(updateMods).length === 0) {
-            api.sendMessage('No modules are installed to ' + cmd + '.', event.thread_id);
-            return null;
-        }
-        return updateMods;
-    },
-
-    isModuleName = function(name) {
-        return getModuleList()[name] ? true : false;
-    },
-
     update = function (module, api, event) {
         api.sendMessage('Updating "' + module.name + '" (' + module.version + ')...', event.thread_id);
         git.pullWithPath(module.folderPath, function (err) {
@@ -342,7 +184,9 @@ var git = require.once('../git.js'),
     scriptInstall = function (url, api, event) {
         api.sendMessage('Attempting to install script from "' + url + '"...', event.thread_id);
         tmp.dir(function(err, dir, cleanupCallback) {
-            if (err) throw err;
+            if (err) {
+                throw err;
+            }
             var cleanup = function() {
                 fs.emptyDir(dir, function() {
                     cleanupCallback(); // not a lot we can do about errors here.
@@ -403,6 +247,126 @@ var git = require.once('../git.js'),
                 callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
             }
         });
+    },
+
+    opts = {
+        help: {
+            run: function(args, api, event) {
+                if (args.length > 1) {
+                    api.sendMessage('You can only show detailed help for one command at a time.', event.thread_id);
+                    return;
+                }
+                var msg;
+                if (args.length === 1) {
+                    if (!opts[args[0]] || args[0] === 'help') {
+                        api.sendMessage('No such command to show help for.', event.thread_id);
+                        return;
+                    }
+                    msg = opts[args[0]].command + '\n--------------------\n' + opts[args[0]].detailedHelp;
+                    api.sendMessage(msg, event.thread_id);
+                }
+                else {
+                    msg = '';
+                    for (var opt in opts) {
+                        if (opt === 'help') {
+                            continue;
+                        }
+                        msg += opts[opt].command + '\n\t' + opts[opt].help + '\n';
+                    }
+                    api.sendMessage(msg, event.thread_id);
+                }
+            },
+            command: 'help [<command>]'
+        },
+        install: {
+            run: function(args, api, event) {
+                if (args.length === 0) {
+                    api.sendMessage('Nothing provided to install!', event.thread_id);
+                    return;
+                }
+
+                for (var i = 0; i < args.length; i++) {
+                    var url = args[i];
+                    if (url.startsWith('ssh') || url.endsWith('.git')) {
+                        gitInstall.call(this, url, api, event);
+                        continue;
+                    }
+                    else if (url.startsWith('http') && (url.endsWith('.coffee') || url.endsWith('.js'))) {
+                        scriptInstall.call(this, url, api, event);
+                        continue;
+                    }
+
+                    var spl = url.split('/');
+                    if (spl.length === 1) {
+                        refreshModuleTable(url, function(url, err) {
+                            if (err || !moduleTable.modules[url]) {
+                                api.sendMessage('Invalid KPM table reference provided "' + url + '". Skipping...', event.thread_id);
+                                return;
+                            }
+                            url = moduleTable.modules[url];
+                            gitInstall.call(this, url, api, event);
+                        }.bind(this));
+                    }
+                    else if (spl.length === 2) {
+                        url = 'https://github.com/' + url.trim();
+                        gitInstall.call(this, url, api, event);
+                    }
+                    else {
+                        api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                    }
+                }
+            },
+            command: 'install <url|ref> [<url|ref> [<url|ref> [...]]]',
+            help: 'Installs one or more modules from exising git repositories or github references.',
+            detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
+        },
+
+        uninstall: {
+            run: function(args, api, event) {
+                var uninstallMods = parseRuntimeModuleList(args, 'uninstall', api, event);
+                for (var m in uninstallMods) {
+                    uninstall.call(this, uninstallMods[m], api, event);
+                }
+            },
+            command: 'uninstall [<moduleName> [<moduleName> [...]]]',
+            help: 'Uninstalls one or more modules.',
+            detailedHelp: 'Uninstalls one or more modules that were installed using Kassy Package Manager' +
+            'or uninstalls all modules if a list was not provided. Will not uninstall preinstalled modules.'
+        },
+
+        update: {
+            run: function(args, api, event) {
+                var updateMods = parseRuntimeModuleList(args, 'update', api, event);
+                for (var m in updateMods) {
+                    update.call(this, updateMods[m], api, event);
+                }
+            },
+            command: 'update [<moduleName> [<moduleName> [...]]]',
+            help: 'Updates one or all modules.',
+            detailedHelp: 'Updates all modules that were installed using Kassy Package Manager or if a module name was provided updates that module.'
+        },
+
+        list: {
+            run: function(args, api, event) {
+                if (args.length > 0) {
+                    api.sendMessage('List does not take any arguments', event.thread_id);
+                    return;
+                }
+
+                var l = 'Installed KPM modules are:\n';
+                var mods = Object.keys(getModuleList());
+                for (var i = 0; i < mods.length; i++) {
+                    l += '\t- ' + mods[i] + '\n';
+                }
+                if (mods.length === 0) {
+                    l += 'No modules currently installed using KPM.\n';
+                }
+                api.sendMessage(l, event.thread_id);
+            },
+            command: 'list',
+            help: 'Lists all installed modules (except preinstalled ones).',
+            detailedHelp: 'Lists all modules that have been installed using Kassy Package Manager.'
+        }
     };
 
 exports.match = function (event, commandPrefix) {

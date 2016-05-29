@@ -48,6 +48,7 @@ module.exports = function(grunt) {
                 cmd: 'node',
                 args: [
                     'main.js',
+                    '--debug',
                     'grunt'
                 ]
             }

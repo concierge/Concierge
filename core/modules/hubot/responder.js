@@ -36,22 +36,18 @@ Responder.prototype.random = function (arr) {
 Responder.prototype.send = function () {
     for (var i = 0; i < arguments.length; i++) {
         switch (getType(arguments[i])) {
-            case 'message': {
-                this.api.sendMessage(arguments[i], this.event.thread_id);
-                break;
-            }
-            case 'url': {
-                this.api.sendUrl(arguments[i], this.event.thread_id);
-                break;
-            }
-            case 'image': {
-                this.api.sendImage('url', arguments[i], '', this.event.thread_id);
-                break;
-            }
-            case 'file': {
-                this.api.sendFile('file', arguments[i], '', this.event.thread_id);
-                break;
-            }
+        case 'message':
+            this.api.sendMessage(arguments[i], this.event.thread_id);
+            break;
+        case 'url':
+            this.api.sendUrl(arguments[i], this.event.thread_id);
+            break;
+        case 'image':
+            this.api.sendImage('url', arguments[i], '', this.event.thread_id);
+            break;
+        case 'file':
+            this.api.sendFile('file', arguments[i], '', this.event.thread_id);
+            break;
         }
     }
 };
