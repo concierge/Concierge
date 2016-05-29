@@ -1,9 +1,0 @@
-﻿{
-  "name": "joke",
-  "version": 2.1,
-  "startup": "joke.js",
-  "command": "joke",
-  "help": [
-    [ "{{commandPrefix}}joke", "A mixed bag of fun." ]
-  ]
-}
