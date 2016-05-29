@@ -270,35 +270,6 @@ var request = require.safe('request'),
         });
     },
 
-    connect = function(connectionDetails) {
-        var socket;
-        console.debug('slack-> Connecting to socket');
-
-        if (connectionDetails) {
-            socket = new WebSocket(connectionDetails.url);
-            console.debug(connectionDetails.url);
-            sockets[connectionDetails.team_id] = socket;
-            socket.on('open', function() {
-                console.debug('slack-> Connection to team: ' + teamData[connectionDetails.team_id].team.name + ' established');
-            }).on('message', function(data) {
-                startPingPongTimer(connectionDetails.team_id);
-                eventReceived(JSON.parse(data), connectionDetails.team_id);
-            }).on('ping', function() {
-                console.debug('slack-> Recieved ping, sending pong');
-                sendSocketMessage('pong', connectionDetails.team_id);
-            }).on('pong', function() {
-                pong(connectionDetails.team_id);
-            }).on('close', function() {
-                console.debug('slack-> Disconnected from team: ' + teamData[connectionDetails.team_id].team.name);
-            }).on('error', function(data) {
-                console.debug('slack-> received error:\n' + data);
-            });
-        }
-        else {
-            exports.start(eventReceivedCallback);
-        }
-    },
-
     getTime = function() {
         return new Date().getTime();
     },
@@ -469,6 +440,35 @@ var request = require.safe('request'),
         default:
             console.debug('slack-> Message of type ' + event.type + ' not supported');
             break;
+        }
+    },
+
+    connect = function(connectionDetails) {
+        var socket;
+        console.debug('slack-> Connecting to socket');
+
+        if (connectionDetails) {
+            socket = new WebSocket(connectionDetails.url);
+            console.debug(connectionDetails.url);
+            sockets[connectionDetails.team_id] = socket;
+            socket.on('open', function() {
+                console.debug('slack-> Connection to team: ' + teamData[connectionDetails.team_id].team.name + ' established');
+            }).on('message', function(data) {
+                startPingPongTimer(connectionDetails.team_id);
+                eventReceived(JSON.parse(data), connectionDetails.team_id);
+            }).on('ping', function() {
+                console.debug('slack-> Recieved ping, sending pong');
+                sendSocketMessage('pong', connectionDetails.team_id);
+            }).on('pong', function() {
+                pong(connectionDetails.team_id);
+            }).on('close', function() {
+                console.debug('slack-> Disconnected from team: ' + teamData[connectionDetails.team_id].team.name);
+            }).on('error', function(data) {
+                console.debug('slack-> received error:\n' + data);
+            });
+        }
+        else {
+            exports.start(eventReceivedCallback);
         }
     },
 

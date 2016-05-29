@@ -33,7 +33,7 @@ var request = require.safe('request');
                     if(!('missing' in page)) {
                         pageId = page.pageid;
                         break;
-                  }
+                    }
                 }
                 if (pageId > 0) {
                     success(pageId);
@@ -128,25 +128,24 @@ var request = require.safe('request');
     * is a redirect.
     */
     exports.getRandomQuote = function(titles, success, error) {
+        var errorFunction = function(msg) {
+            error(msg);
+        };
 
-    var errorFunction = function(msg) {
-      error(msg);
-    };
+        var chooseQuote = function(quotes) {
+            var randomNum = Math.floor(Math.random() * quotes.quotes.length);
+            success({ titles: quotes.titles, quote: quotes.quotes[randomNum] });
+        };
 
-    var chooseQuote = function(quotes) {
-      var randomNum = Math.floor(Math.random() * quotes.quotes.length);
-      success({ titles: quotes.titles, quote: quotes.quotes[randomNum] });
-    };
+        var getQuotes = function(pageId, sections) {
+            var randomNum = Math.floor(Math.random() * sections.sections.length);
+            exports.getQuotesForSection(pageId, sections.sections[randomNum], chooseQuote, errorFunction);
+        };
 
-    var getQuotes = function(pageId, sections) {
-      var randomNum = Math.floor(Math.random() * sections.sections.length);
-      exports.getQuotesForSection(pageId, sections.sections[randomNum], chooseQuote, errorFunction);
-    };
+        var getSections = function(pageId) {
+            exports.getSectionsForPage(pageId, function(sections) { getQuotes(pageId, sections); }, errorFunction);
+        };
 
-    var getSections = function(pageId) {
-      exports.getSectionsForPage(pageId, function(sections) { getQuotes(pageId, sections); }, errorFunction);
-    };
-
-    exports.queryTitles(titles, getSections, errorFunction);
+        exports.queryTitles(titles, getSections, errorFunction);
     };
 }());

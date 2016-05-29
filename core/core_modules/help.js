@@ -19,11 +19,11 @@ checkIfModuleExists = function(modules, moduleName) {
 },
 
 shortSummary = function(context, event) {
-	var help = figlet.textSync(this.packageInfo.name.toProperCase()) + '\n ' +
-		this.packageInfo.version + '\n--------------------\n' +
-		this.packageInfo.homepage +  '\n\n';
+    var help = figlet.textSync(this.packageInfo.name.toProperCase()) + '\n ' +
+        this.packageInfo.version + '\n--------------------\n' +
+        this.packageInfo.homepage +  '\n\n';
 
-	help = constructHelpMessage(help, this.coreModules, context, event);
+    help = constructHelpMessage(help, this.coreModules, context, event);
     return constructHelpMessage(help, this.loadedModules, context, event);
 },
 
@@ -64,14 +64,14 @@ exports.run = function(api, event) {
         context = {
             commandPrefix: api.commandPrefix
         },
-		help;
-	if (commands.length === 1) {
-		help = shortSummary.call(exports.platform, context, event);
-	}
-	else {
-		commands.splice(0, 1);
-		help = longDescription.call(exports.platform, commands.join(' '), context, event);
-	}
+        help;
+    if (commands.length === 1) {
+        help = shortSummary.call(exports.platform, context, event);
+    }
+    else {
+        commands.splice(0, 1);
+        help = longDescription.call(exports.platform, commands.join(' '), context, event);
+    }
 
     api.sendPrivateMessage(help, event.thread_id, event.sender_id);
     return false;

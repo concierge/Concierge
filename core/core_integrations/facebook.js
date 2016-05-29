@@ -127,16 +127,15 @@ exports.start = function(callback) {
             }
 
             switch (event.type) {
-            case 'message': {
+            case 'message':
                 getSenderName(api, event, function(name) {
                     var data = shim.createEvent(event.threadID, event.senderID, name, event.body + '');
                     callback(platform, data);
                 });
                 break;
-            }
-            case 'event': {
+            case 'event':
                 switch (event.logMessageType) {
-                case 'log:unsubscribe': {
+                case 'log:unsubscribe':
                     var usrs = event.logMessageData.removed_participants;
                     for (var i = 0; i < usrs.length; i++) {
                         usrs[i] = usrs[i].split(':')[1];
@@ -145,18 +144,15 @@ exports.start = function(callback) {
                         }
                     }
                     break;
+                case 'log:subscribe':
+                    usrs = event.logMessageData.added_participants;
+                    for (var i = 0; i < usrs.length; i++) {
+                        usrs[i] = usrs[i].split(':')[1];
                     }
-                    case 'log:subscribe': {
-                        usrs = event.logMessageData.added_participants;
-                        for (var i = 0; i < usrs.length; i++) {
-                            usrs[i] = usrs[i].split(':')[1];
-                        }
-                        getSenderInfo(usrs, api, event, function(){});
-                        break;
-                    }
+                    getSenderInfo(usrs, api, event, function(){});
+                    break;
                 }
                 break;
-                }
             }
         });
     });
