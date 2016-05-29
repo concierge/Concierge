@@ -12,9 +12,7 @@
 
 var figlet = require('figlet');
 
-Platform = function() {
-    require.reload('./prototypes.js');
-
+var Platform = function() {
     this.config = require('./config.js');
     this.loadedModules = [];
     this.coreModules = [];

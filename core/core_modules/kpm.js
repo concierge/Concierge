@@ -162,7 +162,7 @@ var git = require.once('../git.js'),
             return null;
         }
         return updateMods;
-    };
+    },
 
     isModuleName = function(name) {
         return getModuleList()[name] ? true : false;

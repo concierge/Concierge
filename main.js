@@ -22,7 +22,6 @@
 'use strict';
 
 // Load NodeJS Modifications/Variables
-require('./core/require.js');
 require('./core/prototypes.js');
 require('./core/status.js');
 require('./core/unsafe/console.js');

@@ -7,13 +7,12 @@
  *
  * License:
  *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *		Copyright (c) Matthew Knox and Contributors 2016.
  */
  
 'use strict';
 
-var hook = require('./unsafe/hook.js'),
-    preventCache = [],
+var babylon = require('babylon'),
     inst = require('./install.js');
 
 global.requireHook = function (req) {
@@ -27,7 +26,7 @@ global.requireHook = function (req) {
 
     func.searchCache = function (moduleName, callback) {
         var mod = func.resolve(moduleName);
-        if (mod && ((mod = func.cache[mod]) !== undefined)) {
+        if (mod && (typeof (mod = func.cache[mod]) !== 'undefined')) {
             (function run(mod) {
                 mod.children.forEach(function (child) {
                     run(child);
@@ -54,24 +53,22 @@ global.requireHook = function (req) {
         return func(moduleName);
     };
 
-    func.once = function (moduleName, preventRerequire) {
-    	if (preventCache.indexOf(moduleName) !== -1) {
-    		return;
-    	}
-    
+    func.once = function (moduleName) {
         var mod = func(moduleName);
         func.uncache(moduleName);
-        
-        if (preventRerequire) {
-        	preventCache.push(moduleName);
-        }
-        
         return mod;
     };
 
     return func;
 };
 
-hook.setInjectionFunction(function () {
-    require = (global || GLOBAL).requireHook(require);
-});
+module.exports = function () {
+    return {
+        visitor: {
+            Program(path) {
+                path.unshiftContainer('body', babylon.parse('require = (global || GLOBAL).requireHook(require);').program.body[0]);
+            }
+        }
+    };
+};
+exports.default = module.exports;
