@@ -1,9 +1,0 @@
-﻿{
-    "name": "lithp",
-    "version": 2.1,
-    "startup": "lithp.js",
-    "command": "lithp",
-    "help": [
-        [ "{{commandPrefix}}lithp", "Speaks with a lisp" ]
-    ]
-}

@@ -1,9 +1,0 @@
-﻿{
-    "name": "pirate",
-    "version": 2.1,
-    "startup": "pirate.js",
-    "command": "pirate",
-    "help": [
-        [ "{{commandPrefix}}pirate <message>", "Translates your message into pirate speak." ]
-    ]
-}
