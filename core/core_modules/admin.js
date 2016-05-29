@@ -107,7 +107,7 @@
     },
 
     helpHook = function (moduleName, origionalHelp, config) {
-        return function(commandPrefix) {
+        return function(commandPrefix, event) {
             if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
                 return origionalHelp.call(this, commandPrefix);
             }

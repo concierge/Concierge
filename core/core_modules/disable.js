@@ -74,56 +74,50 @@ exports.match = function (event, commandPrefix) {
 exports.run = function (api, event) {
     if (event.arguments[0] === api.commandPrefix + commands[0]) {
         switch (event.arguments[1]) {
-            case commands[1]: {
-                // Command /disable counter <value> (Stateless)
-                var input = parseInput(api, event, event.arguments[2]);
-                if (input) {
-                    threads[event.thread_id].counterLimit = input;
-                    api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
+        case commands[1]:
+            // Command /disable counter <value> (Stateless)
+            var input = parseInput(api, event, event.arguments[2]);
+            if (input) {
+                threads[event.thread_id].counterLimit = input;
+                api.sendMessage(messages[5] + ' ' + event.sender_name, event.thread_id);
+            }
+            break;
+        case commands[2]:
+            // Command /disable timer <seconds> (Stateless)
+            var input = parseInput(api, event, event.arguments[2]);
+            if (input) {
+                if (threads[event.thread_id].disableTimer) {
+                    clearTimeout(threads[event.thread_id].disableTimer);
                 }
-                break;
+                threads[event.thread_id].disableTimer = setTimeout(function () {
+                    threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
+                }, input * 1000); // Converting seconds to milliseconds
+                api.sendMessage(messages[8] + ' ' + event.sender_name, event.thread_id);
             }
-            case commands[2]: {
-                // Command /disable timer <seconds> (Stateless)
-                var input = parseInput(api, event, event.arguments[2]);
-                if (input) {
-                    if (threads[event.thread_id].disableTimer) {
-                        clearTimeout(threads[event.thread_id].disableTimer);
-                    }
-                    threads[event.thread_id].disableTimer = setTimeout(function () {
-                        threads[event.thread_id].isThreadDisabled = !threads[event.thread_id].isThreadDisabled;
-                    }, input * 1000); // Converting seconds to milliseconds
-                    api.sendMessage(messages[8] + ' ' + event.sender_name, event.thread_id);
-                }
-                break;
+            break;
+        case commands[3]:
+            // Command /disable default (Stateless)
+            threads[event.thread_id].counterLimit = 3;
+            api.sendMessage(messages[6] + ' ' + event.sender_name, event.thread_id);
+            break;
+        case commands[4]:
+            threads[event.thread_id].spamDetection = !threads[event.thread_id].spamDetection;
+            api.sendMessage(threads[event.thread_id].spamDetection ? messages[9] : messages[10], event.thread_id);
+            break;
+        case commands[5]:
+            if (threads[event.thread_id].isThreadDisabled) {
+                api.sendMessage(messages[0] + ' ' + event.sender_name, event.thread_id);
+                threads[event.thread_id].isThreadDisabled = false;
             }
-            case commands[3]: {
-                // Command /disable default (Stateless)
-                threads[event.thread_id].counterLimit = 3;
-                api.sendMessage(messages[6] + ' ' + event.sender_name, event.thread_id);
-                break;
+            else {
+                api.sendMessage(messages[1], event.thread_id);
+                threads[event.thread_id].isThreadDisabled = true;
             }
-            case commands[4]: {
-                threads[event.thread_id].spamDetection = !threads[event.thread_id].spamDetection;
-                api.sendMessage(threads[event.thread_id].spamDetection ? messages[9] : messages[10], event.thread_id);
-                break;
-            }
-            case commands[5]: {
-                if (threads[event.thread_id].isThreadDisabled) {
-                    api.sendMessage(messages[0] + ' ' + event.sender_name, event.thread_id);
-                    threads[event.thread_id].isThreadDisabled = false;
-                }
-                else {
-                    api.sendMessage(messages[1], event.thread_id);
-                    threads[event.thread_id].isThreadDisabled = true;
-                }
-                threads[event.thread_id].possibleSpam = false;
-                break;
-            }
-            default: {
-                api.sendMessage(messages[7], event.thread_id);
-                break;
-            }
+            threads[event.thread_id].possibleSpam = false;
+            break;
+        default:
+            api.sendMessage(messages[7], event.thread_id);
+            break;
         }
     }
     else if (threads[event.thread_id].possibleSpam && threads[event.thread_id].spamDetection) {

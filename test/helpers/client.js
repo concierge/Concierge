@@ -64,7 +64,7 @@ catch (e) {
     console.info('config not found, continue with defaults');
 }
 
-if (config !== null && config.output.grunt) {
+if (config !== null && config.output.grunt && config.output.grunt.port) {
     port = config.output.grunt.port;
 }
 

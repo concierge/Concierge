@@ -23,8 +23,8 @@ catch (e) {
 }
 
 var ifStringNotEmpty = function(str) {
-    return str && str.trim(). length !== 0;
-},
+        return str && str.trim(). length !== 0;
+    },
 
     submitRequest = function(title, description, debugLevel, callback, waitCallback) {
         waitCallback();
@@ -40,16 +40,16 @@ var ifStringNotEmpty = function(str) {
         if (debugLevel === 'full') {
             var cache = [];
             data.body += '\nfull debug details: ' + JSON.stringify(this, function (key, value) {
-                    if (typeof value === 'object' && value !== null) {
-                        if (cache.indexOf(value) !== -1) {
-                            // Circular reference found, discard key
-                            return;
-                        }
-                        // Store value in our collection
-                        cache.push(value);
+                if (typeof value === 'object' && value !== null) {
+                    if (cache.indexOf(value) !== -1) {
+                        // Circular reference found, discard key
+                        return;
                     }
-                    return value;
-                }, 2);
+                    // Store value in our collection
+                    cache.push(value);
+                }
+                return value;
+            }, 2);
             cache = null;
         }
         if (debugLevel === 'detail' || debugLevel === 'full') {

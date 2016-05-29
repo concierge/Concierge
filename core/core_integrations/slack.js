@@ -1,7 +1,6 @@
 var request = require.safe('request'),
     shim = require.once('../shim.js'),
     WebSocket = require.safe('ws'),
-    deasync = require.safe('deasync'),
     platform = null,
     sockets = [],
     eventReceivedCallback = null,
@@ -14,8 +13,6 @@ var request = require.safe('request'),
     messageQueue = {},
     inTransaction = {},
     waitingForFirstTransaction = {},
-    clearedMessageQueue = false,
-    clearedTimeouts = false,
     teamData = {},
 
     sendMessageWebAPI = function (teamId) {
@@ -28,26 +25,25 @@ var request = require.safe('request'),
             inTransaction[teamId] = true;
             var message = messageQueue[teamId].shift();
             request({
-                    uri: message.uri,
-                    method: 'GET',
-                    qs: message.body
-                },
-                function (error, response, body) {
-                    body = JSON.parse(body);
-                    if (error) {
-                        console.debug('slack-> error: ' + error);
-                        message.callback(true, null);
-                    } else if (!body.ok) {
-                        console.debug('slack-> Failed to send message, error: ' + body.error);
-                        message.callback(true, null);
-                    } else if (message.callback) {
-                        message.callback(false, body);
-                    }
-                    inTransaction[teamId] = false;
-                    // Wait until message is sent before trying to send another message.
-                    sendMessageWebAPI(teamId);
+                uri: message.uri,
+                method: 'GET',
+                qs: message.body
+            },
+            function (error, response, body) {
+                body = JSON.parse(body);
+                if (error) {
+                    console.debug('slack-> error: ' + error);
+                    message.callback(true, null);
+                } else if (!body.ok) {
+                    console.debug('slack-> Failed to send message, error: ' + body.error);
+                    message.callback(true, null);
+                } else if (message.callback) {
+                    message.callback(false, body);
                 }
-            );
+                inTransaction[teamId] = false;
+                // Wait until message is sent before trying to send another message.
+                sendMessageWebAPI(teamId);
+            });
         }
     },
 
@@ -135,16 +131,16 @@ var request = require.safe('request'),
         var socket = sockets[teamId];
         if (socket !== null) {
             switch (type) {
-                case 'messsage':
+            case 'messsage':
                 socket.send(body);
                 break;
-                case 'ping':
+            case 'ping':
                 socket.ping();
                 break;
-                case 'pong':
+            case 'pong':
                 socket.pong();
                 break;
-                default:
+            default:
                 socket.send(body);
             }
         }
@@ -237,7 +233,7 @@ var request = require.safe('request'),
             var teamId = null,
                 team;
 
-                recconnetionTimeout = 15000;
+            recconnetionTimeout = 15000;
             try {
                 body = JSON.parse(body);
             }
@@ -342,9 +338,9 @@ var request = require.safe('request'),
 
     recMessage = function(event, teamId) {
         var slackTeam = teamData[teamId],
-        userName,
-        message = event.text,
-        shimMessage;
+            userName,
+            message = event.text,
+            shimMessage;
 
         if (!slackTeam.lastMessageSinceConnection) {
             slackTeam.lastMessageSinceConnection = true;
@@ -356,8 +352,8 @@ var request = require.safe('request'),
 
         if (event.user !== slackTeam.bot_id) {
             var matches = null,
-            lastMatchIndex = -1,
-            regex = /<@([^>\|]+)(\|[^>]+)?>:?/;
+                lastMatchIndex = -1,
+                regex = /<@([^>\|]+)(\|[^>]+)?>:?/;
 
             if (slackTeam) {
                 matches = regex.exec(message);
@@ -405,45 +401,45 @@ var request = require.safe('request'),
         }
 
         switch (event.type) {
-            case 'message':
-                recMessage(event, teamId);
-                break;
-            case 'channel_created':
-                channelCreated(event, teamId);
-                break;
-            case 'channel_deleted':
-                channelDeleted(event, teamId);
-                break;
-            case 'channel_rename':
-                channelRename(event, teamId);
-                break;
-            case 'im_created':
-                channelCreated(event, teamId);
-                break;
-            case 'group_joined':
-                channelCreated(event, teamId);
-                break;
-            case 'group_close':
-                channelDeleted(event, teamId);
-                break;
-            case 'group_rename':
-                channelRename(event, teamId);
-                break;
-            case 'user_change':
-                userChange(event, teamId);
-                break;
-            case 'team_join':
-                userChange(event, teamId);
-                break;
-            case 'team_rename':
-                teamRename(event, teamId);
-                break;
-            case 'hello':
-                console.debug('slack-> Hello from slack servers');
-                break;
-            default:
-                console.debug('slack-> Message of type ' + event.type + ' not supported');
-                break;
+        case 'message':
+            recMessage(event, teamId);
+            break;
+        case 'channel_created':
+            channelCreated(event, teamId);
+            break;
+        case 'channel_deleted':
+            channelDeleted(event, teamId);
+            break;
+        case 'channel_rename':
+            channelRename(event, teamId);
+            break;
+        case 'im_created':
+            channelCreated(event, teamId);
+            break;
+        case 'group_joined':
+            channelCreated(event, teamId);
+            break;
+        case 'group_close':
+            channelDeleted(event, teamId);
+            break;
+        case 'group_rename':
+            channelRename(event, teamId);
+            break;
+        case 'user_change':
+            userChange(event, teamId);
+            break;
+        case 'team_join':
+            userChange(event, teamId);
+            break;
+        case 'team_rename':
+            teamRename(event, teamId);
+            break;
+        case 'hello':
+            console.debug('slack-> Hello from slack servers');
+            break;
+        default:
+            console.debug('slack-> Message of type ' + event.type + ' not supported');
+            break;
         }
     },
 

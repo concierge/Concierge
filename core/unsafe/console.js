@@ -38,29 +38,29 @@ colours.setTheme({
 });
 
 var getTimestampString = function() {
-	var dt = new Date(),
-		diff = (dt.getTime() / 1000) - startupTime,
-		time = '[' + ('          ' + diff.toFixed(2)).slice(-10) + '] ';
-	return time;
+    var dt = new Date(),
+        diff = (dt.getTime() / 1000) - startupTime,
+        time = '[' + ('          ' + diff.toFixed(2)).slice(-10) + '] ';
+    return time;
 },
 
 getOutputString = function(data) {
-	if (timestamp) {
-		var time = getTimestampString(),
-			spl = data.split('\n');
-		if (lastNewline) {
-			time = '\n' + time;
-			lastNewline = false;
-		}
-		for (var i = 1; i < spl.length; i++) {
-			if (strip(spl[i]).length > 0) {
-				spl[i] = '             ' + spl[i];
-			}
-		}
-		process.stdout.write(time);
-		data = spl.join('\n');
-	}
-	return data;
+    if (timestamp) {
+        var time = getTimestampString(),
+            spl = data.split('\n');
+        if (lastNewline) {
+            time = '\n' + time;
+            lastNewline = false;
+        }
+        for (var i = 1; i < spl.length; i++) {
+            if (strip(spl[i]).length > 0) {
+                spl[i] = '             ' + spl[i];
+            }
+        }
+        process.stdout.write(time);
+        data = spl.join('\n');
+    }
+    return data;
 };
 
 console.info = function (args) {
