@@ -1,13 +1,13 @@
 /**
- * Manages the loading and saving of configuration data.
- *
- * Written By:
- * 		Matthew Knox
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * Manages the loading and saving of configuration data.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var fs = require('fs'),
     path = require('path'),
@@ -24,7 +24,7 @@ var loadConfig = function (location) {
         return JSON.parse(data);
     }
     catch (e) {
-        console.debug('No or invalid configuration file found at \"' + location + "'.");
+        console.debug('No or invalid configuration file found at \"' + location + '\".');
         return {};
     }
 };
@@ -82,8 +82,8 @@ exports.getConfig = function (m) {
     }
 
     if (!isSystem) {
-        console.warn("\nConfiguration data for module '" + m + "' stored in deprecated location.\n" +
-            "Configuration will be moved to module specific configuration file.");
+        console.warn('\nConfiguration data for module \"' + m + '\" stored in deprecated location.\n' +
+            'Configuration will be moved to module specific configuration file');
         var cfg = sysConfig[m];
         delete sysConfig[m];
         return cfg;

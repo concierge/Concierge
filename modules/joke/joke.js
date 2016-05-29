@@ -5,11 +5,11 @@ var reddit = require('./../common/reddit.js'),
 exports.joke = function(callback, waitCallback) {
     // If we have no stored joke, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
-		waitCallback();
+        waitCallback();
         reddit.reddit('jokes', 200, function (err, data) {
             if (!err) {
                 results = data;
-                exports.fuckNode(callback);
+                exports.acquireJoke(callback);
             }
             else {
                 callback(data);
@@ -17,11 +17,11 @@ exports.joke = function(callback, waitCallback) {
         });
     }
     else {
-        exports.fuckNode(callback);
+        exports.acquireJoke(callback);
     }
 };
 
-exports.fuckNode = function(callback) {
+exports.acquireJoke = function(callback) {
     // Get some random joke
 
     var index = Math.floor(Math.random() * results.length),
@@ -38,7 +38,7 @@ exports.run = function(api, event) {
     exports.joke(function(result) {
         api.sendMessage(result, event.thread_id);
     },
-	function() {
-		api.sendTyping(event.thread_id);
-	});
+    function() {
+        api.sendTyping(event.thread_id);
+    });
 };

@@ -1,9 +1,9 @@
 ﻿{
-  "name": "fawlty",
-  "version": 2.1,
-  "startup": "fawlty.js",
-  "command": "fawlty",
-  "help": [
-    [ "{{commandPrefix}}fawlty", "Fixes fawlty code. Probably." ]
-  ]
+    "name": "fawlty",
+    "version": 2.1,
+    "startup": "fawlty.js",
+    "command": "fawlty",
+    "help": [
+        [ "{{commandPrefix}}fawlty", "Fixes fawlty code. Probably." ]
+    ]
 }

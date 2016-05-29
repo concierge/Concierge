@@ -4,7 +4,7 @@ var reddit = require('./../common/reddit.js'),
 exports.insult = function(callback, waitCallback) {
     // If we have no stored insults, get some
     if (results === undefined || results === null || results.length === 0) {
-		waitCallback();
+        waitCallback();
         reddit.reddit('insults', 200, function (err, data) {
             if (!err) {
                 results = data;
@@ -37,7 +37,7 @@ exports.run = function(api, event) {
     exports.insult(function(result) {
         api.sendMessage(result, event.thread_id);
     },
-	function() {
-		api.sendTyping(event.thread_id);
-	});
+    function() {
+        api.sendTyping(event.thread_id);
+    });
 };

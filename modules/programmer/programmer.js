@@ -5,7 +5,7 @@ var reddit = require('./../common/reddit.js'),
 exports.reaction = function(callback, waitCallback) {
     // If we have no stored reactions, get some
     if (typeof results === 'undefined' || results === null || results.length === 0) {
-		waitCallback();
+        waitCallback();
         reddit.reddit('programmerreactions', 200, function (err, data) {
             if (!err) {
                 results = data;
@@ -27,8 +27,8 @@ exports.getReaction = function(callback) {
     var index = Math.floor(Math.random() * results.length),
         title = results[index].data.title,
         text = results[index].data.selftext,
-		url = results[index].data.url;
-		
+        url = results[index].data.url;
+
     // Delete the reaction, so we don't get it again
     results.splice(index, 1);
 
@@ -37,15 +37,15 @@ exports.getReaction = function(callback) {
 
 exports.run = function(api, event) {
     exports.reaction(function(result) {
-		if (result.url != null) {
-			api.sendImage('url', result.url, result.title, event.thread_id);
-		}
-		else {
-			api.sendMessage(result.title, event.thread_id);
-			api.sendMessage(result.body, event.thread_id);
-		}
+        if (result.url != null) {
+            api.sendImage('url', result.url, result.title, event.thread_id);
+        }
+        else {
+            api.sendMessage(result.title, event.thread_id);
+            api.sendMessage(result.body, event.thread_id);
+        }
     },
-	function() {
-		api.sendTyping(event.thread_id);
-	});
+    function() {
+        api.sendTyping(event.thread_id);
+    });
 };

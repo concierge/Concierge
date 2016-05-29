@@ -12,7 +12,7 @@ exports.run = function(api, event) {
         return;
     }
 
-    text = text.replace(/v/gi, "f");    
+    text = text.replace(/v/gi, "f");
     text = text.replace(/we /gi, "vee ");
     text = text.replace(/(wh)|w/gi, "v");
     text = text.replace(/th/gi, "z");

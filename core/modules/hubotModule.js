@@ -24,8 +24,8 @@ var verifyModuleDescriptior = function (hj, disabled) {
         return false;
     }
 
-    if (disabled === true && exports.disabledConfig
-        && exports.disabledConfig[hj.name] && exports.disabledConfig[hj.name] === true) {
+    if (disabled === true && exports.disabledConfig &&
+        exports.disabledConfig[hj.name] && exports.disabledConfig[hj.name] === true) {
         return false;
     }
     return true;
