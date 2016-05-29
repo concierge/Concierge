@@ -1,7 +1,0 @@
-﻿{
-  "name": "currency",
-  "version": 1.0,
-  "startup": "currency.js",
-  "command": "currency",
-  "help": [["{{commandPrefix}}currency <number> <from-currency> in <to-currency>","Converts between currencies."]]
-}

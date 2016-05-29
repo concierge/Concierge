@@ -1,9 +1,0 @@
-﻿{
-  "name": "profound",
-  "version": 2.1,
-  "startup": "profound.js",
-  "command": "profound",
-  "help": [
-    [ "{{commandPrefix}}profound", "Calculates the meaning of life. You probably wouldn't understand" ]
-  ]
-}
