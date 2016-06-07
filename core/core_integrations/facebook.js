@@ -95,7 +95,9 @@ exports.start = function(callback) {
                     break;
                 }
             },
-            sendFile: this.sendImage,
+            sendFile: function () {
+                this.sendImage.apply(this, arguments);
+            },
             sendTyping: function(thread) {
                 stopTyping();
                 api.sendTypingIndicator(thread, function(err, end) {
@@ -118,12 +120,6 @@ exports.start = function(callback) {
                 stopListening();
                 console.error(err);
                 process.exit(-1);
-            }
-            if (!stopListeningMethod) {
-                stopListeningMethod = function() {
-                    stopListening();
-                    api.logout();
-                };
             }
 
             switch (event.type) {
@@ -155,6 +151,11 @@ exports.start = function(callback) {
                 break;
             }
         });
+
+        stopListeningMethod = function () {
+            stopListening();
+            api.logout();
+        };
     });
 };
 
