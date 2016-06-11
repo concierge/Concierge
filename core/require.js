@@ -66,12 +66,12 @@ module.exports = function () {
     return {
         visitor: {
             Program(path) {
-                path.unshiftContainer("body", babylon.parse(module.exports.injectionString).program.body[0]);
+                path.unshiftContainer('body', babylon.parse(module.exports.injectionString).program.body[0]);
             }
         }
     };
 };
 
-module.exports.injectionString = "require = (global || GLOBAL).requireHook(require);";
+module.exports.injectionString = 'require = (global || GLOBAL).requireHook(require);';
 
 exports.default = module.exports;

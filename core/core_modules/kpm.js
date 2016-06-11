@@ -291,11 +291,11 @@ var git = require.once('../git.js'),
                     var spl = url.split('/');
                     if (spl.length === 1) {
                         refreshModuleTable(url, function(u, err) {
-                                if (err || !moduleTable.modules[u]) {
-                                    return;
-                                }
-                                url = moduleTable.modules[u];
-                            }.bind(this));
+                            if (err || !moduleTable.modules[u]) {
+                                return;
+                            }
+                            url = moduleTable.modules[u];
+                        }.bind(this));
                     }
                     else if (!url.startsWith('ssh') && !url.startsWith('http')) {
                         if (spl.length === 2) {
