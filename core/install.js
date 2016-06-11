@@ -12,11 +12,25 @@
 var npm = require('npm'),
     deasync = require('deasync'),
     fs = require('fs'),
-    load = deasync(npm.load);
+    load = deasync(npm.load),
+    csHasLoaded = false;
 
 load({loglevel: 'silent'});
 var inst = deasync(npm.commands.install),
-upd = deasync(npm.commands.update),
+    upd = deasync(npm.commands.update),
+
+// inject require modifications into all coffeescript code because babel wont
+coffeescriptRequireInjector = function () {
+    if (!csHasLoaded && global.coffeescriptLoaded) {
+        var cs = require("coffee-script"),
+            orig = cs._compileFile;
+        cs._compileFile = function () {
+            var res = orig.apply(this, arguments);
+            return require('./require.js').injectionString + res;
+        };
+        csHasLoaded = true;
+    }
+},
 
 install = function(name) {
     console.info('Installing "' + name + '" from npm.');
@@ -26,6 +40,7 @@ install = function(name) {
 
 exports.requireOrInstall = function(req, name) {
     try {
+        coffeescriptRequireInjector();
         return req(name);
     }
     catch (e) {
