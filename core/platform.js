@@ -70,13 +70,17 @@ Platform.prototype.messageRxd = function(api, event) {
 
         if (matchResult) {
             try {
+                event.module_match_count = (event.module_match_count || 0) + 1;
                 this.handleTransaction(this.loadedModules[i], runArgs);
             }
             catch (e) {
                 api.sendMessage(event.body + ' threw up.' + event.sender_name + ' is now covered in sick.', event.thread_id);
                 console.critical(e);
             }
-            return;
+
+            if (event.shouldAbort) {
+                return;
+            }
         }
     }
 };
@@ -109,7 +113,7 @@ Platform.prototype.start = function() {
     m = this.modulesLoader.listModules();
     for (var mod in m) {
         var ld = this.modulesLoader.loadModule(m[mod]);
-        if (ld && ld !== null) {
+        if (ld) {
             this.loadedModules.push(ld);
         }
     }

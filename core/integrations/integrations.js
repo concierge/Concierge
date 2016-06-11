@@ -137,7 +137,7 @@ exports.stopIntegrations = function() {
             selectedIntegrations[i].instance.stop();
         }
         catch (e) {
-            console.debug('Failed to correctly stop output integration \'' + selectedIntegrations[i] + '\'.');
+            console.debug('Failed to correctly stop output integration \'' + selectedIntegrations[i].name + '\'.');
             console.critical(e);
         }
     }
