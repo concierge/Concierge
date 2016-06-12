@@ -123,15 +123,6 @@ exports.loadOutputConfig = function (outputName) {
     if (!config[outputName]) {
         config[outputName] = {};
     }
-
-    for (var obj in config) {
-        if (integs.find(int => int.name === obj)) {
-            continue;
-        }
-        if (!config[outputName][obj]) {
-            config[outputName][obj] = config[obj];
-        }
-    }
     return config[outputName];
 };
 
