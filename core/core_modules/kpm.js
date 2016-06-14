@@ -6,6 +6,7 @@ var git = require.once('../git.js'),
     sanitize = require.safe('sanitize-filename'),
     request = require('request'),
     urll = require('url'),
+    deasync = require('deasync'),
     moduleCache = null,
     moduleTable = {
         lastUpdated: null,
@@ -214,39 +215,39 @@ var git = require.once('../git.js'),
             return callback(url);
         }
 
-        request.get('https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md', function (error, response) {
-            if (response.statusCode === 200 && response.body) {
-                var b = response.body;
-                if (b && b.length > 0) {
-                    var spl = b.split('\n'),
-                        shouldParse = false,
-                        foundModules = {};
-                    for (var i = 0; i < spl.length; i++) {
-                        if (!spl[i].startsWith('|')) {
-                            continue;
-                        }
-
-                        var items = spl[i].split('|');
-                        if (items.length !== 4) {
-                            continue;
-                        }
-                        if (!shouldParse) {
-                            if (items[1] === '---' && items[2] === '---') {
-                                shouldParse = true;
-                            }
-                            continue;
-                        }
-                        foundModules[items[1]] = items[2];
+        var sreq = deasync(request.get);
+        var response = sreq('https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md');
+        if (response.statusCode === 200 && response.body) {
+            var b = response.body;
+            if (b && b.length > 0) {
+                var spl = b.split('\n'),
+                    shouldParse = false,
+                    foundModules = {};
+                for (var i = 0; i < spl.length; i++) {
+                    if (!spl[i].startsWith('|')) {
+                        continue;
                     }
-                    moduleTable.modules = foundModules;
-                    moduleTable.lastUpdated = new Date();
+
+                    var items = spl[i].split('|');
+                    if (items.length !== 4) {
+                        continue;
+                    }
+                    if (!shouldParse) {
+                        if (items[1] === '---' && items[2] === '---') {
+                            shouldParse = true;
+                        }
+                        continue;
+                    }
+                    foundModules[items[1]] = items[2];
                 }
-                callback(url);
+                moduleTable.modules = foundModules;
+                moduleTable.lastUpdated = new Date();
             }
-            else {
-                callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
-            }
-        });
+            callback(url);
+        }
+        else {
+            callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
+        }
     },
 
     opts = {
@@ -287,29 +288,30 @@ var git = require.once('../git.js'),
 
                 for (var i = 0; i < args.length; i++) {
                     var url = args[i];
+                    var spl = url.split('/');
+                    if (spl.length === 1) {
+                        refreshModuleTable(url, function(u, err) {
+                            if (err || !moduleTable.modules[u]) {
+                                return;
+                            }
+                            url = moduleTable.modules[u];
+                        }.bind(this));
+                    }
+                    else if (!url.startsWith('ssh') && !url.startsWith('http')) {
+                        if (spl.length === 2) {
+                            url = 'https://github.com/' + url.trim();
+                        }
+                        else {
+                            api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                            continue;
+                        }
+                    }
+
                     if (url.startsWith('ssh') || url.endsWith('.git')) {
                         gitInstall.call(this, url, api, event);
-                        continue;
                     }
                     else if (url.startsWith('http') && (url.endsWith('.coffee') || url.endsWith('.js'))) {
                         scriptInstall.call(this, url, api, event);
-                        continue;
-                    }
-
-                    var spl = url.split('/');
-                    if (spl.length === 1) {
-                        refreshModuleTable(url, function(url, err) {
-                            if (err || !moduleTable.modules[url]) {
-                                api.sendMessage('Invalid KPM table reference provided "' + url + '". Skipping...', event.thread_id);
-                                return;
-                            }
-                            url = moduleTable.modules[url];
-                            gitInstall.call(this, url, api, event);
-                        }.bind(this));
-                    }
-                    else if (spl.length === 2) {
-                        url = 'https://github.com/' + url.trim();
-                        gitInstall.call(this, url, api, event);
                     }
                     else {
                         api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
