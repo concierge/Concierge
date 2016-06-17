@@ -11,7 +11,6 @@
 
 var fs = require('fs'),
     path = require('path'),
-    integs = require('./integrations/integrations.js').listIntegrations(),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
@@ -124,8 +123,4 @@ exports.loadOutputConfig = function (outputName) {
         config[outputName] = {};
     }
     return config[outputName];
-};
-
-exports.loadDisabledConfig = function () {
-    return exports.getConfig(sysConfigZones[1]);
 };

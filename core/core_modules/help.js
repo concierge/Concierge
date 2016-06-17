@@ -23,17 +23,11 @@ shortSummary = function(context, event) {
         this.packageInfo.version + '\n--------------------\n' +
         this.packageInfo.homepage +  '\n\n';
 
-    help = constructHelpMessage(help, this.coreModules, context, event);
-    return constructHelpMessage(help, this.loadedModules, context, event);
+    return constructHelpMessage(help, this.modulesLoader.getLoadedModules(), context, event);
 },
 
 longDescription = function(moduleName, context, event) {
-	var module = checkIfModuleExists(this.coreModules, moduleName);
-
-    if (!module || module.length === 0) {
-        // Check loaded modules, as commnd not in core modules
-        module = checkIfModuleExists(this.loadedModules, moduleName);
-    }
+    var module = checkIfModuleExists(this.modulesLoader.getLoadedModules(), moduleName);
 
     if (!module || module.length === 0) {
         return 'Cannot provide help on module that was not found. Has it been disabled?';

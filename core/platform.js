@@ -13,15 +13,11 @@
 var figlet = require('figlet');
 
 var Platform = function() {
-    this.config = require('./config.js');
-    this.loadedModules = [];
-    this.coreModules = [];
+    this.config = require.once('./config.js');
     this.integrationManager = require('./integrations/integrations.js');
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
     this.modulesLoader = require.once('./modules/modules.js');
-    this.coreLoader = require.once('./modules/core.js');
-    this.coreLoader.platform = this;
     this.statusFlag = StatusFlag.NotStarted;
     this.onShutdown = null;
     this.waitingTime = 250;
@@ -36,55 +32,48 @@ Platform.prototype.handleTransaction = function(module, args) {
             }
             args[0].sendTyping(args[1].thread_id);
         }, this.waitingTime);
-    returnVal = module.run.apply(module, args);
-    clearTimeout(timeout);
+    try {
+        returnVal = module.run.apply(this, args);
+    }
+    catch (e) {
+        args[0].sendMessage(args[1].body + ' threw up. ' + args[1].sender_name + ' is now covered in sick.',
+            args[1].thread_id);
+        console.critical(e);
+    }
+    finally {
+        clearTimeout(timeout);
+    }
+    
+    return returnVal;
 };
 
-Platform.prototype.messageRxd = function(api, event) {
+Platform.prototype.onMessage = function(api, event) {
     var matchArgs = [event, api.commandPrefix],
         runArgs = [api, event],
-        abort = false;
+        loadedModules = this.modulesLoader.getLoadedModules();
 
-    // Run core modules in platform mode
-    for (var i = 0; i < this.coreModules.length; i++) {
-        if (this.coreModules[i].match.apply(this, matchArgs)) {
-            var temp = !this.coreModules[i].run.apply(this, runArgs);
-            abort = abort || temp;
-        }
-    }
-    if (abort) {
-        return;
-    }
-
-    // Run user modules in protected mode
-    for (var i = 0; i < this.loadedModules.length; i++) {
+    event.module_match_count = 0;
+    for (var i = 0; i < loadedModules.length; i++) {
         var matchResult;
         try {
-            matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
+            matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
         }
         catch (e) {
-            console.error('The module ' + this.loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
+            console.error('The module ' + loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
             console.critical(e);
             continue;
         }
 
         if (matchResult) {
-            try {
-                event.module_match_count = (event.module_match_count || 0) + 1;
-                this.handleTransaction(this.loadedModules[i], runArgs);
-            }
-            catch (e) {
-                api.sendMessage(event.body + ' threw up.' + event.sender_name + ' is now covered in sick.', event.thread_id);
-                console.critical(e);
-            }
+            event.module_match_count++;
+            var transactionRes = this.handleTransaction(loadedModules[i], runArgs);
 
-            if (event.shouldAbort) {
+            if (event.shouldAbort || transactionRes) {
                 return;
             }
         }
     }
 };
-
 
 Platform.prototype.start = function() {
     if (this.statusFlag !== StatusFlag.NotStarted) {
@@ -97,30 +86,15 @@ Platform.prototype.start = function() {
     console.info('------------------------------------');
     console.warn('Starting system...\nLoading system configuration...');
 
-    this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
     this.integrationManager.setIntegrationConfigs(this);
-
-    // Load core modules
-    console.warn('Loading core components...');
-    var m = this.coreLoader.listCoreModules();
-    for (var i = 0; i < m.length; i++) {
-        this.coreModules.push(this.coreLoader.loadCoreModule(this, m[i]));
-    }
-    this.coreLoader.loadingComplete(this.coreModules);
 
     // Load Kassy modules
     console.warn('Loading modules...');
-    m = this.modulesLoader.listModules();
-    for (var mod in m) {
-        var ld = this.modulesLoader.loadModule(m[mod]);
-        if (ld) {
-            this.loadedModules.push(ld);
-        }
-    }
+    this.modulesLoader.loadAllModules(this);
 
     // Starting output
     console.warn('Starting integrations...');
-    this.integrationManager.startIntegrations(this.messageRxd.bind(this));
+    this.integrationManager.startIntegrations(this.onMessage.bind(this));
 
     this.statusFlag = StatusFlag.Started;
     console.warn('System has started. ' + 'Hello World!'.rainbow);
@@ -138,16 +112,7 @@ Platform.prototype.shutdown = function(flag) {
     this.integrationManager.stopIntegrations();
 
     // Unload user modules
-    while (this.loadedModules.length > 0) {
-        this.modulesLoader.unloadModule(this.loadedModules[0]);
-        this.loadedModules.splice(0, 1);
-    }
-
-    // Unload core modules
-    while (this.coreModules.length > 0) {
-        this.coreLoader.unloadCoreModule(this.coreModules[0]);
-        this.coreModules.splice(0, 1);
-    }
+    this.modulesLoader.unloadAllModules(this.config);
 
     this.config.saveSystemConfig();
     this.statusFlag = flag ? flag : StatusFlag.Shutdown;

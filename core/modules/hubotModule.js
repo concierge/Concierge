@@ -12,7 +12,6 @@
 var fs = require('fs'),
     path = require('path'),
     files = require.once('./../files.js'),
-    config = require('./../config.js'),
     modulesDir = 'modules',
     descriptor = 'hubot.json',
     pkg = 'package.json',
@@ -98,7 +97,7 @@ exports.listModules = function (disabled) {
     return modules;
 };
 
-exports.loadModule = function (module) {
+exports.loadModule = function (module, config) {
     if (!coffeescriptLoaded && module.startup.endsWith('.coffee')) {
         require('coffee-script').register();
         coffeescriptLoaded = true;

@@ -83,10 +83,6 @@ var ifStringNotEmpty = function(str) {
                 data.body += this.loadedModules[i].name + ', ';
             }
             data.body += '\nstatus flag: ' + this.statusFlag;
-            data.body += '\ncore modules: ';
-            for (var i = 0; i < this.coreModules.length; i++) {
-                data.body += this.coreModules[i].name + ', ';
-            }
 
             data.body += '\nmodes: ';
             for (var i = 0; i < this.modes.length; i++) {

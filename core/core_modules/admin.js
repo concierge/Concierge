@@ -1,4 +1,4 @@
-﻿var config = require.once('../config.js'),
+﻿var cfg = null,
 
     getHasPermission = function (config, userId, name, threadId, moduleName) {
         if (!config.modules || !config.modules[moduleName] || config.modules[moduleName].length === 0) {
@@ -34,64 +34,64 @@
     },
 
     modify = function (name, threadId, action, method) {
-        if (!exports.config.users) {
-            exports.config.users = {};
+        if (!cfg.users) {
+            cfg.users = {};
         }
 
-        if (!exports.config.users[name]) {
-            exports.config.users[name] = {};
+        if (!cfg.users[name]) {
+            cfg.users[name] = {};
         }
 
-        if (!exports.config.users[name][threadId]) {
-            exports.config.users[name][threadId] = [];
+        if (!cfg.users[name][threadId]) {
+            cfg.users[name][threadId] = [];
         }
 
         switch (method) {
             case 'grant': {
-                if (!exports.config.users[name][threadId].includes(action)) {
-                    exports.config.users[name][threadId].push(action);
+                if (!cfg.users[name][threadId].includes(action)) {
+                    cfg.users[name][threadId].push(action);
                     return true;
                 }
                 return false;
             }
             case 'revoke': {
-                var newArr = exports.config.users[name][threadId].filter(function(item) {
+                var newArr = cfg.users[name][threadId].filter(function(item) {
                     return item !== action;
                 });
-                if (newArr.length === exports.config.users[name][threadId].length) {
+                if (newArr.length === cfg.users[name][threadId].length) {
                     return false;
                 }
-                exports.config.users[name][threadId] = newArr;
+                cfg.users[name][threadId] = newArr;
                 return true;
             }
         }
     },
 
     setup = function (action, name, permission) {
-        if (!exports.config.modules) {
-            exports.config.modules = {};
+        if (!cfg.modules) {
+            cfg.modules = {};
         }
 
-        if (!exports.config.modules[name]) {
-            exports.config.modules[name] = [];
+        if (!cfg.modules[name]) {
+            cfg.modules[name] = [];
         }
 
         switch (action) {
         case 'create': {
-            if (!exports.config.modules[name].includes(permission)) {
-                exports.config.modules[name].push(permission);
+            if (!cfg.modules[name].includes(permission)) {
+                cfg.modules[name].push(permission);
                 return true;
             }
             return false;
         }
         case 'delete': {
-            var newArr = exports.config.modules[name].filter(function (item) {
+            var newArr = cfg.modules[name].filter(function (item) {
                 return item === action;
             });
-            if (newArr.length === exports.config.modules[name].length) {
+            if (newArr.length === cfg.modules[name].length) {
                 return false;
             }
-            exports.config.modules[name] = newArr;
+            cfg.modules[name] = newArr;
             return true;
         }
         }
@@ -100,7 +100,7 @@
     matchHook = function (moduleName, origionalMatch, config) {
         return function(event, commandPrefix) {
             if (getHasPermission(config, event.sender_id, event.sender_name, event.thread_id, moduleName)) {
-                return origionalMatch(event, commandPrefix);
+                return origionalMatch.call(this, event, commandPrefix);
             }
             return false;
         };
@@ -116,13 +116,14 @@
     };
 
 exports.load = function () {
-    exports.config = config.getConfig('admin');
-    for (var i = 0; i < exports.platform.coreModules.length; i++) {
-        var help = exports.platform.coreModules[i].help,
-            match = exports.platform.coreModules[i].match;
+    cfg = exports.platform.config.getConfig('admin');
+    var loadedModules = exports.platform.modulesLoader.getLoadedModules();
+    for (var i = 0; i < loadedModules.length; i++) {
+        var help = loadedModules[i].help,
+            match = loadedModules[i].match;
 
-        exports.platform.coreModules[i].help = helpHook(exports.platform.coreModules[i].name, help, exports.config);
-        exports.platform.coreModules[i].match = matchHook(exports.platform.coreModules[i].name, match, exports.config);
+        loadedModules[i].help = helpHook(loadedModules[i].name, help, cfg);
+        loadedModules[i].match = matchHook(loadedModules[i].name, match, cfg);
     }
 };
 

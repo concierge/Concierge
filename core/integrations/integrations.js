@@ -17,6 +17,8 @@ var files                   = require.once('../files.js'),
     selectedIntegrations    = null,
     started                 = false;
 
+exports.loopback = require.once('./loopback.js');
+
 exports.listIntegrations = function () {
     if (cachedIntegrations) {
         return cachedIntegrations;
@@ -124,6 +126,8 @@ exports.startIntegrations = function (callback) {
         }
     }
 
+    exports.loopback.start(callback);
+
     started = true;
 };
 
@@ -131,6 +135,8 @@ exports.stopIntegrations = function() {
     if (!started) {
         throw 'Cannot stop integrations if they haven\'t been started.';
     }
+
+    exports.loopback.stop();
 
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {

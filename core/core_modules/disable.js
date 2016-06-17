@@ -136,16 +136,14 @@ exports.run = function (api, event) {
 
 exports.help = function (commandPrefix) {
     return [
-        [
-            [commandPrefix + 'disable', 'Disables the platform',
-            'Stops the platform from responding to messages.\nTo renable send the disable command again'],
-            [commandPrefix + 'disable spam-toggle', 'Toggles spam rate limiting.',
-            'Enables and disables the built in rate limiter for spam in this thread.'],
-            [commandPrefix + 'disable counter <NewCounterLimit>', 'Changes the spam counter to n/sec',
-            'Changes the auto-disabling feature\'s spam counter threshold. Decimal values are accepted as a valid limit'],
-            [commandPrefix + 'disable timer <NumberOfSeconds>', 'After the given number of seconds, changes the disabled state',
-            'Starts a timer immediately to auto-renable/disable after a given period of time. Decimal values are accpeted for the number of seconds'],
-            [commandPrefix + 'disable default ', 'Resets all configurations for the current thread to default values']
-        ]
+        [commandPrefix + 'disable', 'Disables the platform',
+        'Stops the platform from responding to messages.\nTo renable send the disable command again'],
+        [commandPrefix + 'disable spam-toggle', 'Toggles spam rate limiting.',
+        'Enables and disables the built in rate limiter for spam in this thread.'],
+        [commandPrefix + 'disable counter <NewCounterLimit>', 'Changes the spam counter to n/sec',
+        'Changes the auto-disabling feature\'s spam counter threshold. Decimal values are accepted as a valid limit'],
+        [commandPrefix + 'disable timer <NumberOfSeconds>', 'After the given number of seconds, changes the disabled state',
+        'Starts a timer immediately to auto-renable/disable after a given period of time. Decimal values are accpeted for the number of seconds'],
+        [commandPrefix + 'disable default', 'Resets all configurations for the current thread to default values']
     ];
 };

@@ -6,31 +6,24 @@ var git = require.once('../git.js'),
     sanitize = require.safe('sanitize-filename'),
     request = require('request'),
     urll = require('url'),
-    moduleCache = null,
     moduleTable = {
         lastUpdated: null,
         modules: {}
     },
 
-    getModuleList = function(cacheOverride) {
-        if (cacheOverride === true || moduleCache === null) {
-            var mods = exports.platform.modulesLoader.listModules(true);
-            for (var m in mods) {
-                var s = mods[m].folderPath.split(path.sep);
-                if (!s[s.length - 1].startsWith('kpm_')) {
-                    delete mods[m];
-                }
+    getModuleList = function() {
+        var mods = exports.platform.modulesLoader.getLoadedModules(),
+            list = {};
+        for (var i = 0; i < mods.length; i++) {
+            if (!mods[i].__coreOnly) {
+                list[mods[i].name] = mods[i];
             }
-            moduleCache = mods;
         }
-        return moduleCache;
+        return list;
     },
 
     isModuleName = function(name) {
-        if (getModuleList()[name]) {
-            return true;
-        }
-        return false;
+        return !!getModuleList()[name];
     },
 
     parseRuntimeModuleList = function(args, cmd, api, event) {
@@ -61,14 +54,7 @@ var git = require.once('../git.js'),
             } else {
                 api.sendMessage('Restarting module "' + module.name + '"...', event.thread_id);
                 // unload the current version
-                this.loadedModules = this.loadedModules.filter(function (value) {
-                    if (value.name !== module.name) {
-                        return true;
-                    }
-                    exports.platform.modulesLoader.unloadModule(value);
-                    return false;
-                });
-                delete moduleCache[module.name];
+                this.modulesLoader.unloadModule();
 
                 // load new module copy
                 var descriptor = exports.platform.modulesLoader.verifyModule(module.folderPath),
