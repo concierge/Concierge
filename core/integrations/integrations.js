@@ -150,3 +150,14 @@ exports.stopIntegrations = function() {
 
     started = false;
 };
+
+exports.getSetIntegrations = function() {
+	if (!selectedIntegrations) {
+	    throw 'Cannot get integrations if they have not already been set.';
+	}
+	var integs = {};
+	for (var i = 0; i < selectedIntegrations.length; i++) {
+	    integs[selectedIntegrations[i].name] = selectedIntegrations[i].instance;
+	}
+    return integs;
+};

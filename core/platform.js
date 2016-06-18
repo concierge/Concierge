@@ -14,7 +14,7 @@ var figlet = require('figlet');
 
 var Platform = function() {
     this.config = require.once('./config.js');
-    this.integrationManager = require('./integrations/integrations.js');
+    this.integrationManager = require.once('./integrations/integrations.js');
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
     this.modulesLoader = require.once('./modules/modules.js');
@@ -24,7 +24,7 @@ var Platform = function() {
     this.packageInfo.name = this.packageInfo.name.toProperCase();
 };
 
-Platform.prototype.handleTransaction = function(module, args) {
+Platform.prototype._handleTransaction = function(module, args) {
     var returnVal = true,
         timeout = setTimeout(function() {
             if (returnVal !== true) {
@@ -66,13 +66,24 @@ Platform.prototype.onMessage = function(api, event) {
 
         if (matchResult) {
             event.module_match_count++;
-            var transactionRes = this.handleTransaction(loadedModules[i], runArgs);
+            var transactionRes = this._handleTransaction(loadedModules[i], runArgs);
 
             if (event.shouldAbort || transactionRes) {
                 return;
             }
         }
     }
+};
+
+Platform.prototype.getIntegrationApis = function() {
+	var integs = this.integrationManager.getSetIntegrations();
+	var apis = {};
+	for (var key in integs) {
+	    if (!integs.hasOwnProperty(key)) {
+	        continue;
+		}
+	    apis[key] = integs[key].getApis();
+	}
 };
 
 Platform.prototype.start = function() {
