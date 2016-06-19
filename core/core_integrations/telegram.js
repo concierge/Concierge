@@ -4,7 +4,6 @@ var options = {
 },
     TelegramBot = require.safe('node-telegram-bot-api'),
     bot = null,
-    shim = require('../shim.js'),
     api = null;
 
 // Adds the missing stopPolling() method
@@ -15,13 +14,17 @@ var sendMessage = function(message, thread, opts) {
     bot.sendMessage(thread, message, opts);
 };
 
+exports.getApi = function() {
+    return api;
+};
+
 exports.start = function(callback) {
     var token = exports.config.token;
     bot = new TelegramBot(token, {
         polling: true
     });
 
-    api = shim.createPlatformModule({
+    api = shim.createIntegration({
         sendMessage: sendMessage,
         commandPrefix: exports.config.commandPrefix
     });

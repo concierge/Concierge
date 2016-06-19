@@ -30,19 +30,18 @@ Arguments:
 - <i>Return:</i> `undefined`
 
 ### Shim
-Not all chat platforms provide every piece of functionality. As a result implementing the API for each one of the missing bits of functionality is a needless hassle. Instead there is a file, `shim.js` that can be required in your integration and used to provide fallback methods where you have not provided them.
+Not all chat platforms provide every piece of functionality. As a result implementing the API for each one of the missing bits of functionality is a needless hassle. Instead `shim` should be used in your integration. It will provide fallback methods where you have not created them.
 
 Usage Example:
 ```
-var shim = require.once('../shim.js');
-....
 var myApiObject = {
   sendMessage = function(....){}
 };
 
-var api = shim.createPlatformModule(myApiObject); // pass this api to callback
+var api = shim.createIntegration(myApiObject); // pass this api to callback
 ```
 This will ensure that although the `myApiObject` only provides a `sendMessage()` implementation, the api generated will have all methods, with fallbacks.
+It will also ensure that any future APIs that are created will not break your integration.
 
 Shim can also be used to generate event objects for a callback.
 Example:

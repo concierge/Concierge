@@ -1,5 +1,4 @@
-var shim = require.once('../shim.js'),
-    WebSocketServer = require.once('ws').Server,
+var WebSocketServer = require.once('ws').Server,
     wss = null,
     functions = null,
     api = null,
@@ -91,6 +90,10 @@ var shim = require.once('../shim.js'),
         }
     };
 
+exports.getApi = function() {
+    return api;
+};
+
 exports.start = function(cb) {
     callback = cb;
     functions = {
@@ -103,7 +106,7 @@ exports.start = function(cb) {
         setTitle: setTitle,
         commadPrefix: '/'
     };
-    api = shim.createPlatformModule(functions);
+    api = shim.createIntegration(functions);
 
     wss = new WebSocketServer({ port: exports.config.port || 49886 });
 

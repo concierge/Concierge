@@ -82,8 +82,9 @@ Platform.prototype.getIntegrationApis = function() {
 	    if (!integs.hasOwnProperty(key)) {
 	        continue;
 		}
-	    apis[key] = integs[key].getApis();
-	}
+	    apis[key] = integs[key].getApi();
+    }
+    return apis;
 };
 
 Platform.prototype.start = function() {

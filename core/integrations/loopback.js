@@ -1,6 +1,10 @@
 ﻿var messageCallback = null,
     maxLoopbackCount = 5;
 
+exports.getApi = function() {
+    return null;
+};
+
 exports.start = function (callback) {
     if (messageCallback) {
         throw "Cannot start when already started.";

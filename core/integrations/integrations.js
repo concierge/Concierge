@@ -17,7 +17,7 @@ var files                   = require.once('../files.js'),
     selectedIntegrations    = null,
     started                 = false;
 
-exports.loopback = require.once('./loopback.js');
+global.shim = require.once('../shim.js');
 
 exports.listIntegrations = function () {
     if (cachedIntegrations) {
@@ -58,7 +58,8 @@ exports.listIntegrations = function () {
     return list;
 };
 
-exports.setIntegrationConfigs = function(platform) {
+exports.setIntegrationConfigs = function (platform) {
+    shim.current = platform;
     for (var i = 0; i < selectedIntegrations.length; i++) {
         selectedIntegrations[i].instance.platform = platform;
         selectedIntegrations[i].instance.config = platform.config.loadOutputConfig(selectedIntegrations[i].name);
@@ -94,6 +95,11 @@ exports.setIntegrations = function (integrations) {
             }
         }
         selectedIntegrations = integrations;
+        selectedIntegrations.push({
+            name: 'loopback',
+            instance: require.once('./loopback.js')
+        });
+
         return true;
     }
     catch (e) {
@@ -115,8 +121,12 @@ exports.startIntegrations = function (callback) {
 
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {
-            console.write('Loading integration \'' + selectedIntegrations[i].name + '\'...\t');
-            selectedIntegrations[i].instance.start(callback);
+            var integ = selectedIntegrations[i];
+            console.write('Loading integration \'' + integ.name + '\'...\t');
+            integ.instance.start(function () {
+                arguments[1].event_source = integ.name;
+                callback.apply(this, arguments);
+            });
             console.info('[DONE]');
         }
         catch (e) {
@@ -125,9 +135,7 @@ exports.startIntegrations = function (callback) {
             console.critical(e);
         }
     }
-
-    exports.loopback.start(callback);
-
+    
     started = true;
 };
 
@@ -149,6 +157,8 @@ exports.stopIntegrations = function() {
     }
 
     started = false;
+    shim.current = null;
+    shim = null;
 };
 
 exports.getSetIntegrations = function() {

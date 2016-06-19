@@ -1,4 +1,4 @@
-exports.createPlatformModule = function (platform) {
+exports.createIntegration = function (platform) {
     if (!platform.sendMessage) {
         platform.sendMessage = function() {
             throw 'What kind of shit platform is this that doesn\'t even support sending messages?';
@@ -65,6 +65,12 @@ exports.createPlatformModule = function (platform) {
             platform.sendMessage(message, thread);
         };
     }
+    
+    if (!platform.getUsers) {
+        platform.getUsers = function () {
+            return {};
+        };
+    }
 
     if (!platform.commandPrefix) {
         if (platform.config && platform.config.commandPrefix) {
@@ -74,6 +80,19 @@ exports.createPlatformModule = function (platform) {
             platform.commandPrefix = '/';
         }
     }
+    
+    platform.sendMessageToMultiple = function (message, threads) {
+        var apis = exports.current.getIntegrationApis();
+        for (var integ in threads) {
+            if (!threads.hasOwnProperty(integ)) {
+                continue;
+            }
+            var intThreads = threads[integ];
+            for (var i = 0; i < intThreads.length; i++) {
+                apis[integ].sendMessage(message, intThreads[i]);
+            }
+        }
+    };
 
     return platform;
 };
@@ -83,7 +102,8 @@ exports.createEvent = function(thread, senderId, senderName, message) {
         thread_id: thread,
         sender_id: senderId,
         sender_name: senderName + '', // Accept sender_name  = null as a literal
-        body: message
+        body: message,
+        event_source: null
     };
     event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);
     if (event.arguments === null) {

@@ -1,5 +1,4 @@
 var skyweb = require('skyweb'),
-    shim = require.once('../shim.js'),
     skype = null,
     contacts = {},
     platform = null,
@@ -8,8 +7,12 @@ shouldListenToChat = function(conversationId) {
     return !exports.config.conversations || exports.config.conversations.includes(conversationId);
 },
 
-findContactName = function(id) {
-    return contacts[id] ? contacts[id] : id;
+findContactName = function(senderId) {
+    return contacts[senderId] ? contacts[senderId] : senderId;
+};
+
+exports.getApi = function() {
+    return platform;
 };
 
 exports.start = function(callback) {
@@ -25,9 +28,12 @@ exports.start = function(callback) {
             commandPrefix: exports.config.commandPrefix,
             sendMessage: function(message, thread) {
                 skype.sendMessage(thread, message);
+            },
+            getUsers: function(thread) {
+                return contacts;
             }
         };
-        platform = shim.createPlatformModule(api);
+        platform = shim.createIntegration(api);
 
         skype.messagesCallback = function (messages) {
             messages.forEach(function (message) {

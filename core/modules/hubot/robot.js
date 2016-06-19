@@ -190,8 +190,7 @@ Robot.prototype.catchAll = function (callback) {
 };
 
 Robot.prototype.receive = function (message) {
-    var shim = require('../../shim.js'),
-        event = shim.createEvent(message.event.thread_id, message.event.sender_id, message.event.sender_name, message.text);
+    var event = shim.createEvent(message.event.thread_id, message.event.sender_id, message.event.sender_name, message.text);
     this.platform.onMessage(api, event);
 };
 
