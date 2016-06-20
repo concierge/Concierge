@@ -144,13 +144,14 @@ exports.stopIntegrations = function() {
         throw 'Cannot stop integrations if they haven\'t been started.';
     }
 
-    exports.loopback.stop();
-
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {
+            console.write('Stopping integration \'' + selectedIntegrations[i].name + '\'...\t');
             selectedIntegrations[i].instance.stop();
+            console.info('[DONE]');
         }
         catch (e) {
+            console.error('[FAIL]');
             console.debug('Failed to correctly stop output integration \'' + selectedIntegrations[i].name + '\'.');
             console.critical(e);
         }

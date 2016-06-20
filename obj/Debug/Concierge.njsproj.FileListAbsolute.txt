@@ -1,2 +1,0 @@
-C:\Users\Matthew\Desktop\Kassy\obj\Debug\Concierge.njsprojResolveAssemblyReference.cache
-C:\Users\Matthew\Desktop\Kassy\bin\Microsoft.NodejsTools.WebRole.dll

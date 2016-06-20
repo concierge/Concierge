@@ -41,14 +41,17 @@
     "test": "grunt test",
     "start": "node main.js"
   },
+  "engines": {
+    "node": "6.2.1"
+  },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mrkno/Kassy.git"
+    "url": "git+https://github.com/concierge/Kassy.git"
   },
   "author": "Matthew Knox",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mrkno/Kassy/issues"
+    "url": "https://github.com/concierge/Kassy/issues"
   },
-  "homepage": "https://github.com/mrkno/Kassy"
+  "homepage": "https://github.com/concierge/Kassy"
 }
