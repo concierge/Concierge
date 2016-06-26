@@ -43,7 +43,7 @@ Platform.prototype._handleTransaction = function(module, args) {
     finally {
         clearTimeout(timeout);
     }
-    
+
     return returnVal;
 };
 
@@ -76,13 +76,13 @@ Platform.prototype.onMessage = function(api, event) {
 };
 
 Platform.prototype.getIntegrationApis = function() {
-	var integs = this.integrationManager.getSetIntegrations();
-	var apis = {};
-	for (var key in integs) {
-	    if (!integs.hasOwnProperty(key)) {
-	        continue;
-		}
-	    apis[key] = integs[key].getApi();
+    var integs = this.integrationManager.getSetIntegrations();
+    var apis = {};
+    for (var key in integs) {
+        if (!integs.hasOwnProperty(key)) {
+            continue;
+        }
+        apis[key] = integs[key].getApi();
     }
     return apis;
 };

@@ -1,3 +1,16 @@
+var sendMessageToMultiple = function (message, threads) {
+    var apis = exports.current.getIntegrationApis();
+    for (var integ in threads) {
+        if (!threads.hasOwnProperty(integ)) {
+            continue;
+        }
+        var intThreads = threads[integ];
+        for (var i = 0; i < intThreads.length; i++) {
+            apis[integ].sendMessage(message, intThreads[i]);
+        }
+    }
+};
+
 exports.createIntegration = function (platform) {
     if (!platform.sendMessage) {
         platform.sendMessage = function() {
@@ -65,7 +78,7 @@ exports.createIntegration = function (platform) {
             platform.sendMessage(message, thread);
         };
     }
-    
+
     if (!platform.getUsers) {
         platform.getUsers = function () {
             return {};
@@ -80,19 +93,8 @@ exports.createIntegration = function (platform) {
             platform.commandPrefix = '/';
         }
     }
-    
-    platform.sendMessageToMultiple = function (message, threads) {
-        var apis = exports.current.getIntegrationApis();
-        for (var integ in threads) {
-            if (!threads.hasOwnProperty(integ)) {
-                continue;
-            }
-            var intThreads = threads[integ];
-            for (var i = 0; i < intThreads.length; i++) {
-                apis[integ].sendMessage(message, intThreads[i]);
-            }
-        }
-    };
+
+    platform.sendMessageToMultiple = sendMessageToMultiple;
 
     return platform;
 };

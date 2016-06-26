@@ -13,38 +13,38 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
     conflict        = 1,
     loadedModules   = [];
 
-var listModules = function (disabled) {
-    var modules = {};
-    for (var i = 0; i < loaders.length; i++) {
-        var m = loaders[i].listModules(disabled);
-        for (var key in m) {
-            var t = key;
-            while (modules[t]) {
-                t = key + conflict++;
+    listModules = function (disabled) {
+        var modules = {};
+        for (var i = 0; i < loaders.length; i++) {
+            var m = loaders[i].listModules(disabled);
+            for (var key in m) {
+                var t = key;
+                while (modules[t]) {
+                    t = key + conflict++;
+                }
+                modules[t] = m[key];
+                modules[t].__loaderUID = i;
             }
-            modules[t] = m[key];
-            modules[t].__loaderUID = i;
         }
-    }
-    return modules;
-},
+        return modules;
+    },
 
-loadModuleInternal = function (module, platform) {
-    try {
-        console.write('Loading module \'' + module.name + '\'... ' + (console.isDebug() ? '\n' : ''));
-        var m = loaders[module.__loaderUID].loadModule(module, platform.config);
-        m.__loaderPriority = module.priority;
-        m.platform = platform;
-        console.info(console.isDebug() ? 'Loading Succeeded' : '\t[DONE]');
-        return m;
-    }
-    catch (e) {
-        console.error(console.isDebug() ? 'Loading Failed' : '\t[FAIL]');
-        console.critical(e);
-        console.debug('Module "' + module.name + '" could not be loaded.');
-        return null;
-    }
-};
+    loadModuleInternal = function (module, platform) {
+        try {
+            console.write('Loading module \'' + module.name + '\'... ' + (console.isDebug() ? '\n' : ''));
+            var m = loaders[module.__loaderUID].loadModule(module, platform.config);
+            m.__loaderPriority = module.priority;
+            m.platform = platform;
+            console.info(console.isDebug() ? 'Loading Succeeded' : '\t[DONE]');
+            return m;
+        }
+        catch (e) {
+            console.error(console.isDebug() ? 'Loading Failed' : '\t[FAIL]');
+            console.critical(e);
+            console.debug('Module "' + module.name + '" could not be loaded.');
+            return null;
+        }
+    };
 
 exports.getLoadedModules = function () {
     return loadedModules;

@@ -3,13 +3,13 @@ var skyweb = require('skyweb'),
     contacts = {},
     platform = null,
 
-shouldListenToChat = function(conversationId) {
-    return !exports.config.conversations || exports.config.conversations.includes(conversationId);
-},
+    shouldListenToChat = function(conversationId) {
+        return !exports.config.conversations || exports.config.conversations.includes(conversationId);
+    },
 
-findContactName = function(senderId) {
-    return contacts[senderId] ? contacts[senderId] : senderId;
-};
+    findContactName = function(senderId) {
+        return contacts[senderId] ? contacts[senderId] : senderId;
+    };
 
 exports.getApi = function() {
     return platform;
@@ -29,7 +29,7 @@ exports.start = function(callback) {
             sendMessage: function(message, thread) {
                 skype.sendMessage(thread, message);
             },
-            getUsers: function(thread) {
+            getUsers: function() {
                 return contacts;
             }
         };

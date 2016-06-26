@@ -135,7 +135,7 @@ exports.startIntegrations = function (callback) {
             console.critical(e);
         }
     }
-    
+
     started = true;
 };
 
@@ -159,16 +159,16 @@ exports.stopIntegrations = function() {
 
     started = false;
     shim.current = null;
-    shim = null;
+    global.shim = null;
 };
 
 exports.getSetIntegrations = function() {
-	if (!selectedIntegrations) {
-	    throw 'Cannot get integrations if they have not already been set.';
-	}
-	var integs = {};
-	for (var i = 0; i < selectedIntegrations.length; i++) {
-	    integs[selectedIntegrations[i].name] = selectedIntegrations[i].instance;
-	}
+    if (!selectedIntegrations) {
+        throw 'Cannot get integrations if they have not already been set.';
+    }
+    var integs = {};
+    for (var i = 0; i < selectedIntegrations.length; i++) {
+        integs[selectedIntegrations[i].name] = selectedIntegrations[i].instance;
+    }
     return integs;
 };

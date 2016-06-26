@@ -14,39 +14,39 @@ var fs              = require('fs'),
     files           = require.once('./../files.js'),
     modulesDir      = 'modules',
     coreMoulesDir   = 'core/core_modules',
-    descriptor      = 'kassy.json';
+    descriptor      = 'kassy.json',
 
-var listCoreModules = function () {
-    var modules = {};
-    var data = files.filesInDirectory('./' + coreMoulesDir);
-    for (var i = 0; i < data.length; i++) {
-        if (!data[i].endsWith('.js')) {
-            continue;
+    listCoreModules = function () {
+        var modules = {};
+        var data = files.filesInDirectory('./' + coreMoulesDir);
+        for (var i = 0; i < data.length; i++) {
+            if (!data[i].endsWith('.js')) {
+                continue;
+            }
+
+            var kj = {
+                name: path.basename(data[i], '.js'),
+                startup: path.resolve(path.join(coreMoulesDir, data[i])),
+                priority: 'first',
+                bypassConfig: true,
+                __coreOnly: true
+            };
+            modules[kj.name] = kj;
+        }
+        return modules;
+    },
+
+    verifyModuleDescriptior = function (kj, disabled) {
+        if (!kj.name || !kj.startup || !kj.version) {
+            return false;
         }
 
-        var kj = {
-            name: path.basename(data[i], '.js'),
-            startup: path.resolve(path.join(coreMoulesDir, data[i])),
-            priority: 'first',
-            bypassConfig: true,
-            //__coreOnly: true
-        };
-        modules[kj.name] = kj;
-    }
-    return modules;
-},
-
-verifyModuleDescriptior = function (kj, disabled) {
-    if (!kj.name || !kj.startup || !kj.version) {
-        return false;
-    }
-
-    if (disabled === true && exports.disabledConfig &&
-        exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
-        return false;
-    }
-    return true;
-};
+        if (disabled === true && exports.disabledConfig &&
+            exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+            return false;
+        }
+        return true;
+    };
 
 exports.verifyModule = function (location, disabled) {
     var stat = fs.statSync(location);
