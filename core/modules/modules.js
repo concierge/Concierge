@@ -11,7 +11,7 @@
 
 var loaders         = [require.once('./kassyModule.js'), require.once('./hubotModule.js')],
     conflict        = 1,
-    loadedModules   = [];
+    loadedModules   = [],
 
     listModules = function (disabled) {
         var modules = {};
