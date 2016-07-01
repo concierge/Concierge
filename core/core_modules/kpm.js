@@ -6,6 +6,7 @@ var git = require.once('../git.js'),
     sanitize = require.safe('sanitize-filename'),
     request = require('request'),
     urll = require('url'),
+    moduleTableUrl = null,
     moduleTable = {
         lastUpdated: null,
         modules: {}
@@ -200,7 +201,7 @@ var git = require.once('../git.js'),
             return callback(url);
         }
 
-        request.get('https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md', function (error, response) {
+        request.get(moduleTableUrl, function (error, response) {
             if (response.statusCode === 200 && response.body) {
                 var b = response.body;
                 if (b && b.length > 0) {
@@ -369,6 +370,16 @@ exports.run = function (api, event) {
         }
         api.sendMessage(t, event.thread_id);
         return false;
+    }
+
+    if (!moduleTableUrl) {
+        var kpmCfg = exports.platform.config.getConfig('kpm');
+        if (kpmCfg.hasOwnProperty('tableUrl')) {
+            moduleTableUrl = kpmCfg.tableUrl;
+        }
+        else {
+            moduleTableUrl = 'https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md';
+        }
     }
 
     commands.splice(0, 2);
