@@ -73,5 +73,9 @@ process.on('uncaughtException', function(err) {
     console.critical(err);
 });
 
+process.on('SIGINT', function () {
+    startup.stop();
+});
+
 integf.setIntegrations(startArgs);
 startup.run();
