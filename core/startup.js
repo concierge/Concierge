@@ -35,7 +35,7 @@ exports.run = function() {
     }
 };
 
-exports.shutdown = function() {
+exports.stop = function() {
     if (platform) {
         platform.shutdown();
     }
