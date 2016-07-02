@@ -1,0 +1,10 @@
+﻿{
+  "StartError": "Cannot start platform when it is already started.",
+  "StartingSystem": "Starting system...",
+  "LoadingSystemConfig": "Loading system configuration...",
+  "LoadingModules": "Loading modules...",
+  "StartingIntegrations": "Starting integrations...",
+  "SystemStarted": "System has started.",
+  "HelloWorld": "Hello World!",
+  "${0} failed ${1} caused it": "${0} threw up. ${1} is now covered in sick." 
+}

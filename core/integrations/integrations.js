@@ -18,6 +18,7 @@ var files                   = require.once('../files.js'),
     started                 = false;
 
 global.shim = require.once('../shim.js');
+global.shim.current = null;
 
 exports.listIntegrations = function () {
     if (cachedIntegrations) {
@@ -59,7 +60,7 @@ exports.listIntegrations = function () {
 };
 
 exports.setIntegrationConfigs = function (platform) {
-    shim.current = platform;
+    global.shim.current = platform;
     for (var i = 0; i < selectedIntegrations.length; i++) {
         selectedIntegrations[i].instance.platform = platform;
         selectedIntegrations[i].instance.config = platform.config.loadOutputConfig(selectedIntegrations[i].name);
@@ -95,10 +96,6 @@ exports.setIntegrations = function (integrations) {
             }
         }
         selectedIntegrations = integrations;
-        selectedIntegrations.push({
-            name: 'loopback',
-            instance: require.once('./loopback.js')
-        });
 
         return true;
     }
@@ -118,6 +115,8 @@ exports.startIntegrations = function (callback) {
     if (started) {
         throw 'Cannot start when already started.';
     }
+    
+    if (selectedIntegrations)
 
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {
@@ -148,6 +147,7 @@ exports.stopIntegrations = function() {
         try {
             console.write('Stopping integration \'' + selectedIntegrations[i].name + '\'...\t');
             selectedIntegrations[i].instance.stop();
+            selectedIntegrations[i].instance = null;
             console.info('[DONE]');
         }
         catch (e) {
@@ -158,7 +158,7 @@ exports.stopIntegrations = function() {
     }
 
     started = false;
-    shim.current = null;
+    global.shim.current = null;
     global.shim = null;
 };
 

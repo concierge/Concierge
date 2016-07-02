@@ -120,6 +120,14 @@ exports.unloadModule = function(mod, config) {
     return null;
 };
 
+exports.unloadModuleByName = function (name, platform) {
+    var module = loadedModules.find(function(mod) {
+        return mod.name.trim().toLowerCase() === name.trim().toLowerCase();
+    });
+
+    exports.unloadModule(module, platform.config);
+};
+
 exports.unloadAllModules = function(config) {
     while (loadedModules.length > 0) {
         exports.unloadModule(loadedModules[0], config);

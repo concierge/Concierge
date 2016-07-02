@@ -12,9 +12,10 @@
 
 var figlet = require('figlet');
 
-var Platform = function() {
+var Platform = function(integrations) {
     this.config = require.once('./config.js');
     this.integrationManager = require.once('./integrations/integrations.js');
+    this.integrationManager.setIntegrations(integrations);
     this.defaultPrefix = '/';
     this.packageInfo = require.once('../package.json');
     this.modulesLoader = require.once('./modules/modules.js');
@@ -36,8 +37,7 @@ Platform.prototype._handleTransaction = function(module, args) {
         returnVal = module.run.apply(this, args);
     }
     catch (e) {
-        args[0].sendMessage(args[1].body + ' threw up. ' + args[1].sender_name + ' is now covered in sick.',
-            args[1].thread_id);
+        args[0].sendMessage($$`${args[1].body} failed ${args[1].sender_name} caused it`, args[1].thread_id);
         console.critical(e);
     }
     finally {
@@ -59,7 +59,7 @@ Platform.prototype.onMessage = function(api, event) {
             matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
         }
         catch (e) {
-            console.error('The module ' + loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
+            console.error(i18n`The module ${loadedModules[i].name} appears to be broken. Please remove or fix it.`);
             console.critical(e);
             continue;
         }
@@ -89,27 +89,28 @@ Platform.prototype.getIntegrationApis = function() {
 
 Platform.prototype.start = function() {
     if (this.statusFlag !== StatusFlag.NotStarted) {
-        throw 'Cannot start platform when it is already started.';
+        throw $$`StartError`;
     }
 
     console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
 
     console.title(' ' + this.packageInfo.version);
     console.info('------------------------------------');
-    console.warn('Starting system...\nLoading system configuration...');
+    console.warn($$`StartingSystem`);
 
+    console.warn($$`LoadingSystemConfig`);
     this.integrationManager.setIntegrationConfigs(this);
 
     // Load Kassy modules
-    console.warn('Loading modules...');
+    console.warn($$`LoadingModules`);
     this.modulesLoader.loadAllModules(this);
 
     // Starting output
-    console.warn('Starting integrations...');
+    console.warn($$`StartingIntegrations`);
     this.integrationManager.startIntegrations(this.onMessage.bind(this));
 
     this.statusFlag = StatusFlag.Started;
-    console.warn('System has started. ' + 'Hello World!'.rainbow);
+    console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
 };
 
 Platform.prototype.shutdown = function(flag) {

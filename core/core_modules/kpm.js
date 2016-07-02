@@ -59,7 +59,7 @@ var git = require.once('../git.js'),
 
                 // load new module copy
                 var descriptor = exports.platform.modulesLoader.verifyModule(module.folderPath),
-                    m = exports.platform.modulesLoader.loadModule(descriptor);
+                    m = exports.platform.modulesLoader.loadModule(descriptor, exports.platform);
                 if (m !== null) {
                     moduleCache[descriptor.name] = descriptor;
                     exports.platform.loadedModules.push(m);
@@ -74,13 +74,7 @@ var git = require.once('../git.js'),
     uninstall = function(module, api, event) {
         api.sendMessage('Unloading module "' + module.name + '"...', event.thread_id);
         // unload the current version
-        this.loadedModules = this.loadedModules.filter(function (value) {
-            if (value.name !== module.name) {
-                return true;
-            }
-            exports.platform.modulesLoader.unloadModule(value);
-            return false;
-        });
+        exports.platform.modulesLoader.unloadModuleByName(module.name);
 
         delete moduleCache[module.name];
         rmdir(module.folderPath, function (error) {
@@ -104,7 +98,7 @@ var git = require.once('../git.js'),
                 return;
             }
 
-            if (exports.platform.loadedModules[descriptor.name] || moduleList[descriptor.name] || moduleList['kpm_' + descriptor.name]) {
+            if (exports.platform.modulesLoader.getLoadedModules()[descriptor.name] || moduleList[descriptor.name] || moduleList['kpm_' + descriptor.name]) {
                 api.sendMessage('A module with name or directory "' + descriptor.name + '" has already been installed.', event.thread_id);
                 cleanup();
                 return;
@@ -121,7 +115,7 @@ var git = require.once('../git.js'),
                 }
 
                 descriptor.folderPath = instDir;
-                var m = exports.platform.modulesLoader.loadModule(descriptor);
+                var m = exports.platform.modulesLoader.loadModule(descriptor, exports.platform);
                 if (m !== null) {
                     moduleCache[descriptor.name] = descriptor;
                     exports.platform.loadedModules.push(m);
