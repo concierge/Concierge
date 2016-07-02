@@ -1,15 +1,7 @@
-var options = {
-    // Used by the monkey patch to node-telegram-bot-api
-    stopPolling: true
-},
-TelegramBot = require.safe('node-telegram-bot-api'),
-bot = null,
-shim = require('../shim.js'),
-api = null;
-
-// Adds the missing stopPolling() method
-// https://github.com/yagop/node-telegram-bot-api/pull/51#issuecomment-217395990
-require.safe('monkey-patches-node-telegram-bot-api')(TelegramBot, options);
+var bot = null,
+    api = null,
+    shim = require('../shim.js'),
+    TelegramBot = require.safe('node-telegram-bot-api');
 
 var sendMessage = function(message, thread, opts) {
     bot.sendMessage(thread, message, opts);
