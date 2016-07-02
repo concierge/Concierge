@@ -14,7 +14,7 @@ var fs = require('fs'),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
-    sysConfigZones = ['output', 'disabled', 'update', 'admin', 'kpm'],
+    sysConfigZones = ['output', 'disabled', 'update', 'admin', 'kpm', 'i18n'],
     sysConfigFile = 'config.json';
 
 var loadConfig = function (location) {
@@ -29,7 +29,12 @@ var loadConfig = function (location) {
 };
 
 var saveIndividualConfig = function (location, data) {
-    fs.writeFileSync(location, JSON.stringify(data, null, 4), 'utf8');
+    fs.writeFileSync(location, JSON.stringify(data, function(key, value) {
+            if (sysConfigZones.includes(key) && value === {}) {
+                return undefined;
+            }
+            return value;
+        }, 4), 'utf8');
 };
 
 exports.saveModuleConfig = function(mod) {

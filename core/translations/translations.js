@@ -11,8 +11,8 @@
 
 var path = require('path'),
     files = require.once('./../files.js'),
-    currentLocale = null,
     defaultLocale = 'en',
+    currentLocale = global.__i18nLocale || defaultLocale,
     globalContext = '*',
     contextMap = {},
 
@@ -50,7 +50,6 @@ var path = require('path'),
 var TranslatorService = function (translationsDir) {
     this.translations = {};
     translationsDir = path.resolve(translationsDir);
-    console.log(translationsDir);
     var translationFiles = files.filesInDirectory(translationsDir);
     for (var i = 0; i < translationFiles.length; i++) {
         var translationFile = path.join(translationsDir, translationFiles[i]);
@@ -79,6 +78,7 @@ TranslatorService.prototype.translate = function (strings, values) {
     else if (this.translations.hasOwnProperty(defaultLocale) && this.translations[defaultLocale].hasOwnProperty(key)) {
         return _translate(values, this.translations[defaultLocale][key]);
     }
+    console.debug(`Missing i18n value for key "${key}" in {current: "${currentLocale}", default:"${defaultLocale}"}.`);
     return _fallbackTranslate(strings, values);
 };
 
@@ -94,7 +94,7 @@ module.exports = function(strings, ...values) {
         context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
 
     if (!contextMap.hasOwnProperty(context)) {
-        var translationsDirectory = path.join(context.substr(0, contextFileName.indexOf(contextMatches[0]) + contextMatches[0].length), 'i18n/');
+        var translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(contextMatches[0]) + contextMatches[0].length), 'i18n/');
         contextMap[context] = new TranslatorService(translationsDirectory);
     }
     return contextMap[context].translate(strings, values);
@@ -114,6 +114,8 @@ module.exports.hook = function(func, context = null) {
     contextMap[context].setHook(func);
 };
 
-module.exports.setLocale = function(localeString) {
-    currentLocale = localeString;
+module.exports.setLocale = function (localeString) {
+    if (localeString) {
+        currentLocale = localeString;
+    }
 };
