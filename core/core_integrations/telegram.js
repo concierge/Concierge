@@ -30,6 +30,11 @@ exports.start = function(callback) {
 
 exports.stop = function() {
     console.debug('Telegram -> start shutdown');
+    // Ensure that there's no endless loop because of an incorrect offset value
     exports.config.offset = bot._polling.offset + 1;
-    bot.stopPolling();
+    // No stopPolling() method, so we set the abort to true & that seems to work
+    if (bot._polling) {
+        bot._polling.abort = true;
+    }
+    this._polling = null;
 };
