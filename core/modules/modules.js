@@ -34,6 +34,9 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             console.write('Loading module \'' + module.name + '\'... ' + (console.isDebug() ? '\n' : ''));
             var m = loaders[module.__loaderUID].loadModule(module, platform.config);
             m.__loaderPriority = module.priority;
+            if (module.folderPath) {
+                m.__folderPath = module.folderPath;
+            }
             m.platform = platform;
             console.info(console.isDebug() ? 'Loading Succeeded' : '\t[DONE]');
             return m;
@@ -44,6 +47,39 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             console.debug('Module "' + module.name + '" could not be loaded.');
             return null;
         }
+    },
+
+    insertSorted = function (module) {
+        if (loadedModules.length === 0) {
+            loadedModules.push(module);
+            return;
+        }
+
+        var upper = 0,
+            middle = Math.floor(loadedModules.length / 2),
+            lower = loadedModules.length - 1;
+
+        while (true) {
+            if (module.__loaderPriority === loadedModules[middle].__loaderPriority) {
+                break;
+            }
+            if (module.__loaderPriority < loadedModules[middle].__loaderPriority) {
+                lower = middle;
+                middle = Math.floor(upper + (lower - upper) / 2);
+                if (middle === 0) {
+                    break;
+                }
+            }
+            else {
+                upper = middle;
+                middle = Math.floor(upper + (lower - upper) / 2);
+                if (middle === loadedModules.length - 1) {
+                    middle++;
+                    break;
+                }
+            }
+        }
+        loadedModules.splice(middle, 0, module);
     };
 
 exports.getLoadedModules = function () {
@@ -53,7 +89,7 @@ exports.getLoadedModules = function () {
 exports.loadModule = function (module, platform) {
     var ld = loadModuleInternal(module, platform);
     if (ld) {
-        loadedModules.push(ld);
+        insertSorted(ld);
         if (ld.load) {
             ld.load.call(ld.platform);
         }
@@ -65,7 +101,7 @@ exports.loadAllModules = function(platform) {
     for (var mod in m) {
         var ld = loadModuleInternal(m[mod], platform);
         if (ld) {
-            loadedModules.push(ld);
+            insertSorted(ld);
         }
     }
 
@@ -118,14 +154,6 @@ exports.unloadModule = function(mod, config) {
         console.critical(e);
     }
     return null;
-};
-
-exports.unloadModuleByName = function (name, platform) {
-    var module = loadedModules.find(function(mod) {
-        return mod.name.trim().toLowerCase() === name.trim().toLowerCase();
-    });
-
-    exports.unloadModule(module, platform.config);
 };
 
 exports.unloadAllModules = function(config) {

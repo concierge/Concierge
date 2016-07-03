@@ -12,3 +12,4 @@ typings/
 tsd.json
 *.vs*
 obj/*
+/bin/Microsoft.NodejsTools.WebRole.dll

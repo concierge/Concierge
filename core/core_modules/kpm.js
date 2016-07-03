@@ -61,7 +61,6 @@ var git = require.once('../git.js'),
                 var descriptor = exports.platform.modulesLoader.verifyModule(module.folderPath),
                     m = exports.platform.modulesLoader.loadModule(descriptor, exports.platform);
                 if (m !== null) {
-                    moduleCache[descriptor.name] = descriptor;
                     exports.platform.loadedModules.push(m);
                     api.sendMessage('"' + module.name + '" is now at version ' + module.version + '.', event.thread_id);
                 } else {
@@ -74,10 +73,9 @@ var git = require.once('../git.js'),
     uninstall = function(module, api, event) {
         api.sendMessage('Unloading module "' + module.name + '"...', event.thread_id);
         // unload the current version
-        exports.platform.modulesLoader.unloadModuleByName(module.name);
+        exports.platform.modulesLoader.unloadModule(module, exports.platform.config);
 
-        delete moduleCache[module.name];
-        rmdir(module.folderPath, function (error) {
+        rmdir(module.__folderPath, function (error) {
             if (error) {
                 console.debug(error);
                 api.sendMessage('Failed to delete module "' + module.name + '".', event.thread_id);
@@ -98,7 +96,7 @@ var git = require.once('../git.js'),
                 return;
             }
 
-            if (exports.platform.modulesLoader.getLoadedModules()[descriptor.name] || moduleList[descriptor.name] || moduleList['kpm_' + descriptor.name]) {
+            if (moduleList[descriptor.name] || moduleList['kpm_' + descriptor.name]) {
                 api.sendMessage('A module with name or directory "' + descriptor.name + '" has already been installed.', event.thread_id);
                 cleanup();
                 return;
@@ -117,8 +115,6 @@ var git = require.once('../git.js'),
                 descriptor.folderPath = instDir;
                 var m = exports.platform.modulesLoader.loadModule(descriptor, exports.platform);
                 if (m !== null) {
-                    moduleCache[descriptor.name] = descriptor;
-                    exports.platform.loadedModules.push(m);
                     api.sendMessage('"' + descriptor.name + '" (' + descriptor.version + ') is now installed.', event.thread_id);
                 }
                 else {
