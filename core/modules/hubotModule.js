@@ -86,10 +86,10 @@ exports.listModules = function (disabled) {
                 modules[output.name] = output;
             }
             else {
-                console.debug('Skipping "' + data[i] + '". It isn\'t a Hubot module.');
+                console.debug($$`Skipping "${data[i]}". It isn't a Hubot module.`);
             }
         } catch (e) {
-            console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
+            console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
             console.critical(e);
             continue;
         }
@@ -113,6 +113,6 @@ exports.loadModule = function (module, config) {
     }
     catch (e) {
         console.critical(e);
-        throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
+        throw new Error($$`Could not load module '${module.name}'. Does it have a syntax error?`);
     }
 };

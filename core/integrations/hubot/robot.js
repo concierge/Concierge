@@ -10,7 +10,7 @@ exports.logger = {
 };
 
 exports.receive = function (message) {
-    var msg = shim.createEvent(message.room, message.user.name, message.user.id, message.text);
+    const msg = global.shim.createEvent(message.room, message.user.name, message.user.id, message.text);
     messageCallback(api, msg);
 };
 
@@ -20,10 +20,10 @@ exports.getApi = function() {
 
 exports.start = function (callback) {
     messageCallback = callback;
-    api = shim.createIntegration({
+    api = global.shim.createIntegration({
         commandPrefix: exports.config.commandPrefix ? exports.config.commandPrefix : '/',
         sendMessage: function (message, thread) {
-            var m = {
+            const m = {
                 room: thread
             };
             instance.send(m, message);
@@ -52,7 +52,6 @@ exports.brain = {
 };
 
 exports.shutdown = function () {
-    exports.logger.warning('Integrations should not invoke a safe shutdown. Please use the shutdown command itself.');
     exports.platform.shutdown();
 };
 

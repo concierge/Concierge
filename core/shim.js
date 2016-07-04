@@ -14,7 +14,7 @@ var sendMessageToMultiple = function (message, threads) {
 exports.createIntegration = function (platform) {
     if (!platform.sendMessage) {
         platform.sendMessage = function() {
-            throw 'What kind of shit platform is this that doesn\'t even support sending messages?';
+            throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
         };
     }
     //platform.sendMessage = loopbackWrapper(platform.sendMessage, platform);
@@ -38,7 +38,7 @@ exports.createIntegration = function (platform) {
                 break;
             default: // fallback to sending a message
                 platform.sendMessage(description, thread);
-                platform.sendMessage('I also have something to send you but cant seem to do so...', thread);
+                platform.sendMessage($$`I also have something to send you but cant seem to do so...`, thread);
                 break;
             }
         };
@@ -52,10 +52,10 @@ exports.createIntegration = function (platform) {
                 platform.sendUrl(file, thread);
                 break;
             case 'file': // fallback to sending a message
-                platform.sendMessage('I have a file to send you but cant seem to do so...', thread);
+                platform.sendMessage($$`I have a file to send you but cant seem to do so...`, thread);
                 break;
             default: // fallback to sending a message
-                platform.sendMessage('I have something to send you but cant seem to do so...', thread);
+                platform.sendMessage($$`I have something to send you but cant seem to do so...`, thread);
                 break;
             }
         };
@@ -63,13 +63,13 @@ exports.createIntegration = function (platform) {
 
     if (!platform.sendTyping) {
         platform.sendTyping = function(thread) {
-            platform.sendMessage('Working on it...', thread); // fallback to sending a message
+            platform.sendMessage($$`Working on it...`, thread); // fallback to sending a message
         };
     }
 
     if (!platform.setTitle) {
         platform.setTitle = function(title, thread) { // fallback to sending a message
-            platform.sendMessage('If I could set the title of this chat I would set it to "' + title + '"', thread);
+            platform.sendMessage($$`If I could set the title of this chat I would set it to "${title}"`, thread);
         };
     }
 

@@ -375,7 +375,7 @@ exports.run = function (api, event) {
     commands.splice(0, 2);
     opts[command].run.call(this, commands, api, event);
 
-    return false;
+    return true;
 };
 
 exports.help = function(commandPrefix) {

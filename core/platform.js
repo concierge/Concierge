@@ -59,7 +59,7 @@ Platform.prototype.onMessage = function(api, event) {
             matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
         }
         catch (e) {
-            console.error(i18n`The module ${loadedModules[i].name} appears to be broken. Please remove or fix it.`);
+            console.error($$`BrokenModule ${loadedModules[i].name}`);
             console.critical(e);
             continue;
         }
@@ -67,7 +67,6 @@ Platform.prototype.onMessage = function(api, event) {
         if (matchResult) {
             event.module_match_count++;
             var transactionRes = this._handleTransaction(loadedModules[i], runArgs);
-
             if (event.shouldAbort || transactionRes) {
                 return;
             }
@@ -116,7 +115,7 @@ Platform.prototype.start = function() {
 
 Platform.prototype.shutdown = function(flag) {
     if (this.statusFlag !== StatusFlag.Started) {
-        throw 'Cannot shutdown platform when it is not started.';
+        throw new Error($$`ShutdownError`);
     }
     if (!flag) {
         flag = 0;
@@ -131,7 +130,7 @@ Platform.prototype.shutdown = function(flag) {
     this.config.saveSystemConfig();
     this.statusFlag = flag ? flag : StatusFlag.Shutdown;
 
-    console.warn(this.packageInfo.name + ' has shutdown.');
+    console.warn($$`${this.packageInfo.name} Shutdown`);
     if (this.onShutdown && this.onShutdown != null) {
         this.onShutdown(this.statusFlag);
     }

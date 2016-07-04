@@ -23,7 +23,7 @@ var loadConfig = function (location) {
         return JSON.parse(data);
     }
     catch (e) {
-        console.debug('No or invalid configuration file found at \"' + location + '\".');
+        console.debug($$`No or invalid configuration file found at "${location}".`);
         return {};
     }
 };
@@ -53,7 +53,7 @@ exports.saveModuleConfig = function(mod) {
         delete modConfig[mod];
         return true;
     } catch (e) {
-        console.error('An error occured while saving the configuration file.');
+        console.error($$`An error occured while saving the configuration file.`);
         console.critical(e);
         return false;
     }
@@ -65,7 +65,7 @@ exports.saveSystemConfig = function () {
         sysConfig = null;
         return true;
     } catch (e) {
-        console.error('An error occured while saving the configuration files.');
+        console.error($$`An error occured while saving the configuration file.`);
         console.critical(e);
         return false;
     }
@@ -86,8 +86,7 @@ exports.getConfig = function (m) {
     }
 
     if (!isSystem) {
-        console.warn('\nConfiguration data for module \"' + m + '\" stored in deprecated location.\n' +
-            'Configuration will be moved to module specific configuration file');
+        console.warn($$`Configuration data for module ${m} stored in deprecated location.`);
         var cfg = sysConfig[m];
         delete sysConfig[m];
         return cfg;

@@ -86,7 +86,7 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
     }
 
     if (help.length === 0) {
-        help.push([scriptDocumentation.name, 'Does something. The unhelpful author didn\'t specify what.']);
+        help.push([scriptDocumentation.name, $$`Does something. The unhelpful author didn't specify what.`]);
     }
 
     var priority = 'normal';

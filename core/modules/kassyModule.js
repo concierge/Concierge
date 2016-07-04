@@ -90,10 +90,10 @@ exports.listModules = function (disabled) {
                 modules[output.name] = output;
             }
             else {
-                console.debug('Skipping "' + data[i] + '". It isn\'t a Kassy module.');
+                console.debug($$`Skipping "${data[i]}". It isn't a Kassy module.`);
             }
         } catch (e) {
-            console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
+            console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
             console.critical(e);
             continue;
         }
@@ -146,14 +146,14 @@ exports.loadModule = function (module, config) {
         m = require.once(startPath);
         if (!m.help) {
             if (!module.help) {
-                throw 'A module must provide basic help.';
+                throw new Error($$`A module must provide basic help.`);
             }
             m.help = createHelp(module);
         }
 
         if (!m.match) {
             if (!module.command) {
-                throw 'A module must provide a match function or command.';
+                throw new Error($$`A module must provide a match function or command.`);
             }
             m.match = createMatcher(module);
         }
@@ -163,7 +163,7 @@ exports.loadModule = function (module, config) {
     }
     catch (e) {
         console.critical(e);
-        throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
+        throw new Error($$`Could not load module '${module.name}'. Does it have a syntax error?`);
     }
     if (!module.bypassConfig) {
         m.config = config.loadModuleConfig(module, modulePath);

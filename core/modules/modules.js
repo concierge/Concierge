@@ -24,6 +24,18 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
                 }
                 modules[t] = m[key];
                 modules[t].__loaderUID = i;
+                if (!modules[t].priority || modules[t].priority === 'normal') {
+                    modules[t].priority = 0;
+                }
+                else if (modules[t].priority === 'first') {
+                    modules[t].priority = Number.MIN_SAFE_INTEGER;
+                }
+                else if (modules[t].priority === 'last') {
+                    modules[t].priority = Number.MAX_SAFE_INTEGER;
+                }
+                else {
+                    modules[t].priority = 0;
+                }
             }
         }
         return modules;
@@ -31,20 +43,20 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
 
     loadModuleInternal = function (module, platform) {
         try {
-            console.write('Loading module \'' + module.name + '\'... ' + (console.isDebug() ? '\n' : ''));
+            console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
             var m = loaders[module.__loaderUID].loadModule(module, platform.config);
             m.__loaderPriority = module.priority;
             if (module.folderPath) {
                 m.__folderPath = module.folderPath;
             }
             m.platform = platform;
-            console.info(console.isDebug() ? 'Loading Succeeded' : '\t[DONE]');
+            console.info(console.isDebug() ? $$`Loading Succeeded` : $$`[DONE]`);
             return m;
         }
         catch (e) {
-            console.error(console.isDebug() ? 'Loading Failed' : '\t[FAIL]');
+            console.error(console.isDebug() ? $$`Loading Failed` : $$`[FAIL]`);
             console.critical(e);
-            console.debug('Module "' + module.name + '" could not be loaded.');
+            console.debug($$`Module "${module.name}" could not be loaded.`);
             return null;
         }
     },
@@ -66,14 +78,14 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             if (module.__loaderPriority < loadedModules[middle].__loaderPriority) {
                 lower = middle;
                 middle = Math.floor(upper + (lower - upper) / 2);
-                if (middle === 0) {
+                if (middle === 0 || lower === middle) {
                     break;
                 }
             }
             else {
                 upper = middle;
                 middle = Math.floor(upper + (lower - upper) / 2);
-                if (middle === loadedModules.length - 1) {
+                if (middle === loadedModules.length - 1 || upper === middle) {
                     middle++;
                     break;
                 }
@@ -138,7 +150,7 @@ exports.verifyModule = function (path, disabled) {
 
 exports.unloadModule = function(mod, config) {
     try {
-        console.debug('Unloading module "' + mod.name + '".');
+        console.debug($$`Unloading module "${mod.name}".`);
         if (mod.unload) {
             mod.unload();
         }
@@ -148,9 +160,12 @@ exports.unloadModule = function(mod, config) {
         mod.platform = null;
         var index = loadedModules.indexOf(mod);
         loadedModules.splice(index, 1);
+        if (!mod.__coreOnly) {
+            $$.removeContextIfExists(mod.name);
+        }
     }
     catch (e) {
-        console.error('Unloading module "' + mod.name + '" failed.');
+        console.error($$`Unloading module "${mod.name}" failed.`);
         console.critical(e);
     }
     return null;
