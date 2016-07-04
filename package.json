@@ -39,7 +39,8 @@
   },
   "scripts": {
     "test": "grunt test",
-    "start": "node main.js"
+    "start": "node main.js",
+	"debug": "node main.js --debug --timestamp"
   },
   "engines": {
     "node": "6.2.1"
