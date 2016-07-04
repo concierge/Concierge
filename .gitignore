@@ -10,3 +10,4 @@ obj/Debug/Kassy.njsproj.FileListAbsolute.txt
 modules/kpm_*
 typings/
 tsd.json
+.DS_Store
