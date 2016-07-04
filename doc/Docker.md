@@ -1,6 +1,6 @@
 # Docker
 
-Thanks to docker, your personal chat-bot can be contained and readily deployed wherever for an experiance the is consistent on all platforms!
+Thanks to docker, your personal chat-bot can be contained and readily deployed wherever, for an experience that is consistent on all platforms!
 
 ## docker-kassy Quickstart
 ### Prerequisites
@@ -27,8 +27,8 @@ docker run -it \
   concierge/docker-kassy facebook
 ```
 
-#### Daemonised Start
-The -d switch will start Kassy daemonised and running in the background. Again, make sure to mount your specific config as needed, per integration.
+#### Start in daemon mode
+The -d switch will start Kassy in daemon mode (runs in the background). Again, make sure to mount your specific config as needed, per integration.
 
 ```sh
 docker run -d \

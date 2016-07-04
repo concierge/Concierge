@@ -15,8 +15,7 @@ var fs = require('fs'),
     modulesDir = 'modules',
     descriptor = 'hubot.json',
     pkg = 'package.json',
-    Robot = require.once('./hubot/robot.js'),
-    coffeescriptLoaded = false;
+    Robot = require.once('./hubot/robot.js');
 
 var verifyModuleDescriptior = function (hj, disabled) {
     if (!hj.name || !hj.startup || !hj.version) {
@@ -98,9 +97,9 @@ exports.listModules = function (disabled) {
 };
 
 exports.loadModule = function (module, config) {
-    if (!coffeescriptLoaded && module.startup.endsWith('.coffee')) {
+    if (!global.coffeescriptLoaded && module.startup.endsWith('.coffee')) {
         require('coffee-script').register();
-        coffeescriptLoaded = true;
+        global.coffeescriptLoaded = true;
     }
 
     try {
