@@ -68,7 +68,7 @@ exports.run = function(api, event) {
     }
 
     api.sendPrivateMessage(help, event.thread_id, event.sender_id);
-    return false;
+    return true;
 };
 
 exports.help = function(commandPrefix) {
