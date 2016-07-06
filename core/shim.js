@@ -1,15 +1,23 @@
 var sendMessageToMultiple = function (message, threads) {
-    var apis = exports.current.getIntegrationApis();
-    for (var integ in threads) {
-        if (!threads.hasOwnProperty(integ)) {
-            continue;
+        var apis = exports.current.getIntegrationApis();
+        for (var integ in threads) {
+            if (!threads.hasOwnProperty(integ)) {
+                continue;
+            }
+            var intThreads = threads[integ];
+            for (var i = 0; i < intThreads.length; i++) {
+                apis[integ].sendMessage(message, intThreads[i]);
+            }
         }
-        var intThreads = threads[integ];
-        for (var i = 0; i < intThreads.length; i++) {
-            apis[integ].sendMessage(message, intThreads[i]);
-        }
-    }
-};
+    },
+
+    _loopbackWrapper = function (origionalSend, api) {
+        return function (data, thread) {
+            origionalSend(data, thread);
+            let newEvent = exports.createEvent(thread, -1, 'Bot', data);
+            exports.current.onMessage(api, newEvent);
+        };
+    };
 
 exports.createIntegration = function (platform) {
     if (!platform.sendMessage) {
@@ -17,12 +25,14 @@ exports.createIntegration = function (platform) {
             throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
         };
     }
+    platform.sendMessage = _loopbackWrapper(platform.sendMessage, platform);
 
     if (!platform.sendUrl) {
         platform.sendUrl = function(url, thread) {
             platform.sendMessage(url, thread); // fallback to sending a message
         };
     }
+    platform.sendUrl = _loopbackWrapper(platform.sendUrl, platform);
 
     if (!platform.sendImage) {
         platform.sendImage = function(type, image, description, thread) {

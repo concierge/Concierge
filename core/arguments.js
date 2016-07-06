@@ -1,8 +1,9 @@
-var consolec = require('./unsafe/console.js'),
+let consolec = require('./unsafe/console.js'),
     options = [
         {
             long: '--debug',
             short: '-d',
+            description: 'Enables debug level logging.',
             run: function() {
                 console.warn('Debug mode enabled.');
                 consolec.setDebug(true);
@@ -11,6 +12,7 @@ var consolec = require('./unsafe/console.js'),
         {
             long: '--log',
             short: '-l',
+            description: 'Saves logs to a local file.',
             run: function() {
                 console.warn('Logging mode enabled.');
                 consolec.setLog(true);
@@ -19,6 +21,7 @@ var consolec = require('./unsafe/console.js'),
         {
             long: '--timestamp',
             short: '-t',
+            description: 'Adds a timestamp to each output log message.',
             run: function () {
                 console.warn('Console timestamps enabled.');
                 consolec.setTimestamp(true);
@@ -27,16 +30,37 @@ var consolec = require('./unsafe/console.js'),
         {
             long: '--language',
             short: '-i',
-            expects: 1,
+            description: 'Sets the locale that should be used by the bot.',
+            expects: ['LOCALE'],
             run: function (value) {
                 console.warn(`Locale set to "${value[0]}".`);
                 global.__i18nLocale = value[0];
+            }
+        },
+        {
+            long: '--help',
+            short: '-h',
+            description: 'Shows this help.',
+            run: function() {
+                console.log('USAGE\n\tnode main.js ' + '<options...>'.cyan + '\nOPTIONS');
+                for (let i = 0; i < options.length; i++) {
+                    let infoStr = '\t' + options[i].short + ', ' + options[i].long;
+                    if (options[i].expects) {
+                        infoStr += ' ';
+                        for (let j = 0; j < options[i].expects.length; j++) {
+                            infoStr += '{' + options[i].expects[j].yellow + '} ';
+                        }
+                    }
+                    console.info(infoStr);
+                    console.log('\t\t' + options[i].description);
+                }
+                process.exit(0);
             }
         }
     ];
 
 exports.runArguments = function (args) {
-    for (var i = 0; i < args.length; i++) {
+    for (let i = 0; i < args.length; i++) {
         var arg = args[i],
             pargs = options.filter(function(value) {
                 return value.short === arg || value.long === arg;
@@ -49,14 +73,14 @@ exports.runArguments = function (args) {
             throw new Error('Cannot have overlapping arguments.');
         }
 
-        var vals = [];
-        var count = pargs[0].expects || 0;
-        for (var j = 1; j <= count; j++) {
+        let vals = [],
+            count = (pargs[0].expects || {}).length || 0;
+        for (let j = 1; j <= count; j++) {
             vals.push(args[i + j]);
         }
 
         pargs[0].run(vals);
-        var diff = 1 + count;
+        let diff = 1 + count;
         args.splice(i, diff);
         i -= diff;
     }

@@ -1,6 +1,4 @@
-var figlet = require.safe('figlet'),
-
-constructHelpMessage = function (help, modules, context, event) {
+let constructHelpMessage = function (help, modules, context, event) {
     for (var i = 0; i < modules.length; i++) {
         var cmdHelp = modules[i].ignoreHelpContext ?
         modules[i].help(context.commandPrefix, event) :
@@ -19,9 +17,8 @@ checkIfModuleExists = function(modules, moduleName) {
 },
 
 shortSummary = function(context, event) {
-    var help = figlet.textSync(this.packageInfo.name.toProperCase()) + '\n ' +
-        this.packageInfo.version + '\n--------------------\n' +
-        this.packageInfo.homepage +  '\n\n';
+    var help = this.packageInfo.name.toProperCase() + ' [' + this.packageInfo.version +
+        ']\n--------------------\n' + this.packageInfo.homepage +  '\n\n';
 
     return constructHelpMessage(help, this.modulesLoader.getLoadedModules(), context, event);
 },
