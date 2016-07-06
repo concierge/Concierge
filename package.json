@@ -24,7 +24,7 @@
     "rimraf": "^2.4.4",
     "sandbox": "^0.8.6",
     "sanitize-filename": "^1.5.3",
-    "skyweb": "0.0.2",
+    "skyweb": "0.0.4",
     "stripcolorcodes": "^0.1.0",
     "tmp": "^0.0.28",
     "ws": "^0.8.0"
