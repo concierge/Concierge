@@ -30,11 +30,11 @@ var loadConfig = function (location) {
 
 var saveIndividualConfig = function (location, data) {
     fs.writeFileSync(location, JSON.stringify(data, function(key, value) {
-            if (sysConfigZones.includes(key) && value === {}) {
-                return undefined;
-            }
-            return value;
-        }, 4), 'utf8');
+        if (sysConfigZones.includes(key) && Object.keys(value).length === 0) {
+            return undefined; // deliberate use of undefined, will cause property to be deleted.
+        }
+        return value;
+    }, 4), 'utf8');
 };
 
 exports.saveModuleConfig = function(mod) {

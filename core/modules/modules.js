@@ -71,7 +71,7 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             middle = Math.floor(loadedModules.length / 2),
             lower = loadedModules.length - 1;
 
-        while (true) {
+        while (lower !== middle && upper !== middle) {
             if (module.__loaderPriority === loadedModules[middle].__loaderPriority) {
                 break;
             }
@@ -98,7 +98,7 @@ exports.getLoadedModules = function () {
     return loadedModules;
 };
 
-exports.loadModule = function (module, platform) {
+exports.loadModule = function(module, platform) {
     var ld = loadModuleInternal(module, platform);
     if (ld) {
         insertSorted(ld);
@@ -106,7 +106,7 @@ exports.loadModule = function (module, platform) {
             ld.load.call(ld.platform);
         }
     }
-}
+};
 
 exports.loadAllModules = function(platform) {
     var m = listModules();

@@ -17,14 +17,12 @@ exports.createIntegration = function (platform) {
             throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
         };
     }
-    //platform.sendMessage = loopbackWrapper(platform.sendMessage, platform);
 
     if (!platform.sendUrl) {
         platform.sendUrl = function(url, thread) {
             platform.sendMessage(url, thread); // fallback to sending a message
         };
     }
-    //platform.sendUrl = loopbackWrapper(platform.sendUrl, platform);
 
     if (!platform.sendImage) {
         platform.sendImage = function(type, image, description, thread) {

@@ -18,9 +18,9 @@ var path = require('path'),
 
     _getCallerFileName = function (levels = 1) {
         const origPrepareStackTrace = Error.prepareStackTrace;
-        Error.prepareStackTrace = function (_, stack) {
+        Error.prepareStackTrace = function(_, stack) {
             return stack;
-        }
+        };
         const err = new Error();
         const stack = err.stack;
         Error.prepareStackTrace = origPrepareStackTrace;
@@ -92,7 +92,7 @@ TranslatorService.prototype.setHook = function(hookFunction) {
 contextMap[globalContext] = new TranslatorService('./core/translations/i18n/');
 
 /**
- * Translates a given format string. 
+ * Translates a given format string.
  * @param {Array<string>} strings input format string split at format values. These are
  * the sections outside of the `${x}` sections of the format string.
  * @param {Array<string>} values input format values. These are the values of strings
@@ -125,7 +125,7 @@ module.exports.hook = function(func, context = null) {
         const contextMatches = contextFileName.match(/modules(\\|\/).*(?=\\|\/)/g);
         context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
     }
-    
+
     if (!contextMap.hasOwnProperty(context)) {
         throw new Error($$`Invalid translation context provided.`);
     }
@@ -134,7 +134,7 @@ module.exports.hook = function(func, context = null) {
 };
 
 /**
- * Sets the current locale of the system. 
+ * Sets the current locale of the system.
  * @param {string} localeString the string to set the locale to. E.g. 'en' for english.
  * @returns {undefined} does not currently return a value.
  */
@@ -148,7 +148,7 @@ module.exports.setLocale = function (localeString) {
  * Removes a translation context if that context exists.
  * Has no limitations, so has the ability to remove the global context as well...
  * @param {string} context the translation context. Either the module name or global context identifier.
- * @returns {undefined} does not currently return a value. 
+ * @returns {undefined} does not currently return a value.
  */
 module.exports.removeContextIfExists = function(context) {
     if (contextMap.hasOwnProperty(context)) {

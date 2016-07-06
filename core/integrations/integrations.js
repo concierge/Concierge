@@ -115,8 +115,6 @@ exports.startIntegrations = function (callback) {
     if (started) {
         throw new Error($$`StartError`);
     }
-    
-    if (selectedIntegrations)
 
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {
