@@ -27,11 +27,11 @@ longDescription = function(moduleName, context, event) {
     var module = checkIfModuleExists(this.modulesLoader.getLoadedModules(), moduleName);
 
     if (!module || module.length === 0) {
-        return 'Cannot provide help on module that was not found. Has it been disabled?';
+        return $$`No help found`;
     }
 
     if (module.length > 1) {
-        return 'More than one module has the same name. Please fix this before continuing.';
+        return $$`Multiple different help results`;
     }
 
     var help = '',
@@ -69,5 +69,8 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'help', 'displays this help', 'prints a short summary of all available commands'], [commandPrefix + 'help <query>', 'prints help for a specific module']];
+    return [
+        [commandPrefix + 'help', $$`Displays this help`, $$`Prints a short summary of all available commands with help`],
+        [commandPrefix + 'help <query>', $$`Prints help for a specific module`]
+    ];
 };

@@ -14,7 +14,7 @@ var git = require.once('../git.js'),
     checkForHash = function() {
         git.getSHAOfRemoteMaster(function(err, consoleOutput) {
             if (err) {
-                console.debug('Failed to get SHA hash of remote origin/master\n Error: ' + consoleOutput);
+                console.debug($$`Failed SHA hash ${consoleOutput}`);
                 return false;
             }
             if (currentSHA !== consoleOutput) {
@@ -38,14 +38,14 @@ var git = require.once('../git.js'),
                 if (err) {
                     failedUpdateAttempts++;
                     console.critical(err);
-                    console.debug('Periodic auto update failed. Manual intervention is probably required.\n Error: ' + consoleOutput);
+                    console.debug($$`Periodic auto update failed ${consoleOutput}`);
                     setUpdateTimer();
                 }
                 else {
                     git.submoduleUpdate(function(err) {
                         if (err) {
                             console.critical(err);
-                            console.debug('Periodic auto git submodule update failed. Manual intervention is probably required.\n Error: ' + consoleOutput);
+                            console.debug($$`Periodic auto git submodule update failed. ${consoleOutput}`);
                         }
                         else {
                             try {
@@ -53,7 +53,7 @@ var git = require.once('../git.js'),
                             }
                             catch (e) {
                                 console.critical(e);
-                                api.sendMessage('Periodic auto update of NPM packages failed. Manual NPM intervention will be required.', event.thread_id);
+                                api.sendMessage($$`Periodic auto update of NPM packages failed.`, event.thread_id);
                             }
                         }
 
@@ -81,7 +81,7 @@ exports.load = function() {
 
     git.getCurrentBranchName(function (err, consoleOutput) {
         if (err) {
-            console.debug('Failed to get current branch name\n Error: ' + consoleOutput);
+            console.debug($$`Failed to get branch name ${consoleOutput}`);
             return;
         }
         branchName = consoleOutput.trim();
@@ -96,7 +96,7 @@ exports.load = function() {
         }
         git.getSHAOfHead(function (err, consoleOutput) {
             if (err) {
-                console.debug('Failed to get SHA hash of HEAD\n Error: ' + consoleOutput);
+                console.debug($$`Failed SHA hash ${consoleOutput}`);
                 return;
             }
             currentSHA = consoleOutput;
@@ -113,28 +113,28 @@ exports.unload = function() {
 };
 
 exports.run = function (api, event) {
-    api.sendMessage('Updating from git...', event.thread_id);
+    api.sendMessage($$`Updating from git`, event.thread_id);
     git.pull(function(err) {
         if (err) {
             console.critical(err);
-            api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
+            api.sendMessage($$`Update failed`, event.thread_id);
         }
         else {
-            api.sendMessage('Updating submodules...', event.thread_id);
+            api.sendMessage($$`Updating submodules`, event.thread_id);
             git.submoduleUpdate(function(err) {
                 if (err) {
                     console.critical(err);
-                    api.sendMessage('Updating submodules failed. Manual intervention is required', event.thread_id);
+                    api.sendMessage($$`Update failed`, event.thread_id);
                 }
                 else {
-                    api.sendMessage('Updating installed NPM packages...', event.thread_id);
+                    api.sendMessage($$`Updating installed NPM packages`, event.thread_id);
                     try {
                         install.update();
-                        api.sendMessage('Update successful. Restart to load changes.', event.thread_id);
+                        api.sendMessage($$`Update successful`, event.thread_id);
                     }
                     catch (e) {
                         console.critical(e);
-                        api.sendMessage('Update succeeded but NPM package update failed. Manual intervention is probably required.', event.thread_id);
+                        api.sendMessage($$`Update failed`, event.thread_id);
                     }
                 }
             });
@@ -145,5 +145,5 @@ exports.run = function (api, event) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'update', 'Updates the platform to the latest version on master', 'Also update npm dependencies, periodic automatic updates are enabled by default.']];
+    return [[commandPrefix + 'update', $$`Updates the bot to the latest version.`, $$`Updates the bot to the latest version extended`]];
 };

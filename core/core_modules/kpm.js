@@ -34,7 +34,7 @@ var git = require.once('../git.js'),
             var m = {};
             for (var i = 0; i < args.length; i++) {
                 if (!isModuleName(args[i])) {
-                    api.sendMessage('"' + args[i] + '" is not an installed module.', event.thread_id);
+                    api.sendMessage($$`"${args[i]}" is not an installed module.`, event.thread_id);
                     return null;
                 }
                 m[args[i]] = updateMods[args[i]];
@@ -42,19 +42,19 @@ var git = require.once('../git.js'),
             updateMods = m;
         }
         if (Object.keys(updateMods).length === 0) {
-            api.sendMessage('No modules are installed to ' + cmd + '.', event.thread_id);
+            api.sendMessage($$`No modules are installed to ${cmd}.`, event.thread_id);
             return null;
         }
         return updateMods;
     },
 
     update = function (module, api, event) {
-        api.sendMessage('Updating "' + module.name + '" (' + module.version + ')...', event.thread_id);
+        api.sendMessage($$`Updating "${module.name}" (${module.version})...`, event.thread_id);
         git.pullWithPath(module.folderPath, function (err) {
             if (err) {
-                api.sendMessage('Update failed. Manual intervention is probably required.', event.thread_id);
+                api.sendMessage($$`Update failed`, event.thread_id);
             } else {
-                api.sendMessage('Restarting module "' + module.name + '"...', event.thread_id);
+                api.sendMessage($$`Restarting module "${module.name}"...`, event.thread_id);
                 // unload the current version
                 this.modulesLoader.unloadModule();
 
@@ -63,25 +63,26 @@ var git = require.once('../git.js'),
                     m = exports.platform.modulesLoader.loadModule(descriptor, exports.platform);
                 if (m !== null) {
                     exports.platform.loadedModules.push(m);
-                    api.sendMessage('"' + module.name + '" is now at version ' + module.version + '.', event.thread_id);
+                    api.sendMessage($$`"${module.name}" is now at version ${module.version}.`, event.thread_id);
                 } else {
-                    api.sendMessage('Loading updated "' + module.name + '" failed. Manual intervention will be required.', event.thread_id);
+                    api.sendMessage($$`Loading updated "${module.name}" failed`, event.thread_id);
                 }
             }
         }.bind(this));
     },
 
     uninstall = function(module, api, event) {
-        api.sendMessage('Unloading module "' + module.name + '"...', event.thread_id);
+        api.sendMessage($$`Unloading module "${module.name}".`, event.thread_id);
         // unload the current version
         exports.platform.modulesLoader.unloadModule(module, exports.platform.config);
 
         rmdir(module.__folderPath, function (error) {
             if (error) {
                 console.debug(error);
-                api.sendMessage('Failed to delete module "' + module.name + '".', event.thread_id);
-            } else {
-                api.sendMessage('Uninstalled module "' + module.name + '".', event.thread_id);
+                api.sendMessage($$`Failed to delete module "${module.name}".`, event.thread_id);
+            }
+            else {
+                api.sendMessage($$`Uninstalled module "${module.name}".`, event.thread_id);
             }
         });
     },
@@ -92,13 +93,13 @@ var git = require.once('../git.js'),
                 moduleList = getModuleList();
 
             if (!descriptor) {
-                api.sendMessage('"' + name + '" is not a valid module/script.', event.thread_id);
+                api.sendMessage($$`"${name}" is not a valid module/script.`, event.thread_id);
                 cleanup();
                 return;
             }
 
             if (moduleList[descriptor.name] || moduleList['kpm_' + descriptor.name]) {
-                api.sendMessage('A module with name or directory "' + descriptor.name + '" has already been installed.', event.thread_id);
+                api.sendMessage($$`A module with name or directory "${descriptor.name}" has already been installed.`, event.thread_id);
                 cleanup();
                 return;
             }
@@ -108,7 +109,7 @@ var git = require.once('../git.js'),
             fs.copy(moduleLocation, instDir, function (err) {
                 if (err) {
                     console.debug(err);
-                    api.sendMessage('An unknown error occurred while installing "' + descriptor.name + '".', event.thread_id);
+                    api.sendMessage($$`An unknown error occurred while installing "${descriptor.name}".`, event.thread_id);
                     cleanup();
                     return;
                 }
@@ -116,10 +117,10 @@ var git = require.once('../git.js'),
                 descriptor.folderPath = instDir;
                 var m = exports.platform.modulesLoader.loadModule(descriptor, exports.platform);
                 if (m !== null) {
-                    api.sendMessage('"' + descriptor.name + '" (' + descriptor.version + ') is now installed.', event.thread_id);
+                    api.sendMessage($$`"${descriptor.name}" (${descriptor.version}) is now installed.`, event.thread_id);
                 }
                 else {
-                    api.sendMessage('"' + descriptor.name + '" (' + descriptor.version + ') could not be installed, it appears to be invalid (syntax error?).', event.thread_id);
+                    api.sendMessage($$`"${descriptor.name}" (${descriptor.version}) could not be installed, it appears to be invalid (syntax error?).`, event.thread_id);
                     fs.emptyDir(descriptor.folderPath, function () {
                         // just delete if we can, not a lot we can do about errors here.
                     });
@@ -129,13 +130,13 @@ var git = require.once('../git.js'),
         }
         catch (e) {
             console.critical(e);
-            api.sendMessage('Could not install "' + name + '".', event.thread_id);
+            api.sendMessage($$`Could not install "${name}".`, event.thread_id);
             cleanup();
         }
     },
 
     gitInstall = function(url, api, event) {
-        api.sendMessage('Attempting to install module from "' + url + '"...', event.thread_id);
+        api.sendMessage($$`Attempting to install module from "${url}"`, event.thread_id);
         tmp.dir(function (err, dir, cleanupCallback) {
             if (err) {
                 throw err;
@@ -150,7 +151,7 @@ var git = require.once('../git.js'),
                 if (err1) {
                     console.critical(err1);
                     cleanup();
-                    return api.sendMessage('Failed to install module from "' + url + '"...', event.thread_id);
+                    return api.sendMessage($$`Failed to install module from "${url}"`, event.thread_id);
                 }
                 var parsed = urll.parse(url),
                     cleaned = sanitize(path.basename(parsed.pathname));
@@ -160,7 +161,7 @@ var git = require.once('../git.js'),
     },
 
     scriptInstall = function (url, api, event) {
-        api.sendMessage('Attempting to install script from "' + url + '"...', event.thread_id);
+        api.sendMessage($$`Attempting to install script from "${url}"`, event.thread_id);
         tmp.dir(function(err, dir, cleanupCallback) {
             if (err) {
                 throw err;
@@ -177,7 +178,7 @@ var git = require.once('../git.js'),
                 if (err) {
                     console.critical(err);
                     cleanup();
-                    return api.sendMessage('Failed to install "' + cleaned + '"...', event.thread_id);
+                    return api.sendMessage($$`Failed to install "${cleaned}"`, event.thread_id);
                 }
 
                 fs.writeFileSync(path.join(dir, cleaned), body, 'utf8');
@@ -223,7 +224,7 @@ var git = require.once('../git.js'),
             callback(url);
         }
         else {
-            callback(url, 'Could not update the list of KPM entries. Module entries may not be up to date.');
+            callback(url, $$`Could not update the list of KPM entries. Module entries may not be up to date.`);
         }
     },
 
@@ -231,13 +232,13 @@ var git = require.once('../git.js'),
         help: {
             run: function(args, api, event) {
                 if (args.length > 1) {
-                    api.sendMessage('You can only show detailed help for one command at a time.', event.thread_id);
+                    api.sendMessage($$`You can only show detailed help for one command at a time.`, event.thread_id);
                     return;
                 }
                 var msg;
                 if (args.length === 1) {
                     if (!opts[args[0]] || args[0] === 'help') {
-                        api.sendMessage('No such command to show help for.', event.thread_id);
+                        api.sendMessage($$`No such command to show help for.`, event.thread_id);
                         return;
                     }
                     msg = opts[args[0]].command + '\n--------------------\n' + opts[args[0]].detailedHelp;
@@ -259,7 +260,7 @@ var git = require.once('../git.js'),
         install: {
             run: function(args, api, event) {
                 if (args.length === 0) {
-                    api.sendMessage('Nothing provided to install!', event.thread_id);
+                    api.sendMessage($$`Nothing provided to install!`, event.thread_id);
                     return;
                 }
 
@@ -279,7 +280,7 @@ var git = require.once('../git.js'),
                             url = 'https://github.com/' + url.trim();
                         }
                         else {
-                            api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                            api.sendMessage($$`Invalid KPM module provided "${url}"`, event.thread_id);
                             continue;
                         }
                     }
@@ -291,13 +292,13 @@ var git = require.once('../git.js'),
                         scriptInstall.call(this, url, api, event);
                     }
                     else {
-                        api.sendMessage('Invalid KPM module provided "' + url + '". Skipping...', event.thread_id);
+                        api.sendMessage($$`Invalid KPM module provided "${url}"`, event.thread_id);
                     }
                 }
             },
             command: 'install <url|ref> [<url|ref> [<url|ref> [...]]]',
-            help: 'Installs one or more modules from exising git repositories or github references.',
-            detailedHelp: 'Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.'
+            help: $$`Installs one or more modules from exising git repositories or github references.`,
+            detailedHelp: $$`Installs one or more modules from existing git repositories or github references if ones of the same name do not already exist.`
         },
 
         uninstall: {
@@ -308,9 +309,8 @@ var git = require.once('../git.js'),
                 }
             },
             command: 'uninstall [<moduleName> [<moduleName> [...]]]',
-            help: 'Uninstalls one or more modules.',
-            detailedHelp: 'Uninstalls one or more modules that were installed using Kassy Package Manager' +
-            'or uninstalls all modules if a list was not provided. Will not uninstall preinstalled modules.'
+            help: $$`Uninstalls one or more modules.`,
+            detailedHelp: $$`Uninstalls one or more modules extended`
         },
 
         update: {
@@ -321,30 +321,30 @@ var git = require.once('../git.js'),
                 }
             },
             command: 'update [<moduleName> [<moduleName> [...]]]',
-            help: 'Updates one or all modules.',
-            detailedHelp: 'Updates all modules that were installed using Kassy Package Manager or if a module name was provided updates that module.'
+            help: $$`Updates one or all modules.`,
+            detailedHelp: $$`Updates one or all modules extended`
         },
 
         list: {
             run: function(args, api, event) {
                 if (args.length > 0) {
-                    api.sendMessage('List does not take any arguments', event.thread_id);
+                    api.sendMessage($$`List does not take any arguments`, event.thread_id);
                     return;
                 }
 
-                var l = 'Installed KPM modules are:\n';
+                var l = $$`Installed KPM modules are:`;
                 var mods = Object.keys(getModuleList());
                 for (var i = 0; i < mods.length; i++) {
                     l += '\t- ' + mods[i] + '\n';
                 }
                 if (mods.length === 0) {
-                    l += 'No modules currently installed using KPM.\n';
+                    l += $$`No modules currently installed using KPM.`;
                 }
                 api.sendMessage(l, event.thread_id);
             },
             command: 'list',
-            help: 'Lists all installed modules (except preinstalled ones).',
-            detailedHelp: 'Lists all modules that have been installed using Kassy Package Manager.'
+            help: $$`Lists all installed modules (except preinstalled ones).`,
+            detailedHelp: $$`Lists all modules that have been installed using Kassy Package Manager.`
         }
     };
 
@@ -356,7 +356,7 @@ exports.run = function (api, event) {
     var commands = event.arguments;
     var command = commands.length >= 2 ? commands[1].toLowerCase() : null;
     if (command == null || !opts[command]) {
-        var t = 'Invalid usage of Kassy Package Manager. Options are:\n';
+        var t = $$`Invalid usage of KPM`;
         for (var opt in opts) {
             t += '\t- ' + opts[opt].command + '\n';
         }
@@ -381,5 +381,5 @@ exports.run = function (api, event) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'kpm', 'Kassy Package Manager, for installing external kpm modules', 'For detailed help on specific kpm commands run ' + commandPrefix + 'kpm help']];
+    return [[commandPrefix + 'kpm', $$`KPM Help`, $$`KPM Help Extended ${commandPrefix}`]];
 };

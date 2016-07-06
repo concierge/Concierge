@@ -22,5 +22,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'ping', 'Checks to see if the platform is alive', 'Also displays the hostname and computer platform']];
+    return [[commandPrefix + 'ping', $$`Checks to see if the bot is alive`, $$`Checks to see if the bot is alive extended`]];
 };
