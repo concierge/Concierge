@@ -1,6 +1,6 @@
 {
   "name": "kassy",
-  "version": "3.5.1",
+  "version": "4.0.0alpha",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -23,7 +23,7 @@
     "rimraf": "^2.4.4",
     "sandbox": "^0.8.6",
     "sanitize-filename": "^1.5.3",
-    "skyweb": "0.0.2",
+    "skyweb": "0.0.4",
     "stripcolorcodes": "^0.1.0",
     "tmp": "^0.0.28",
     "ws": "^1.0.1"
@@ -38,16 +38,20 @@
   },
   "scripts": {
     "test": "grunt test",
-    "start": "node main.js"
+    "start": "node main.js",
+	"debug": "node main.js --debug --timestamp"
+  },
+  "engines": {
+    "node": "6.2.1"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mrkno/Kassy.git"
+    "url": "git+https://github.com/concierge/Kassy.git"
   },
   "author": "Matthew Knox",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/mrkno/Kassy/issues"
+    "url": "https://github.com/concierge/Kassy/issues"
   },
-  "homepage": "https://github.com/mrkno/Kassy"
+  "homepage": "https://github.com/concierge/Kassy"
 }

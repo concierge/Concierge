@@ -1,4 +1,4 @@
-var shutdownResponses = ['Good Night', 'I don\'t blame you.', 'There you are.', 'Please.... No, Noooo!'];
+var shutdownResponses = [$$`Good Night`, $$`I don't blame you`, $$`There you are`, $$`Please.... No, Noooo!`];
 
 exports.match = function (event, commandPrefix) {
     return event.body === commandPrefix + 'shutdown';
@@ -12,5 +12,5 @@ exports.run = function(api, event) {
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'shutdown', 'Shuts down the platform', 'The platform may take up to 30 seconds to shutdown fully, this is dependant on output modules.']];
+    return [[commandPrefix + 'shutdown', $$`Shuts down the bot`, $$`Shuts down the bot extended`]];
 };

@@ -1,5 +1,4 @@
 var request = require.safe('request'),
-    shim = require.once('../shim.js'),
     WebSocket = require.safe('ws'),
     platform = null,
     sockets = [],
@@ -536,6 +535,10 @@ var request = require.safe('request'),
         clearedTimeouts = true;
     };
 
+exports.getApi = function() {
+    return platform;
+};
+
 exports.start = function (callback) {
     var slackTokens = exports.config.slack_tokens;
 
@@ -548,7 +551,7 @@ exports.start = function (callback) {
             initialiseConnection(slackTokens[i], connect);
         }
 
-        platform = shim.createPlatformModule({
+        platform = shim.createIntegration({
             sendMessage: sendMessage,
             sendFile: sendFile,
             setTitle: renameChannel,

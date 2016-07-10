@@ -1,10 +1,13 @@
 var bot = null,
     api = null,
-    shim = require('../shim.js'),
     TelegramBot = require.safe('node-telegram-bot-api');
 
 var sendMessage = function(message, thread, opts) {
     bot.sendMessage(thread, message, opts);
+};
+
+exports.getApi = function() {
+    return api;
 };
 
 exports.start = function(callback) {
@@ -13,7 +16,7 @@ exports.start = function(callback) {
         polling: true
     });
 
-    api = shim.createPlatformModule({
+    api = shim.createIntegration({
         sendMessage: sendMessage,
         commandPrefix: exports.config.commandPrefix
     });

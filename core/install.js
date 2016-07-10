@@ -33,9 +33,9 @@ var inst = deasync(npm.commands.install),
     },
 
     install = function(name) {
-        console.info('Installing "' + name + '" from npm.');
+        console.info($$`Installing "${name}" from npm.`);
         inst([name]);
-        console.info('Installation complete.');
+        console.info($$`Installation complete.`);
     };
 
 exports.requireOrInstall = function(req, name) {

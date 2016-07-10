@@ -59,7 +59,8 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
         if (hubotDocumentationSections.indexOf(nextSection) >= 0) {
             currentSection = nextSection;
             scriptDocumentation[currentSection] = [];
-        } else if (currentSection) {
+        }
+        else if (currentSection) {
             scriptDocumentation[currentSection].push(cleanedLine.trim());
             if (currentSection === 'commands') {
                 commands.push(cleanedLine.trim());
@@ -85,7 +86,12 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
     }
 
     if (help.length === 0) {
-        help.push([scriptDocumentation.name, 'Does something. The unhelpful author didn\'t specify what.']);
+        help.push([scriptDocumentation.name, $$`Does something. The unhelpful author didn't specify what.`]);
+    }
+
+    var priority = 'normal';
+    if (body.indexOf('.catchAll') >= 0) {
+        priority = 'last';
     }
 
     return {
@@ -99,7 +105,8 @@ Robot.generateHubotJson = function (folderPath, scriptLocation) {
         examples: scriptDocumentation.examples,
         tags: scriptDocumentation.tags,
         urls: scriptDocumentation.urls,
-        help: help
+        help: help,
+        priority: priority
     };
 };
 
@@ -115,13 +122,15 @@ Robot.prototype.run = function (api, event) {
 };
 
 Robot.prototype.match = function (event, commandPrefix) {
+    if (event.__robotCallbackListeners) {
+        delete event.__robotCallbackListeners;
+    }
+
     var msg = new Message(event, commandPrefix);
 
-    var hasMatched = false;
     for (var i = 0; i < this.listeners.length; i++) {
         var m = this.listeners[i].matcher(msg);
         if (m) {
-            hasMatched = true;
             if (!event.__robotCallbackListeners) {
                 event.__robotCallbackListeners = [];
                 event.__robotCallbackMessage = msg;
@@ -133,7 +142,7 @@ Robot.prototype.match = function (event, commandPrefix) {
         }
     }
 
-    if (!hasMatched) {
+    if (event.module_match_count === 0) {
         for (var i = 0; i < this.catchAllListeners.length; i++) {
             if (!event.__robotCallbackListeners) {
                 event.__robotCallbackListeners = [];
@@ -178,6 +187,11 @@ Robot.prototype.respond = function (regex, callback) {
 
 Robot.prototype.catchAll = function (callback) {
     this.listeners.push(callback);
+};
+
+Robot.prototype.receive = function (message) {
+    var event = shim.createEvent(message.event.thread_id, message.event.sender_id, message.event.sender_name, message.text);
+    this.platform.onMessage(api, event);
 };
 
 Robot.prototype.ignoreHelpContext = true;
