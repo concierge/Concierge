@@ -1,11 +1,14 @@
-var shim = require.once('../shim.js'),
-    cline = require('cline'),
+var cline = require('cline'),
     chalk = require('chalk'),
     historySize = 1024,
     receivedCallback = null,
     cli = null,
     api = null,
     hasStartedShutdown = false;
+
+exports.getApi = function() {
+    return api;
+};
 
 exports.start = function (callback) {
     receivedCallback = callback;
@@ -23,10 +26,17 @@ exports.start = function (callback) {
         exports.config.commandHistory = [];
     }
 
-    api = api = shim.createPlatformModule({
+    api = api = shim.createIntegration({
         commandPrefix: exports.config.commandPrefix,
         sendMessage: function (text) {
             console.log(chalk.bold('' + text));
+        },
+        getUsers: function (thread) {
+            var obj = {};
+            if (thread === exports.config.threadId) {
+                obj[exports.config.senderId] = exports.config.senderName;
+            }
+            return obj;
         }
     });
 

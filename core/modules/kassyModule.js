@@ -12,21 +12,41 @@
 var fs              = require('fs'),
     path            = require('path'),
     files           = require.once('./../files.js'),
-    config          = require('./../config.js'),
     modulesDir      = 'modules',
-    descriptor      = 'kassy.json';
+    coreMoulesDir   = 'core/core_modules',
+    descriptor      = 'kassy.json',
 
-var verifyModuleDescriptior = function (kj, disabled) {
-    if (!kj.name || !kj.startup || !kj.version) {
-        return false;
-    }
+    listCoreModules = function () {
+        var modules = {};
+        var data = files.filesInDirectory('./' + coreMoulesDir);
+        for (var i = 0; i < data.length; i++) {
+            if (!data[i].endsWith('.js')) {
+                continue;
+            }
 
-    if (disabled === true && exports.disabledConfig &&
-        exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
-        return false;
-    }
-    return true;
-};
+            var kj = {
+                name: path.basename(data[i], '.js'),
+                startup: path.resolve(path.join(coreMoulesDir, data[i])),
+                priority: 'first',
+                bypassConfig: true,
+                __coreOnly: true
+            };
+            modules[kj.name] = kj;
+        }
+        return modules;
+    },
+
+    verifyModuleDescriptior = function (kj, disabled) {
+        if (!kj.name || !kj.startup || !kj.version) {
+            return false;
+        }
+
+        if (disabled === true && exports.disabledConfig &&
+            exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
+            return false;
+        }
+        return true;
+    };
 
 exports.verifyModule = function (location, disabled) {
     var stat = fs.statSync(location);
@@ -54,12 +74,13 @@ exports.verifyModule = function (location, disabled) {
     if (!kj.folderPath) {
         kj.folderPath = folderPath;
     }
+
     return kj;
 };
 
 exports.listModules = function (disabled) {
     var data = files.filesInDirectory('./' + modulesDir),
-        modules = {};
+        modules = listCoreModules();
 
     for (var i = 0; i < data.length; i++) {
         try {
@@ -69,10 +90,10 @@ exports.listModules = function (disabled) {
                 modules[output.name] = output;
             }
             else {
-                console.debug('Skipping "' + data[i] + '". It isn\'t a Kassy module.');
+                console.debug($$`Skipping "${data[i]}". It isn't a Kassy module.`);
             }
         } catch (e) {
-            console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
+            console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
             console.critical(e);
             continue;
         }
@@ -112,23 +133,27 @@ getFunctionParameterNames = function (func) {
     return f.match(/\(.*?\)/)[0].replace(/[()]/gi, '').replace(/\s/gi, '').split(',');
 };
 
-exports.loadModule = function (module) {
+exports.loadModule = function (module, config) {
     var modulePath  = module.folderPath,
-        startPath   = path.join(modulePath, module.startup),
+        startPath   = module.startup,
         m;
 
     try {
+        if (modulePath) {
+            startPath = path.join(modulePath, startPath);
+        }
+
         m = require.once(startPath);
         if (!m.help) {
             if (!module.help) {
-                throw 'A module must provide basic help.';
+                throw new Error($$`A module must provide basic help.`);
             }
             m.help = createHelp(module);
         }
 
         if (!m.match) {
             if (!module.command) {
-                throw 'A module must provide a match function or command.';
+                throw new Error($$`A module must provide a match function or command.`);
             }
             m.match = createMatcher(module);
         }
@@ -138,12 +163,12 @@ exports.loadModule = function (module) {
     }
     catch (e) {
         console.critical(e);
-        throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
+        throw new Error($$`Could not load module '${module.name}'. Does it have a syntax error?`);
     }
-    m.config = config.loadModuleConfig(module, modulePath);
+    if (!module.bypassConfig) {
+        m.config = config.loadModuleConfig(module, modulePath);
+    }
+    m.__coreOnly = module.__coreOnly;
     m.name = module.name;
-    if (m.load) {
-        m.load();
-    }
     return m;
 };

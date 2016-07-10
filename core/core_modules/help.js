@@ -1,6 +1,4 @@
-var figlet = require.safe('figlet'),
-
-constructHelpMessage = function (help, modules, context, event) {
+let constructHelpMessage = function (help, modules, context, event) {
     for (var i = 0; i < modules.length; i++) {
         var cmdHelp = modules[i].ignoreHelpContext ?
         modules[i].help(context.commandPrefix, event) :
@@ -19,28 +17,21 @@ checkIfModuleExists = function(modules, moduleName) {
 },
 
 shortSummary = function(context, event) {
-    var help = figlet.textSync(this.packageInfo.name.toProperCase()) + '\n ' +
-        this.packageInfo.version + '\n--------------------\n' +
-        this.packageInfo.homepage +  '\n\n';
+    var help = this.packageInfo.name.toProperCase() + ' [' + this.packageInfo.version +
+        ']\n--------------------\n' + this.packageInfo.homepage +  '\n\n';
 
-    help = constructHelpMessage(help, this.coreModules, context, event);
-    return constructHelpMessage(help, this.loadedModules, context, event);
+    return constructHelpMessage(help, this.modulesLoader.getLoadedModules(), context, event);
 },
 
 longDescription = function(moduleName, context, event) {
-	var module = checkIfModuleExists(this.coreModules, moduleName);
+    var module = checkIfModuleExists(this.modulesLoader.getLoadedModules(), moduleName);
 
     if (!module || module.length === 0) {
-        // Check loaded modules, as commnd not in core modules
-        module = checkIfModuleExists(this.loadedModules, moduleName);
-    }
-
-    if (!module || module.length === 0) {
-        return 'Cannot provide help on module that was not found. Has it been disabled?';
+        return $$`No help found`;
     }
 
     if (module.length > 1) {
-        return 'More than one module has the same name. Please fix this before continuing.';
+        return $$`Multiple different help results`;
     }
 
     var help = '',
@@ -74,9 +65,12 @@ exports.run = function(api, event) {
     }
 
     api.sendPrivateMessage(help, event.thread_id, event.sender_id);
-    return false;
+    return true;
 };
 
 exports.help = function(commandPrefix) {
-    return [[commandPrefix + 'help', 'displays this help', 'prints a short summary of all available commands'], [commandPrefix + 'help <query>', 'prints help for a specific module']];
+    return [
+        [commandPrefix + 'help', $$`Displays this help`, $$`Prints a short summary of all available commands with help`],
+        [commandPrefix + 'help <query>', $$`Prints help for a specific module`]
+    ];
 };

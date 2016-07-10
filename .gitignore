@@ -4,9 +4,13 @@
 .idea/
 nohup.out
 .ntvs_analysis.dat
-Kassy.njsproj
-Kassy.sln
+*.njsproj
+*.sln
 obj/Debug/Kassy.njsproj.FileListAbsolute.txt
 modules/kpm_*
 typings/
 tsd.json
+*.vs*
+obj/*
+/bin/Microsoft.NodejsTools.WebRole.dll
+.DS_Store

@@ -73,5 +73,13 @@ process.on('uncaughtException', function(err) {
     console.critical(err);
 });
 
-integf.setIntegrations(startArgs);
-startup.run();
+process.on('SIGHUP', function () {
+    console.warn('SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...');
+    startup.stop();
+});
+
+process.on('SIGINT', function () {
+    startup.stop();
+});
+
+startup.run(startArgs);
