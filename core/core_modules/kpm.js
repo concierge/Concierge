@@ -344,7 +344,7 @@ var git = require.once('../git.js'),
             },
             command: 'list',
             help: $$`Lists all installed modules (except preinstalled ones).`,
-            detailedHelp: $$`Lists all modules that have been installed using Kassy Package Manager.`
+            detailedHelp: $$`Lists all modules that have been installed using KPM.`
         }
     };
 
@@ -370,7 +370,7 @@ exports.run = function (api, event) {
             moduleTableUrl = kpmCfg.tableUrl;
         }
         else {
-            moduleTableUrl = 'https://raw.githubusercontent.com/wiki/mrkno/Kassy/KPM-Table.md';
+            moduleTableUrl = 'https://raw.githubusercontent.com/wiki/concierge/Concierge/KPM-Table.md';
         }
     }
 

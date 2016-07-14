@@ -1,5 +1,8 @@
 let constructHelpMessage = function (help, modules, context, event) {
     for (var i = 0; i < modules.length; i++) {
+        if (!modules[i].help) {
+           continue;
+        }
         var cmdHelp = modules[i].ignoreHelpContext ?
         modules[i].help(context.commandPrefix, event) :
         modules[i].help.call(context, context.commandPrefix, event);
@@ -34,20 +37,25 @@ longDescription = function(moduleName, context, event) {
         return $$`Multiple different help results`;
     }
 
-    var help = '',
-        cmdHelp = module.ignoreHelpContext ?
-        module.help(context.commandPrefix, event) :
-        module.help.call(context, context.commandPrefix, event);
+    var help = '';
+    if (module.help) {
+       var cmdHelp = module.ignoreHelpContext ?
+           module.help(context.commandPrefix, event) :
+           module.help.call(context, context.commandPrefix, event);
 
-    for (var i = 0; i < cmdHelp.length; i++) {
-        var text = cmdHelp[i].length === 3 ? cmdHelp[i][2] : cmdHelp[i][1];
-        help += cmdHelp[i][0] + '\n--------------------\n' + text + '\n\n';
+       for (var i = 0; i < cmdHelp.length; i++) {
+           var text = cmdHelp[i].length === 3 ? cmdHelp[i][2] : cmdHelp[i][1];
+           help += cmdHelp[i][0] + '\n--------------------\n' + text + '\n\n';
+       }
+    }
+    else {
+       help = $$`Does something. The unhelpful author didn't specify what.`;
     }
     return help;
 };
 
 exports.match = function(event, commandPrefix) {
-    return event.arguments[0] === commandPrefix + exports.platform.packageInfo.name || event.arguments[0] === commandPrefix + 'help';
+    return event.arguments[0] === commandPrefix + exports.platform.packageInfo.name.toLowerCase() || event.arguments[0] === commandPrefix + 'help';
 };
 
 exports.run = function(api, event) {

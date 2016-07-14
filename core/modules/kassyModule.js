@@ -144,11 +144,12 @@ exports.loadModule = function (module, config) {
         }
 
         m = require.once(startPath);
-        if (!m.help) {
-            if (!module.help) {
-                throw new Error($$`A module must provide basic help.`);
-            }
+        if (!m.help && module.help) {
             m.help = createHelp(module);
+        }
+
+        if (!m.help) {
+            console.debug($$`A module should provide basic help.`);
         }
 
         if (!m.match) {

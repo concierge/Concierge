@@ -1,8 +1,8 @@
-/** Node.js server for a bot (Kassy)
+/** Node.js server for a bot
  *
  * Herein lies the Node.js serverside script to tell node what to do to ensure
  * we get all the magical goodness that is:
- *         (Karma + Sassy) * Facebook - Hipchat = Kassy
+ *         (Karma + Sassy) * Facebook - Hipchat = Concierge
  * Note: it does waaaaaaay more than this now. It even runs on slack!
  *
  * Written By:

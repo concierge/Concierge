@@ -2,9 +2,9 @@
 
 Tests can be run using one of the following grunt tasks.
 
-Most grunt tasks will first launch a testing instance of Kassy, to perform acceptance testing against.
+Most grunt tasks will first launch a testing instance of the bot, to perform acceptance testing against.
 
-| Command | Description | Launches Kassy testing Instance |
+| Command | Description | Launches testing Instance |
 | --- | --- | --- |
 | `grunt` | Watches core for changes and runs tests | Yes |
 | `grunt test` | Runs all tests | Yes |

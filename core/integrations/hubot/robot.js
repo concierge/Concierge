@@ -55,4 +55,4 @@ exports.shutdown = function () {
     exports.platform.shutdown();
 };
 
-exports.name = 'Kassy';
+exports.name = 'Concierge';
