@@ -36,6 +36,7 @@ Then start one or more of the available integrations:<br/>
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
 - [Admin Controls](doc/AdminControls.md)
 - [Docker](doc/Docker.md)
+- [Contributing](doc/Contributing.md)
 
 ### Testing
 See [Running and writing tests](doc/Testing.md)
@@ -45,7 +46,7 @@ HERE BE DRAGONS!
 Written to see if it could be done, not written to be readable.<br><b>Enter at your own peril.</b>
 
 ## Contributions
-Contributions welcome.
+Contributions welcome, see [Contributing](doc/Contributing.md).
 
 ## Copyright and License
 Licensed under the MIT license. Unless otherwise specified, code is Copyright (c) Matthew Knox 2015.
