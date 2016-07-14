@@ -7,7 +7,7 @@
     this.user = {
         name: event.sender_name,
         id: event.sender_id,
-        email_address: 'kassy@foobar.com'
+        email_address: 'concierge@foobar.com'
     };
 };
 

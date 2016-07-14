@@ -1,5 +1,5 @@
 ﻿/**
-* Translations service for Kassy.
+* Translations service for Concierge.
 *
 * Written By:
 *        Matthew Knox

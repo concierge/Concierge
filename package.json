@@ -1,5 +1,5 @@
 {
-  "name": "kassy",
+  "name": "concierge",
   "version": "4.0.0alpha",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
@@ -46,12 +46,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/concierge/Kassy.git"
+    "url": "git+https://github.com/concierge/Concierge.git"
   },
   "author": "Matthew Knox",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/concierge/Kassy/issues"
+    "url": "https://github.com/concierge/Concierge/issues"
   },
-  "homepage": "https://github.com/concierge/Kassy"
+  "homepage": "https://github.com/Concierge/Concierge"
 }

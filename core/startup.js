@@ -1,5 +1,5 @@
 /**
- * Handles the startup of Kassy.
+ * Handles the startup of Concierge.
  *
  * Written By:
  *         Matthew Knox

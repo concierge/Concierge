@@ -17,7 +17,7 @@ describe('Test core modules', function() {
     describe('/ping', function() {
         it('should respond on ping', function(done) {
             client.receiveMessage(function(data, done) {
-                assert.include(data.content, 'Kassy', 'Did not recieve the right thing');
+                assert.include(data.content, 'Concierge', 'Did not recieve the right thing');
                 done();
             }, done);
             client.sendMessage('/ping');

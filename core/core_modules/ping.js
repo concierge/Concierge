@@ -1,5 +1,5 @@
 /**
-    * A command that can check if Kassy is alive.
+    * A command that can check if the bot is alive.
     *
     * Written By:
     *              Matthew Knox

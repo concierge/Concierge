@@ -44,7 +44,7 @@ module.exports = function(grunt) {
                 wait: false,
                 ready: /.*System has started\. Hello World!.*/ig
             },
-            kassy: {
+            concierge: {
                 cmd: 'node',
                 args: [
                     'main.js',
@@ -58,10 +58,10 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-run');
 
-    grunt.registerTask('wall', ['run:kassy', 'watch:all']);
-    grunt.registerTask('wcore', ['run:kassy', 'watch:core']);
-    grunt.registerTask('wtest', ['run:kassy', 'watch:test']);
-    grunt.registerTask('test', ['run:kassy', 'mochacli:spec']);
-    grunt.registerTask('nyan', ['run:kassy', 'mochacli:nyan']);
-    grunt.registerTask('default', ['run:kassy', 'watch:core']);
+    grunt.registerTask('wall', ['run:concierge', 'watch:all']);
+    grunt.registerTask('wcore', ['run:concierge', 'watch:core']);
+    grunt.registerTask('wtest', ['run:concierge', 'watch:test']);
+    grunt.registerTask('test', ['run:concierge', 'mochacli:spec']);
+    grunt.registerTask('nyan', ['run:concierge', 'mochacli:nyan']);
+    grunt.registerTask('default', ['run:concierge', 'watch:core']);
 };

@@ -101,7 +101,7 @@ Platform.prototype.start = function() {
     $$.setLocale(this.config.getConfig('i18n').locale);
     this.integrationManager.setIntegrationConfigs(this);
 
-    // Load Kassy modules
+    // Load modules
     console.warn($$`LoadingModules`);
     this.modulesLoader.loadAllModules(this);
 
