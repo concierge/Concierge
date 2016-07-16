@@ -39,7 +39,7 @@ argp.runArguments(args);
 
 // Check modules path is set
 if (!global.__modulesPath) {
-    let path = require('path');
+    var path = require('path');
     global.__modulesPath = path.resolve('./modules/');
 }
 
