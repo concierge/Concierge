@@ -108,7 +108,7 @@ var createHelp = function(module) {
             var l = [];
             for (var j = 0; j < module.help[i].length; j++) {
                 var expression = module.help[i][j].split(/{{commandPrefix}}/g);
-                var prefixes = Array.from({length: (expression.length - 1)}, (v, k) => commandPrefix);
+                var prefixes = Array.from({length: (expression.length - 1)}, () => commandPrefix);
                 l.push($$.translate(expression, prefixes, module.name));
             }
             h.push(l);
