@@ -10,134 +10,164 @@
 *        Copyright (c) Matthew Knox and Contributors 2015.
 */
 
-var figlet = require('figlet');
+const figlet = require('figlet'),
+    EventEmitter = require('events').EventEmitter;
 
-var Platform = function(integrations) {
-    this.config = require.once('./config.js');
-    this.integrationManager = require.once('./integrations/integrations.js');
-    this.integrationManager.setIntegrations(integrations);
-    this.defaultPrefix = '/';
-    this.packageInfo = require.once('../package.json');
-    this.modulesLoader = require.once('./modules/modules.js');
-    this.statusFlag = StatusFlag.NotStarted;
-    this.onShutdown = null;
-    this.waitingTime = 250;
-    this.packageInfo.name = this.packageInfo.name.toProperCase();
-};
+class Platform extends EventEmitter {
+    constructor(integrations) {
+        super();
+        this.config = require.once('./config.js');
+        this.integrationManager = require.once('./integrations/integrations.js');
+        this.integrationManager.setIntegrations(integrations);
+        this.defaultPrefix = '/';
+        this.packageInfo = require.once('../package.json');
+        this.modulesLoader = require.once('./modules/modules.js');
+        this.statusFlag = global.StatusFlag.NotStarted;
+        this.onShutdown = null;
+        this.waitingTime = 250;
+        this.packageInfo.name = this.packageInfo.name.toProperCase();
+    }
 
-Platform.prototype._handleTransaction = function(module, args) {
-    var returnVal = true,
-        timeout = setTimeout(function() {
-            if (returnVal !== true) {
+    _handleTransaction (module, args) {
+        let returnVal = null;
+        const timeout = setTimeout(function () {
+            if (returnVal !== null) {
                 return;
             }
             args[0].sendTyping(args[1].thread_id);
         }, this.waitingTime);
-    try {
-        returnVal = module.run.apply(this, args);
-    }
-    catch (e) {
-        args[0].sendMessage($$`${args[1].body} failed ${args[1].sender_name} caused it`, args[1].thread_id);
-        console.critical(e);
-    }
-    finally {
-        clearTimeout(timeout);
-    }
-
-    return returnVal;
-};
-
-Platform.prototype.onMessage = function(api, event) {
-    var matchArgs = [event, api.commandPrefix],
-        runArgs = [api, event],
-        loadedModules = this.modulesLoader.getLoadedModules();
-
-    event.module_match_count = 0;
-    for (var i = 0; i < loadedModules.length; i++) {
-        var matchResult;
         try {
-            matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
+            returnVal = module.run.apply(this, args);
         }
         catch (e) {
-            console.error($$`BrokenModule ${loadedModules[i].name}`);
+            args[0].sendMessage($$`${args[1].body} failed ${args[1].sender_name} caused it`, args[1].thread_id);
             console.critical(e);
-            continue;
+        }
+        finally {
+            clearTimeout(timeout);
         }
 
-        if (matchResult) {
-            event.module_match_count++;
-            var transactionRes = this._handleTransaction(loadedModules[i], runArgs);
-            if (event.shouldAbort || transactionRes) {
-                return;
+        return returnVal;
+    }
+
+    onMessage (api, event) {
+        let matchArgs = [event, api.commandPrefix],
+            runArgs = [api, event],
+            loadedModules = this.modulesLoader.getLoadedModules();
+
+        event.module_match_count = 0;
+        for (let i = 0; i < loadedModules.length; i++) {
+            let matchResult;
+            try {
+                matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
+            }
+            catch (e) {
+                console.error($$`BrokenModule ${loadedModules[i].name}`);
+                console.critical(e);
+                continue;
+            }
+
+            if (matchResult) {
+                event.module_match_count++;
+                let transactionRes = this._handleTransaction(loadedModules[i], runArgs);
+                if (event.shouldAbort || transactionRes) {
+                    return;
+                }
             }
         }
     }
-};
 
-Platform.prototype.getIntegrationApis = function() {
-    var integs = this.integrationManager.getSetIntegrations();
-    var apis = {};
-    for (var key in integs) {
-        if (!integs.hasOwnProperty(key)) {
-            continue;
+    getIntegrationApis () {
+        let integs = this.integrationManager.getSetIntegrations(),
+            apis = {};
+        for (let key in integs) {
+            if (!integs.hasOwnProperty(key)) {
+                continue;
+            }
+            apis[key] = integs[key].getApi();
         }
-        apis[key] = integs[key].getApi();
-    }
-    return apis;
-};
-
-Platform.prototype.start = function() {
-    if (this.statusFlag !== StatusFlag.NotStarted) {
-        throw $$`StartError`;
+        return apis;
     }
 
-    console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
+    _firstRun () {
+        const git = require.once('./git.js'),
+            path = require('path'),
+            defaultModules = [
+                ['https://github.com/concierge/creator.git', 'creator'],
+                ['https://github.com/concierge/help.git', 'help'],
+                ['https://github.com/concierge/kpm.git', 'kpm'],
+                ['https://github.com/concierge/ping.git', 'ping'],
+                ['https://github.com/concierge/restart.git', 'restart'],
+                ['https://github.com/concierge/shutdown.git', 'shutdown'],
+                ['https://github.com/concierge/update.git', 'update']
+            ];
 
-    console.title(' ' + this.packageInfo.version);
-    console.info('------------------------------------');
-    console.warn($$`StartingSystem`);
-
-    console.warn($$`LoadingSystemConfig`);
-    $$.setLocale(this.config.getConfig('i18n').locale);
-    this.integrationManager.setIntegrationConfigs(this);
-
-    // Load Kassy modules
-    console.warn($$`LoadingModules`);
-    this.modulesLoader.loadAllModules(this);
-
-    // Starting output
-    console.warn($$`StartingIntegrations`);
-    this.integrationManager.startIntegrations(this.onMessage.bind(this));
-
-    this.statusFlag = StatusFlag.Started;
-    console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
-};
-
-Platform.prototype.shutdown = function(flag) {
-    if (this.statusFlag !== StatusFlag.Started) {
-        throw new Error($$`ShutdownError`);
-    }
-    if (!flag) {
-        flag = 0;
+        for (let i = 0; i < defaultModules.length; i++) {
+            console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
+            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), (err) => {
+                if (err) {
+                    console.critical(err);
+                    console.error($$`Failed to install module from "${defaultModules[i][0]}"`);
+                }
+                else {
+                    console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageInfo.version}) is now installed.`);
+                }
+            });
+        }
     }
 
-    // Stop output integrations
-    this.integrationManager.stopIntegrations();
+    start () {
+        if (this.statusFlag !== global.StatusFlag.NotStarted) {
+            throw new Error($$`StartError`);
+        }
 
-    // Unload user modules
-    this.modulesLoader.unloadAllModules(this.config);
+        console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
 
-    this.config.saveSystemConfig();
-    this.statusFlag = flag ? flag : StatusFlag.Shutdown;
+        console.title(' ' + this.packageInfo.version);
+        console.info('------------------------------------');
+        console.warn($$`StartingSystem`);
 
-    console.warn($$`${this.packageInfo.name} Shutdown`);
-    if (this.onShutdown && this.onShutdown != null) {
-        this.onShutdown(this.statusFlag);
+        console.warn($$`LoadingSystemConfig`);
+        $$.setLocale(this.config.getConfig('i18n').locale);
+        this.integrationManager.setIntegrationConfigs(this);
+        let firstRun = this.config.getConfig('firstRun');
+        if (!firstRun.hasRun) {
+            firstRun.hasRun = true;
+            this._firstRun();
+        }
+
+        // Load modules
+        console.warn($$`LoadingModules`);
+        this.modulesLoader.loadAllModules(this);
+
+        // Starting output
+        console.warn($$`StartingIntegrations`);
+        this.integrationManager.startIntegrations(this.onMessage.bind(this));
+
+        this.statusFlag = global.StatusFlag.Started;
+        console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
     }
-};
 
-Platform.prototype.setOnShutdown = function(onShutdown) {
-    this.onShutdown = onShutdown;
+    shutdown (flag) {
+        if (this.statusFlag !== global.StatusFlag.Started) {
+            throw new Error($$`ShutdownError`);
+        }
+        if (!flag) {
+            flag = global.StatusFlag.Unknown;
+        }
+
+        // Stop output integrations
+        this.integrationManager.stopIntegrations();
+
+        // Unload user modules
+        this.modulesLoader.unloadAllModules(this.config);
+
+        this.config.saveSystemConfig();
+        this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
+
+        console.warn($$`${this.packageInfo.name} Shutdown`);
+        this.emit('shutdown', this.statusFlag);
+    }
 };
 
 module.exports = Platform;

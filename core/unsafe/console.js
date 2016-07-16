@@ -29,7 +29,7 @@ var colours = require.safe('colors'),
     log = {
         _enabled: false,
         _handle: null,
-        _logFile: 'kassy.log',
+        _logFile: 'concierge.log',
         write: function(data, end = false) {
             if (this._enabled) {
                 this._handle.write(strip(data.toString()));

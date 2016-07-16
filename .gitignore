@@ -4,9 +4,8 @@
 .idea/
 nohup.out
 .ntvs_analysis.dat
-*.njsproj
 *.sln
-obj/Debug/Kassy.njsproj.FileListAbsolute.txt
+*.njsproj*
 modules/kpm_*
 typings/
 tsd.json
