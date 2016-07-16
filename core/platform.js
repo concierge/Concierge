@@ -25,7 +25,7 @@ class Platform extends EventEmitter {
         this.statusFlag = global.StatusFlag.NotStarted;
         this.onShutdown = null;
         this.waitingTime = 250;
-        this.packageInfo.name = this.packageInfo.name.toProperCase();  
+        this.packageInfo.name = this.packageInfo.name.toProperCase();
     }
 
     _handleTransaction (module, args) {
