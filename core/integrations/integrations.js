@@ -15,7 +15,13 @@ var files                   = require.once('../files.js'),
     integrationsLocation    = 'core/core_integrations',
     cachedIntegrations      = null,
     selectedIntegrations    = null,
-    started                 = false;
+    started                 = false,
+    eventSourceWrapper      = function (callback, name) {
+        return function () {
+            arguments[1].event_source = name;
+            callback.apply(this, arguments);
+        };
+    };
 
 global.shim = require.once('../shim.js');
 global.shim.current = null;
@@ -118,12 +124,11 @@ exports.startIntegrations = function (callback) {
 
     for (var i = 0; i < selectedIntegrations.length; i++) {
         try {
-            var integ = selectedIntegrations[i];
+            var integ = selectedIntegrations[i],
+                wrapper = eventSourceWrapper(callback, integ.name);
             console.write($$`Loading integration '${integ.name}'...\t`);
-            integ.instance.start(function () {
-                arguments[1].event_source = integ.name;
-                callback.apply(this, arguments);
-            });
+
+            integ.instance.start(wrapper);
             console.info($$`[DONE]`);
         }
         catch (e) {
