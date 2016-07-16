@@ -107,7 +107,9 @@ var createHelp = function(module) {
         for (var i = 0; i < module.help.length; i++) {
             var l = [];
             for (var j = 0; j < module.help[i].length; j++) {
-                l.push(module.help[i][j].replace(/{{commandPrefix}}/g, commandPrefix));
+                var expression = module.help[i][j].split(/{{commandPrefix}}/g);
+                var prefixes = Array.from({length: (expression.length - 1)}, () => commandPrefix);
+                l.push($$.translate(expression, prefixes, module.name));
             }
             h.push(l);
         }
@@ -144,11 +146,12 @@ exports.loadModule = function (module, config) {
         }
 
         m = require.once(startPath);
-        if (!m.help) {
-            if (!module.help) {
-                throw new Error($$`A module must provide basic help.`);
-            }
+        if (!m.help && module.help) {
             m.help = createHelp(module);
+        }
+
+        if (!m.help) {
+            console.debug($$`A module should provide basic help.`);
         }
 
         if (!m.match) {

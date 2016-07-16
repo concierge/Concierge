@@ -2,12 +2,12 @@
 
 Thanks to docker, your personal chat-bot can be contained and readily deployed wherever, for an experience that is consistent on all platforms!
 
-## docker-kassy Quickstart
+## docker-concierge Quickstart
 ### Prerequisites
 First, ensure you have docker-engine installed for your platform. See the [Docker installation docs][did].
 
 ### Configuration
-Once docker-engine is up and running, there are a number of arguments to control the platforms that Kassy will integrate with. For each specific platform see the relevant documentation. To get started, all Kassy needs is a valid config.json file plus a switch that references a given platform.
+Once docker-engine is up and running, there are a number of arguments to control the platforms that your bot will integrate with. For each specific platform see the relevant documentation. To get started, all that is required is a valid config.json file plus a switch that references a given platform.
 
 #### Platform config.json specification documentation
 * [Facebook][fb]
@@ -17,9 +17,9 @@ Once docker-engine is up and running, there are a number of arguments to control
 * [Telegram][tg]
 * [Testing][ts]
 
-### Run docker-kassy
+### Run docker-concierge
 #### Interactive Start
-The docker -it switch will start an interactive teletype session where you can see everything that is happening within the container as Kassy starts up.
+The docker -it switch will start an interactive teletype session where you can see everything that is happening within the container as Concierge starts up.
 
 ```sh
 docker run -it \
