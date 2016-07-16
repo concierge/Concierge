@@ -29,9 +29,9 @@ class Platform extends EventEmitter {
     }
 
     _handleTransaction (module, args) {
-        let returnVal = true;
+        let returnVal = null;
         const timeout = setTimeout(function () {
-            if (returnVal !== true) {
+            if (returnVal !== null) {
                 return;
             }
             args[0].sendTyping(args[1].thread_id);
