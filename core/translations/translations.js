@@ -81,7 +81,7 @@ TranslatorService.prototype.translate = function (strings, values) {
     else if (this.translations.hasOwnProperty(defaultLocale) && this.translations[defaultLocale].hasOwnProperty(key)) {
         return _translate(values, this.translations[defaultLocale][key]);
     }
-    console.error(`Missing i18n value for key "${key}" in {current: "${currentLocale}", default:"${defaultLocale}"}.`);
+    console.debug(`Missing i18n value for key "${key}" in {current: "${currentLocale}", default:"${defaultLocale}"}.`);
     return _fallbackTranslate(strings, values);
 };
 
@@ -106,6 +106,24 @@ module.exports = function(strings, ...values) {
 
     if (!contextMap.hasOwnProperty(context)) {
         const translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(contextMatches[0]) + contextMatches[0].length), 'i18n/');
+        contextMap[context] = new TranslatorService(translationsDirectory);
+    }
+
+    return contextMap[context].translate(strings, values);
+};
+
+/**
+ * Translates a given format string with context.
+ * @param {Array<string>} strings input format string split at format values. These are
+ * the sections outside of the `${x}` sections of the format string.
+ * @param {Array<string>} values input format values. These are the values of strings
+ * contained within `${x}` sections of the format string.
+ * @param {string} the context in which to translate.
+ * @returns {string} the translated string.
+ */
+module.exports.translate = function(strings, values, context) {
+    if (!contextMap.hasOwnProperty(context)) {
+        const translationsDirectory = path.join(global.__modulesPath, context, 'i18n/');
         contextMap[context] = new TranslatorService(translationsDirectory);
     }
     return contextMap[context].translate(strings, values);

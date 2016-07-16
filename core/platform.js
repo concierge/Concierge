@@ -29,9 +29,9 @@ class Platform extends EventEmitter {
     }
 
     _handleTransaction (module, args) {
-        let returnVal = true;
+        let returnVal = null;
         const timeout = setTimeout(function () {
-            if (returnVal !== true) {
+            if (returnVal !== null) {
                 return;
             }
             args[0].sendTyping(args[1].thread_id);
@@ -110,7 +110,7 @@ class Platform extends EventEmitter {
                     console.error($$`Failed to install module from "${defaultModules[i][0]}"`);
                 }
                 else {
-                    console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageinfo.version}) is now installed.`);
+                    console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageInfo.version}) is now installed.`);
                 }
             });
         }
