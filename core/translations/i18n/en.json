@@ -49,11 +49,6 @@
   "Unloading module \"${0}\".": "Unloading module \"${0}\".",
   "What kind of shit platform is this that doesn't even support sending messages?": "What kind of shit platform is this that doesn't even support sending messages?",
   "Working on it...": "Working on it...",
-
-
-
-
-
   "Failed SHA hash ${0}": "Failed to get SHA hash of branch\n Error: ${0}",
   "Periodic auto update failed ${0}": "Periodic auto update failed. Manual intervention is probably required.\n Error: ${0}",
   "Periodic auto update of NPM packages failed.": "Periodic auto update of NPM packages failed. Manual NPM intervention will be required.",

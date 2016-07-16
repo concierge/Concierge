@@ -14,10 +14,11 @@
  *        MIT License. All code unless otherwise specified is
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
-var platform = null,
+let platform = null,
     startArgs = null,
-    checkShutdownCode = function (code) {
+    checkShutdownCode = (code) => {
         if (code === StatusFlag.ShutdownShouldRestart) {
+            platform.removeListener('shutdown', checkShutdownCode);
             exports.run();
         }
         else {
@@ -33,10 +34,10 @@ exports.run = function (startArgsP) {
         global.$$ = require.once('./translations/translations.js');
 
         // quickest way to clone in JS, prevents reuse of same object between startups
-        var startClone = JSON.parse(JSON.stringify(startArgs)),
+        let startClone = JSON.parse(JSON.stringify(startArgs)),
             Platform = require.once('./platform.js');
         platform = new Platform(startClone);
-        platform.setOnShutdown(checkShutdownCode);
+        platform.on('shutdown', checkShutdownCode);
         platform.start();
     }
     catch (e) {

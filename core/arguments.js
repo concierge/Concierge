@@ -38,6 +38,17 @@ let consolec = require('./unsafe/console.js'),
             }
         },
         {
+            long: '--moduledir',
+            short: '-d',
+            description: 'Sets the search path for modules used by the bot.',
+            expects: ['DIRECTORY'],
+            run: function (value) {
+                let path = require('path');
+                console.warn(`Modules directory set to "${value}".`);
+                global.__modulesPath = path.resolve(value);
+            }
+        },
+        {
             long: '--help',
             short: '-h',
             description: 'Shows this help.',

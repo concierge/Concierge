@@ -37,6 +37,12 @@ args.splice(0, 2);
 // Parse optional arguments
 argp.runArguments(args);
 
+// Check modules path is set
+if (!global.__modulesPath) {
+    let path = require('path');
+    global.__modulesPath = path.resolve('./modules/');
+}
+
 // Check startup modes
 if (!args || args.length === 0) {
     console.info('No integrations specified, defaulting to \'test\'.');
