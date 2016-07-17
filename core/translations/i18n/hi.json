@@ -39,7 +39,7 @@
   "Not enough information provided to describe integration.": "इंटीग्रेशन का वर्णन करने के लिए प्रदान जानकारी पर्याप्त नहीं है।",
   "ShutdownError": "बिना शुरू किये प्लेटफार्म शटडाउन नहीं कर सकते हैं।",
   "Skipping \"${0}\". It isn't a Hubot module.": "\"${0}\" को छोड़ रहे है। यह एक हियूबॉट मॉड्यूल नहीं है।",
-  "Skipping \"${0}\". It isn't a Concierge module.": "\"${0}\" को छोड़ रहे है। यह एक कंसीयज मॉड्यूल नहीं है।",
+  "Skipping \"${0}\". It isn't a Kassy module.": "\"${0}\" को छोड़ रहे है। यह एक कैसि मॉड्यूल नहीं है।",
   "StartError": "पहले से ही शुरू करने के बाद दुबारा शुरू नही कर सकते है।",
   "StartingIntegrations": "सभी इंटीग्रेशन शुरू हो रही है ...",
   "StartingSystem": "सिस्टम शुरू हो रहा है ...",
