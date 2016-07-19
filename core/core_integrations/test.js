@@ -33,8 +33,10 @@ exports.start = function (callback) {
         },
         getUsers: function (thread) {
             var obj = {};
-            if (thread === exports.config.threadId) {
-                obj[exports.config.senderId] = exports.config.senderName;
+            if (thread == exports.config.threadId) {
+                obj[exports.config.senderId] = {
+                    name: exports.config.senderName
+                }
             }
             return obj;
         }
