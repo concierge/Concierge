@@ -14,7 +14,7 @@ var sendMessageToMultiple = function (message, threads) {
     _loopbackWrapper = function (origionalSend, api) {
         return function (data, thread) {
             origionalSend(data, thread);
-            if (exports.current) {
+            if (exports.current && exports.current.allowLoopback) {
                 let newEvent = exports.createEvent(thread, -1, 'Bot', data);
                 newEvent.event_source = 'loopback';
                 exports.current.onMessage(api, newEvent);

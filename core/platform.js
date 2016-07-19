@@ -127,6 +127,7 @@ class Platform extends EventEmitter {
         console.info('------------------------------------');
         console.warn($$`StartingSystem`);
 
+        // Load system config
         console.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getConfig('i18n').locale);
         this.integrationManager.setIntegrationConfigs(this);
@@ -135,6 +136,7 @@ class Platform extends EventEmitter {
             firstRun.hasRun = true;
             this._firstRun();
         }
+        this.allowLoopback = !!this.config.getConfig('loopback').enabled;
 
         // Load modules
         console.warn($$`LoadingModules`);
