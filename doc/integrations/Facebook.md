@@ -16,4 +16,4 @@ Replace each of the angle bracketed strings (`<...>`) with the respective inform
 
 To start in Facebook mode, run `node main.js facebook`.
 
-<b>Note: the account that Kassy is logged in as will NOT be able to command it. The reasons behind this are documented [here](https://github.com/mrkno/Kassy/issues/77#issuecomment-209161404) and [here](https://github.com/mrkno/Kassy/issues/77#issuecomment-181676118).</b>
+<b>Note: the account that is logged in as will NOT be able to command it. The reasons behind this are documented [here](https://github.com/concierge/Concierge/issues/77#issuecomment-209161404) and [here](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118).</b>

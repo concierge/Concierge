@@ -4,7 +4,6 @@ var fs = require('fs'),
     bodyParser = require('body-parser'),
     request = require('request'),
     https = require('https'),
-    shim = require('../shim.js'),
     http = null,
     api = null,
 
@@ -104,8 +103,12 @@ var fs = require('fs'),
         genericMessageRequest(arg, threadId, listGenericMessageRequest.bind(this, list, property, threadId));
     };
 
+exports.getApi = function() {
+    return api;
+};
+
 exports.start = function(callback) {
-    api = shim.createPlatformModule({
+    api = shim.createIntegration({
         sendMessage: function (message, threadId) {
             var spl = sentenceSplitter(message);
             listGenericMessageRequest(spl, 'text', threadId);

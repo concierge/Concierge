@@ -1,6 +1,5 @@
 var fb = require('facebook-chat-api'),
     fs = require('fs'),
-    shim = require.once('../shim.js'),
     stopListeningMethod = null,
     platform = null,
     endTyping = null,
@@ -50,6 +49,10 @@ var stopTyping = function() {
     }
 };
 
+exports.getApi = function() {
+    return platform;
+};
+
 exports.start = function(callback) {
     fb({email: this.config.username, password: this.config.password}, function (err, api) {
         if (err) {
@@ -66,7 +69,7 @@ exports.start = function(callback) {
         api.setOptions(options);
         platformApi = api;
 
-        platform = shim.createPlatformModule({
+        platform = shim.createIntegration({
             commandPrefix: exports.config.commandPrefix,
             sendMessage: function(message, thread) {
                 stopTyping();
@@ -95,7 +98,9 @@ exports.start = function(callback) {
                     break;
                 }
             },
-            sendFile: this.sendImage,
+            sendFile: function () {
+                this.sendImage.apply(this, arguments);
+            },
             sendTyping: function(thread) {
                 stopTyping();
                 api.sendTypingIndicator(thread, function(err, end) {
@@ -118,12 +123,6 @@ exports.start = function(callback) {
                 stopListening();
                 console.error(err);
                 process.exit(-1);
-            }
-            if (!stopListeningMethod) {
-                stopListeningMethod = function() {
-                    stopListening();
-                    api.logout();
-                };
             }
 
             switch (event.type) {
@@ -155,6 +154,11 @@ exports.start = function(callback) {
                 break;
             }
         });
+
+        stopListeningMethod = function () {
+            stopListening();
+            api.logout();
+        };
     });
 };
 

@@ -1,22 +1,22 @@
 #!/usr/bin/env bash
-# kassy - A bash CLI tool for running kassy in docker
+# Concierge - A bash CLI tool for running Concierge in docker
 # Written By: Matthew Hartstonge <matt@mykro.co.nz>
 
 # Soak in user params
 ARGS="$@"
 
 
-# Runs kassy given a string of whitespace separated integrations
-function runKassy() {
-  cd /kassy
-  echo "Starting Kassy"'!'
+# Runs Concierge given a string of whitespace separated integrations
+function runConcierge() {
+  cd /concierge
+  echo "Starting Concierge"'!'
   node main.js $1
   echo
   echo "                                     ... You killed me ... You Monster."
 }
 
 
-# Given params will build up an array of integrations that Kassy will start on
+# Given params will build up an array of integrations that Concierge will start on
 function main() {
   if [ -z "${ARGS}" ]; then
     usage
@@ -37,7 +37,7 @@ function main() {
         opts+=(${arg}) ;;
     esac
   done
-  runKassy ${opts[@]}
+  runConcierge ${opts[@]}
 }
 
 main

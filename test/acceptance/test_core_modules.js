@@ -17,20 +17,10 @@ describe('Test core modules', function() {
     describe('/ping', function() {
         it('should respond on ping', function(done) {
             client.receiveMessage(function(data, done) {
-                assert.include(data.content, 'Kassy', 'Did not recieve the right thing');
+                assert.include(data.content, 'Concierge', 'Did not recieve the right thing');
                 done();
             }, done);
             client.sendMessage('/ping');
-        });
-    });
-
-    describe('/uptime', function() {
-        it('should respond with how long it has been alive', function(done) {
-            client.receiveMessage(function(data, done) {
-                assert.include(data.content, 'I\'ve been alive for ', 'Did not recieve the right thing');
-                done();
-            }, done);
-            client.sendMessage('/uptime');
         });
     });
 
