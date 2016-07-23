@@ -3,12 +3,16 @@
   "version": "4.0.0-alpha.2",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
+  "engines": {
+    "node": "6.2.1"
+  },
   "dependencies": {
     "babel-plugin-transform-strict-mode": "^6.3.13",
     "babel-polyfill": "^6.3.14",
     "babel-preset-es2015": "^6.3.13",
     "babel-register": "^6.3.13",
     "babylon": "^6.8.0",
+    "botbuilder": "^3.1.1",
     "chalk": "^1.1.3",
     "cline": "^0.8.2",
     "colors": "^1.1.2",
@@ -20,6 +24,7 @@
     "npm": "^3.7.5",
     "redwrap": "*",
     "request": "^2.72.0",
+    "restify": "^4.1.1",
     "rimraf": "^2.4.4",
     "sandbox": "^0.8.6",
     "sanitize-filename": "^1.5.3",
@@ -30,7 +35,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "grunt": "latest",
+    "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-mocha-cli": "^2.1.0",
     "grunt-run": "^0.6.0",
@@ -39,10 +44,7 @@
   "scripts": {
     "test": "grunt test",
     "start": "node main.js",
-	"debug": "node main.js --debug --timestamp"
-  },
-  "engines": {
-    "node": "6.2.1"
+    "debug": "node main.js --debug --timestamp"
   },
   "repository": {
     "type": "git",
