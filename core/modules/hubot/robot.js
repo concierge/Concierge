@@ -12,6 +12,7 @@ var Robot = function(Instance, descriptor, config) {
     this.catchAllListeners = [];
     this.instances = [];
 
+    let self = this;
     this.brain = {
         on: function(event, callback) {
             if (event === 'loaded') {
@@ -19,7 +20,75 @@ var Robot = function(Instance, descriptor, config) {
             }
         },
         emit: function() {},
-        data: config
+        data: config,
+        users: function () {
+            // Welcome to hack land, where hacks are common place.
+            // We access event_source and thread_id from the stack trace so that this is thread safe.
+            const origPrepareStackTrace = Error.prepareStackTrace;
+            Error.prepareStackTrace = function(_, stack) {
+                return stack;
+            };
+            const err = new Error();
+            const stack = err.stack;
+            Error.prepareStackTrace = origPrepareStackTrace;
+            let res = [];
+            for (let i = 1; i < stack.length; i++) {
+                let funcName = stack[i].getFunctionName() || "";
+                if (funcName.startsWith('dataWrapperFunction')) {
+                    let data = funcName.replace(/\u200d/g, ' ').split('\u200b'),
+                        users = this.platform.getIntegrationApis()[data[1]].getUsers(data[2]);
+                    for (let id in users) {
+                        res.push({
+                            name: users[id].name,
+                            id: id,
+                            email_address: 'unknown@unknown.unknown'
+                        });
+                    }
+                    break;
+                }
+            }
+            return res;
+        }.bind(self),
+        usersForRawFuzzyName: function(fuzzyName) {
+            let users = this.users(),
+                lower = fuzzyName.toLowerCase();
+            for (let i = 0; i < users.length; i++) {
+                if (!users[i].name.toLowerCase().startsWith(lower)) {
+                    users.splice(i, 1);
+                    i--;
+                }
+            }
+            return users;
+        },
+        usersForFuzzyName: function(fuzzyName) {
+            let rawFuzzyName = this.usersForRawFuzzyName(fuzzyName),
+                lower = fuzzyName.toLowerCase();
+            for (let i = 0; i < rawFuzzyName.length; i++) {
+                if (rawFuzzyName[i].name.toLowerCase() === lower) {
+                    return [rawFuzzyName[i]];
+                }
+            }
+            return rawFuzzyName;
+        },
+        userForName: function (fuzzyName) {
+            let users = this.users(),
+                lower = fuzzyName.toLowerCase();
+            for (let i = 0; i < users.length; i++) {
+                if (users[i].name.toLowerCase() === lower) {
+                    return users[i];
+                }
+            }
+            return null;
+        },
+        userForId: function (id) {
+            let users = this.users();
+            for (let i = 0; i < users.length; i++) {
+                if (users[i].id === id) {
+                    return users[i];
+                }
+            }
+            return null;
+        }
     };
 
     this.instances.push(new Instance(this));
@@ -115,10 +184,16 @@ Robot.prototype.run = function (api, event) {
         return;
     }
 
-    for (var i = 0; i < event.__robotCallbackListeners.length; i++) {
-        var responder = new Responder(api, event, event.__robotCallbackListeners[i].match, event.__robotCallbackMessage);
-        event.__robotCallbackListeners[i].callback(responder);
-    }
+    // hack to allow accessing of data via a stacktrace... don't even ask.
+    let funcName = ('dataWrapperFunction\u200b' + event.event_source + '\u200b' + event.thread_id).replace(/ /g, '\u200d');
+    var wrapper = function() {
+        for (let i = 0; i < event.__robotCallbackListeners.length; i++) {
+            let responder = new Responder(api, event, event.__robotCallbackListeners[i].match, event.__robotCallbackMessage);
+            event.__robotCallbackListeners[i].callback(responder);
+        }
+    };
+    Object.defineProperty(wrapper, "name", { value: funcName });
+    wrapper();
 };
 
 Robot.prototype.match = function (event, commandPrefix) {
