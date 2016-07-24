@@ -65,6 +65,9 @@ var discord = require('discord.js'),
     sendMessage = function(message, threadId) {
         let channel = lookUpChannel(threadId);
         message = addMentions(message);
+        if (message.length > 2000) {
+            message = $$`Sorry, output was too long to send :(`;
+        }
         stopTyping(threadId);
         bot.sendMessage(channel, message);
     },
