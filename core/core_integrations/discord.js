@@ -48,6 +48,26 @@ let discord = require('discord.js'),
         return users;
     },
 
+    sentenceSplitter = function(message) {
+        const charLimit = 2000;
+        let spl = message.split('\n'),
+            messages = [''],
+            messagesIndex = 0;
+
+        for (let i = 0; i < spl.length; i++) {
+            if (messages[messagesIndex].length + spl[i].length > charLimit) {
+                messagesIndex++;
+                messages[messagesIndex] = '';
+                i--;
+            }
+            else {
+                messages[messagesIndex] = messages[messagesIndex] + spl[i] + '\n';
+            }
+        }
+
+        return messages;
+    },
+
     sendTyping = function(threadId) {
         let channel = lookUpChannel(threadId);
         bot.startTyping(channel);
@@ -80,14 +100,25 @@ let discord = require('discord.js'),
         return message;
     },
 
+    sendSingleMessage = function(message, threadId, channel, callback) {
+        stopTyping(threadId);
+        bot.sendMessage(channel, message, callback);
+    },
+
+    sendMultipleMessages = function(messageList, threadId, channel) {
+        if (!messageList || messageList.length <= 0) {
+            return;
+        }
+        var message = messageList[0];
+        messageList.splice(0, 1);
+        sendSingleMessage(message, threadId, channel, sendMultipleMessages.bind(this, messageList, threadId, channel));
+    },
+
     sendMessage = function(message, threadId) {
         let channel = lookUpChannel(threadId);
         message = addMentions(message);
-        if (message.length > 2000) {
-            message = $$`Sorry, output was too long to send :(`;
-        }
-        stopTyping(threadId);
-        bot.sendMessage(channel, message);
+        message = sentenceSplitter(message);
+        sendMultipleMessages(message, threadId, channel);
     },
 
     sendFile = function(type, file, description, threadId) {
