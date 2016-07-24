@@ -1,25 +1,25 @@
 ﻿var http = require('scoped-http-client'),
-	fs = require('fs'),
-	path = require('path'),
-	urlMatcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/,
-	imageExts = ['.jpg','.png','.gif','.gifv','.tif','.tiff','.jpeg'];
+    fs = require('fs'),
+    path = require('path'),
+    urlMatcher = /^(?:\w+:)?\/\/([^\s\.]+\.\S{2}|localhost[\:?\d]*)\S*$/,
+    imageExts = ['.jpg','.png','.gif','.gifv','.tif','.tiff','.jpeg'];
 
 var getType = function(message) {
-	try {
-		fs.statSync(message);
-		return 'file';
-	}
-	catch(e){}
-	
-	if (!urlMatcher.test(message)) {
-		return 'message';
-	}
-	
-	var ext = path.extname(message);
-	if (imageExts.includes(ext)) {
-		return 'image';
-	}
-	return 'url';
+    try {
+        fs.statSync(message);
+        return 'file';
+    }
+    catch(e){}
+
+    if (!urlMatcher.test(message)) {
+        return 'message';
+    }
+
+    var ext = path.extname(message);
+    if (imageExts.includes(ext)) {
+        return 'image';
+    }
+    return 'url';
 };
 
 var Responder = function (api, event, match, message) {
@@ -35,24 +35,20 @@ Responder.prototype.random = function (arr) {
 
 Responder.prototype.send = function () {
     for (var i = 0; i < arguments.length; i++) {
-		switch(getType(arguments[i])) {
-			case 'message': {
-				this.api.sendMessage(arguments[i], this.event.thread_id);
-				break;
-			}
-			case 'url': {
-				this.api.sendUrl(arguments[i], this.event.thread_id);
-				break;
-			}
-			case 'image': {
-				this.api.sendImage('url', arguments[i], '', this.event.thread_id);
-				break;
-			}
-			case 'file': {
-				this.api.sendFile('file', arguments[i], '', this.event.thread_id);
-				break;
-			}
-		}
+        switch (getType(arguments[i])) {
+        case 'message':
+            this.api.sendMessage(arguments[i], this.event.thread_id);
+            break;
+        case 'url':
+            this.api.sendUrl(arguments[i], this.event.thread_id);
+            break;
+        case 'image':
+            this.api.sendImage('url', arguments[i], '', this.event.thread_id);
+            break;
+        case 'file':
+            this.api.sendFile('file', arguments[i], '', this.event.thread_id);
+            break;
+        }
     }
 };
 

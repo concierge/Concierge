@@ -1,0 +1,43 @@
+#!/usr/bin/env bash
+# Concierge - A bash CLI tool for running Concierge in docker
+# Written By: Matthew Hartstonge <matt@mykro.co.nz>
+
+# Soak in user params
+ARGS="$@"
+
+
+# Runs Concierge given a string of whitespace separated integrations
+function runConcierge() {
+  cd /concierge
+  echo "Starting Concierge"'!'
+  node main.js $1
+  echo
+  echo "                                     ... You killed me ... You Monster."
+}
+
+
+# Given params will build up an array of integrations that Concierge will start on
+function main() {
+  if [ -z "${ARGS}" ]; then
+    usage
+    exit 1
+  fi
+
+  opts=()
+  # process args
+  for arg in ${ARGS}; do
+    case ${arg} in
+      # Provide a way to escape to bash *nicely*
+      'cmd')
+        bash
+        exit 0 ;;
+
+      # Default case
+      *)
+        opts+=(${arg}) ;;
+    esac
+  done
+  runConcierge ${opts[@]}
+}
+
+main

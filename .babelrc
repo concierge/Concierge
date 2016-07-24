@@ -1,8 +1,10 @@
 {
     "plugins": [
-      "transform-strict-mode"
+        "transform-strict-mode",
+        "./core/require.js"
     ],
     "presets": [
-      "es2015"
-    ]
+        "es2015"
+    ],
+    "retainLines":  true
 }

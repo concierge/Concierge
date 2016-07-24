@@ -12,20 +12,18 @@
 var fs = require('fs'),
     path = require('path'),
     files = require.once('./../files.js'),
-    config = require('./../config.js'),
     modulesDir = 'modules',
     descriptor = 'hubot.json',
     pkg = 'package.json',
-    Robot = require.once('./hubot/robot.js'),
-    coffeescriptLoaded = false;
+    Robot = require.once('./hubot/robot.js');
 
 var verifyModuleDescriptior = function (hj, disabled) {
     if (!hj.name || !hj.startup || !hj.version) {
         return false;
     }
 
-    if (disabled === true && exports.disabledConfig
-        && exports.disabledConfig[hj.name] && exports.disabledConfig[hj.name] === true) {
+    if (disabled === true && exports.disabledConfig &&
+        exports.disabledConfig[hj.name] && exports.disabledConfig[hj.name] === true) {
         return false;
     }
     return true;
@@ -87,10 +85,10 @@ exports.listModules = function (disabled) {
                 modules[output.name] = output;
             }
             else {
-                console.debug('Skipping "' + data[i] + '". It isn\'t a Hubot module.');
+                console.debug($$`Skipping "${data[i]}". It isn't a Hubot module.`);
             }
         } catch (e) {
-            console.debug('A failure occured while listing "' + data[i] + '". It doesn\'t appear to be a module.');
+            console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
             console.critical(e);
             continue;
         }
@@ -98,10 +96,10 @@ exports.listModules = function (disabled) {
     return modules;
 };
 
-exports.loadModule = function (module) {
-    if (!coffeescriptLoaded && module.startup.endsWith('.coffee')) {
+exports.loadModule = function (module, config) {
+    if (!global.coffeescriptLoaded && module.startup.endsWith('.coffee')) {
         require('coffee-script').register();
-        coffeescriptLoaded = true;
+        global.coffeescriptLoaded = true;
     }
 
     try {
@@ -114,6 +112,6 @@ exports.loadModule = function (module) {
     }
     catch (e) {
         console.critical(e);
-        throw 'Could not load module \'' + module.name + '\'. Does it have a syntax error?';
+        throw new Error($$`Could not load module '${module.name}'. Does it have a syntax error?`);
     }
 };

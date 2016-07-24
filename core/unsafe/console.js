@@ -23,12 +23,41 @@ var colours = require.safe('colors'),
     write = process.stdout.write,
     perr = process.stderr.write,
     debug = false,
-    log = false,
-    logStr = null,
-    logFile = 'kassy.log',
     timestamp = false,
     startupTime = (new Date().getTime() / 1000),
-    lastNewline = false;
+    lastNewline = false,
+    log = {
+        _enabled: false,
+        _handle: null,
+        _logFile: 'concierge.log',
+        write: function(data, end = false) {
+            if (this._enabled) {
+                this._handle.write(strip(data.toString()));
+                if (end) {
+                    this._handle.end();
+                }
+            }
+        },
+        setEnabled: function(enabled) {
+            if (enabled) {
+                try {
+                    fs.unlinkSync(this._logFile);
+                }
+                catch (e) { }    // ignore, probably doesn't exist
+                this._handle = fs.createWriteStream(this._logFile, { flags: 'a' });
+                var dt = new Date();
+                startupTime = dt.getTime() / 1000;
+                this.write('~ Log started at ' + dt.toISOString() + ' ~\n');
+            }
+            else {
+                if (this._handle != null) {
+                    this._handle.end();
+                }
+                this._handle = null;
+            }
+            this._enabled = enabled;
+        }
+    };
 
 colours.setTheme({
     info: 'cyan',
@@ -38,29 +67,29 @@ colours.setTheme({
 });
 
 var getTimestampString = function() {
-	var dt = new Date(),
-		diff = (dt.getTime() / 1000) - startupTime,
-		time = '[' + ('          ' + diff.toFixed(2)).slice(-10) + '] ';
-	return time;
+    var dt = new Date(),
+        diff = (dt.getTime() / 1000) - startupTime,
+        time = '[' + ('          ' + diff.toFixed(2)).slice(-10) + '] ';
+    return time;
 },
 
 getOutputString = function(data) {
-	if (timestamp) {
-		var time = getTimestampString(),
-			spl = data.split('\n');
-		if (lastNewline) {
-			time = '\n' + time;
-			lastNewline = false;
-		}
-		for (var i = 1; i < spl.length; i++) {
-			if (strip(spl[i]).length > 0) {
-				spl[i] = '             ' + spl[i];
-			}
-		}
-		process.stdout.write(time);
-		data = spl.join('\n');
-	}
-	return data;
+    if (timestamp) {
+        var time = getTimestampString(),
+            spl = data.toString().split('\n');
+        if (lastNewline) {
+            time = '\n' + time;
+            lastNewline = false;
+        }
+        for (var i = 1; i < spl.length; i++) {
+            if (strip(spl[i]).length > 0) {
+                spl[i] = '             ' + spl[i];
+            }
+        }
+        process.stdout.write(time);
+        data = spl.join('\n');
+    }
+    return data;
 };
 
 console.info = function (args) {
@@ -108,48 +137,25 @@ process.on('exit', function () {
         console.info('~ Terminated at ' + dt.toISOString() + ' ~');
     }
 
-    if (log) {
-        logStr.write('~ Log terminated at ' + dt.toISOString() + ' ~\n');
-        logStr.end();
-    }
+    log.write('~ Log terminated at ' + dt.toISOString() + ' ~\n', true);
 });
 
 process.stdout.write = function (data) {
     write.apply(this, arguments);
-    if (log) {
-        logStr.write(data);
-    }
+    log.write(data);
 };
 
 process.stderr.write = function (data) {
     perr.apply(this, arguments);
-    if (log) {
-        logStr.write(data);
-    }
+    log.write(data);
 };
 
 exports.setDebug = function(enabled) {
     debug = enabled;
 };
 
-exports.setLog = function(enabled) {
-    log = enabled;
-    if (enabled) {
-        try {
-            fs.unlinkSync(logFile);
-        }
-        catch (e){}    // ignore, probably doesn't exist
-        logStr = fs.createWriteStream(logFile, {flags: 'a'});
-        var dt = new Date();
-        startupTime = dt.getTime() / 1000;
-        logStr.write('~ Log started at ' + dt.toISOString() + ' ~\n');
-    }
-    else {
-        if (logStr != null) {
-            logStr.end();
-        }
-        logStr = null;
-    }
+exports.setLog = function (enabled) {
+    log.setEnabled(enabled);
 };
 
 exports.setTimestamp = function (enabled) {

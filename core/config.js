@@ -1,21 +1,20 @@
 /**
- * Manages the loading and saving of configuration data.
- *
- * Written By:
- * 		Matthew Knox
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * Manages the loading and saving of configuration data.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var fs = require('fs'),
     path = require('path'),
-    integs = require('./integrations/integrations.js').listIntegrations(),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
-    sysConfigZones = ['output', 'disabled', 'update'],
+    sysConfigZones = ['output', 'disabled', 'update', 'admin', 'kpm', 'i18n', 'firstRun'],
     sysConfigFile = 'config.json';
 
 var loadConfig = function (location) {
@@ -24,13 +23,18 @@ var loadConfig = function (location) {
         return JSON.parse(data);
     }
     catch (e) {
-        console.debug('No or invalid configuration file found at \"' + location + "'.");
+        console.debug($$`No or invalid configuration file found at "${location}".`);
         return {};
     }
 };
 
 var saveIndividualConfig = function (location, data) {
-    fs.writeFileSync(location, JSON.stringify(data, null, 4), 'utf8');
+    fs.writeFileSync(location, JSON.stringify(data, function(key, value) {
+        if (sysConfigZones.includes(key) && Object.keys(value).length === 0) {
+            return void (0); // deliberate use of undefined, will cause property to be deleted.
+        }
+        return value;
+    }, 4), 'utf8');
 };
 
 exports.saveModuleConfig = function(mod) {
@@ -49,7 +53,7 @@ exports.saveModuleConfig = function(mod) {
         delete modConfig[mod];
         return true;
     } catch (e) {
-        console.error('An error occured while saving the configuration file.');
+        console.error($$`An error occured while saving the configuration file.`);
         console.critical(e);
         return false;
     }
@@ -61,7 +65,7 @@ exports.saveSystemConfig = function () {
         sysConfig = null;
         return true;
     } catch (e) {
-        console.error('An error occured while saving the configuration files.');
+        console.error($$`An error occured while saving the configuration file.`);
         console.critical(e);
         return false;
     }
@@ -82,8 +86,7 @@ exports.getConfig = function (m) {
     }
 
     if (!isSystem) {
-        console.warn("\nConfiguration data for module '" + m + "' stored in deprecated location.\n" +
-            "Configuration will be moved to module specific configuration file.");
+        console.warn($$`Configuration data for module ${m} stored in deprecated location.`);
         var cfg = sysConfig[m];
         delete sysConfig[m];
         return cfg;
@@ -123,18 +126,5 @@ exports.loadOutputConfig = function (outputName) {
     if (!config[outputName]) {
         config[outputName] = {};
     }
-
-    for (var obj in config) {
-        if (integs.find(int => int.name === obj)) {
-            continue;
-        }
-        if (!config[outputName][obj]) {
-            config[outputName][obj] = config[obj];
-        }
-    }
     return config[outputName];
-};
-
-exports.loadDisabledConfig = function () {
-    return exports.getConfig(sysConfigZones[1]);
 };

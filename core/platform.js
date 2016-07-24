@@ -10,154 +10,164 @@
 *        Copyright (c) Matthew Knox and Contributors 2015.
 */
 
-var figlet = require('figlet');
+const figlet = require('figlet'),
+    EventEmitter = require('events').EventEmitter;
 
-Platform = function() {
-    require.reload('./prototypes.js');
+class Platform extends EventEmitter {
+    constructor(integrations) {
+        super();
+        this.config = require.once('./config.js');
+        this.integrationManager = require.once('./integrations/integrations.js');
+        this.integrationManager.setIntegrations(integrations);
+        this.defaultPrefix = '/';
+        this.packageInfo = require.once('../package.json');
+        this.modulesLoader = require.once('./modules/modules.js');
+        this.statusFlag = global.StatusFlag.NotStarted;
+        this.onShutdown = null;
+        this.waitingTime = 250;
+        this.packageInfo.name = this.packageInfo.name.toProperCase();
+    }
 
-    this.config = require('./config.js');
-    this.loadedModules = [];
-    this.coreModules = [];
-    this.integrationManager = require('./integrations/integrations.js');
-    this.defaultPrefix = '/';
-    this.packageInfo = require.once('../package.json');
-    this.modulesLoader = require.once('./modules/modules.js');
-    this.coreLoader = require.once('./modules/core.js');
-    this.coreLoader.platform = this;
-    this.statusFlag = StatusFlag.NotStarted;
-    this.onShutdown = null;
-    this.waitingTime = 250;
-    this.packageInfo.name = this.packageInfo.name.toProperCase();
-};
-
-Platform.prototype.handleTransaction = function(module, args) {
-    var returnVal = true,
-        timeout = setTimeout(function() {
-            if (returnVal !== true) {
+    _handleTransaction (module, args) {
+        let returnVal = null;
+        const timeout = setTimeout(function () {
+            if (returnVal !== null) {
                 return;
             }
             args[0].sendTyping(args[1].thread_id);
         }, this.waitingTime);
-    returnVal = module.run.apply(module, args);
-    clearTimeout(timeout);
-};
-
-Platform.prototype.messageRxd = function(api, event) {
-    var matchArgs = [event, api.commandPrefix],
-        runArgs = [api, event],
-        abort = false;
-
-    // Run core modules in platform mode
-    for (var i = 0; i < this.coreModules.length; i++) {
-        if (this.coreModules[i].match.apply(this, matchArgs)) {
-            var temp = !this.coreModules[i].run.apply(this, runArgs);
-            abort = abort || temp;
+        try {
+            returnVal = module.run.apply(this, args);
         }
-    }
-    if (abort) {
-        return;
+        catch (e) {
+            args[0].sendMessage($$`${args[1].body} failed ${args[1].sender_name} caused it`, args[1].thread_id);
+            console.critical(e);
+        }
+        finally {
+            clearTimeout(timeout);
+        }
+
+        return returnVal;
     }
 
-    // Run user modules in protected mode
-    for (var i = 0; i < this.loadedModules.length; i++) {
-    	var matchResult;
-    	try {
-    		matchResult = this.loadedModules[i].match.apply(this.loadedModules[i], matchArgs);
-    	}
-    	catch (e) {
-    		console.error('The module ' + this.loadedModules[i].name + ' appears to be broken. Please remove or fix it.');
-    		console.critical(e);
-    		continue;
-    	}
+    onMessage (api, event) {
+        let matchArgs = [event, api.commandPrefix],
+            runArgs = [api, event],
+            loadedModules = this.modulesLoader.getLoadedModules();
 
-        if (matchResult) {
+        event.module_match_count = 0;
+        for (let i = 0; i < loadedModules.length; i++) {
+            let matchResult;
             try {
-                this.handleTransaction(this.loadedModules[i], runArgs);
+                matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
             }
             catch (e) {
-                api.sendMessage(event.body + ' fucked up. Damn you ' + event.sender_name + ".", event.thread_id);
+                console.error($$`BrokenModule ${loadedModules[i].name}`);
                 console.critical(e);
+                continue;
             }
-            return;
-        }
-    }
-};
 
-
-Platform.prototype.start = function() {
-    if (this.statusFlag !== StatusFlag.NotStarted) {
-        throw 'Cannot start platform when it is already started.';
-    }
-
-    console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
-
-    console.title(' ' + this.packageInfo.version);
-    console.info('------------------------------------');
-    console.warn('Starting system...\n'
-                + 'Loading system configuration...');
-
-    this.modulesLoader.disabledConfig = this.config.loadDisabledConfig();
-    this.integrationManager.setIntegrationConfigs(this);
-
-    // Load core modules
-    console.warn('Loading core components...');
-    var m = this.coreLoader.listCoreModules();
-    for (var i = 0; i < m.length; i++) {
-        this.coreModules.push(this.coreLoader.loadCoreModule(this, m[i]));
-    }
-
-    // Load Kassy modules
-    console.warn('Loading modules...');
-    m = this.modulesLoader.listModules();
-    for (var mod in m) {
-        var ld = this.modulesLoader.loadModule(m[mod]);
-        if (ld && ld !== null) {
-            this.loadedModules.push(ld);
+            if (matchResult) {
+                event.module_match_count++;
+                let transactionRes = this._handleTransaction(loadedModules[i], runArgs);
+                if (event.shouldAbort || transactionRes) {
+                    return;
+                }
+            }
         }
     }
 
-    // Starting output
-    console.warn('Starting integrations...');
-    this.integrationManager.startIntegrations(this.messageRxd.bind(this));
-
-    this.statusFlag = StatusFlag.Started;
-    console.warn('System has started. ' + 'Hello World!'.rainbow);
-};
-
-Platform.prototype.shutdown = function(flag) {
-    if (this.statusFlag !== StatusFlag.Started) {
-        throw 'Cannot shutdown platform when it is not started.';
-    }
-    if (!flag) {
-        flag = 0;
+    getIntegrationApis () {
+        let integs = this.integrationManager.getSetIntegrations(),
+            apis = {};
+        for (let key in integs) {
+            if (!integs.hasOwnProperty(key)) {
+                continue;
+            }
+            apis[key] = integs[key].getApi();
+        }
+        return apis;
     }
 
-    // Stop output integrations
-    this.integrationManager.stopIntegrations();
+    _firstRun () {
+        const git = require.once('./git.js'),
+            path = require('path'),
+            defaultModules = [
+                ['https://github.com/concierge/creator.git', 'creator'],
+                ['https://github.com/concierge/help.git', 'help'],
+                ['https://github.com/concierge/kpm.git', 'kpm'],
+                ['https://github.com/concierge/ping.git', 'ping'],
+                ['https://github.com/concierge/restart.git', 'restart'],
+                ['https://github.com/concierge/shutdown.git', 'shutdown'],
+                ['https://github.com/concierge/update.git', 'update']
+            ];
 
-    // Unload user modules
-    while (this.loadedModules.length > 0) {
-        this.modulesLoader.unloadModule(this.loadedModules[0]);
-        this.loadedModules.splice(0, 1);
+        for (let i = 0; i < defaultModules.length; i++) {
+            console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
+            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), (err) => {
+                if (err) {
+                    console.critical(err);
+                    console.error($$`Failed to install module from "${defaultModules[i][0]}"`);
+                }
+                else {
+                    console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageInfo.version}) is now installed.`);
+                }
+            });
+        }
     }
 
-    // Unload core modules
-    while (this.coreModules.length > 0) {
-        this.coreLoader.unloadCoreModule(this.coreModules[0]);
-        this.coreModules.splice(0, 1);
+    start () {
+        if (this.statusFlag !== global.StatusFlag.NotStarted) {
+            throw new Error($$`StartError`);
+        }
+
+        console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
+
+        console.title(' ' + this.packageInfo.version);
+        console.info('------------------------------------');
+        console.warn($$`StartingSystem`);
+
+        console.warn($$`LoadingSystemConfig`);
+        $$.setLocale(this.config.getConfig('i18n').locale);
+        this.integrationManager.setIntegrationConfigs(this);
+        let firstRun = this.config.getConfig('firstRun');
+        if (!firstRun.hasRun) {
+            firstRun.hasRun = true;
+            this._firstRun();
+        }
+
+        // Load modules
+        console.warn($$`LoadingModules`);
+        this.modulesLoader.loadAllModules(this);
+
+        // Starting output
+        console.warn($$`StartingIntegrations`);
+        this.integrationManager.startIntegrations(this.onMessage.bind(this));
+
+        this.statusFlag = global.StatusFlag.Started;
+        console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
     }
 
-    this.config.saveSystemConfig();
-    this.statusFlag = flag ? flag : StatusFlag.Shutdown;
+    shutdown (flag) {
+        if (this.statusFlag !== global.StatusFlag.Started) {
+            throw new Error($$`ShutdownError`);
+        }
+        if (!flag) {
+            flag = global.StatusFlag.Unknown;
+        }
 
-    console.warn(this.packageInfo.name + " has shutdown.");
-    if (this.onShutdown && this.onShutdown != null) {
-        this.onShutdown(this.statusFlag);
+        // Stop output integrations
+        this.integrationManager.stopIntegrations();
+
+        // Unload user modules
+        this.modulesLoader.unloadAllModules(this.config);
+
+        this.config.saveSystemConfig();
+        this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
+
+        console.warn($$`${this.packageInfo.name} Shutdown`);
+        this.emit('shutdown', this.statusFlag);
     }
-};
-
-Platform.prototype.setOnShutdown = function(onShutdown) {
-    this.onShutdown = onShutdown;
 };
 
 module.exports = Platform;

@@ -1,8 +1,8 @@
-/** Node.js server for a bot (Kassy)
+/** Node.js server for a bot
  *
  * Herein lies the Node.js serverside script to tell node what to do to ensure
  * we get all the magical goodness that is:
- *         (Karma + Sassy) * Facebook - Hipchat = Kassy
+ *         (Karma + Sassy) * Facebook - Hipchat = Concierge
  * Note: it does waaaaaaay more than this now. It even runs on slack!
  *
  * Written By:
@@ -22,7 +22,6 @@
 'use strict';
 
 // Load NodeJS Modifications/Variables
-require('./core/require.js');
 require('./core/prototypes.js');
 require('./core/status.js');
 require('./core/unsafe/console.js');
@@ -37,6 +36,12 @@ args.splice(0, 2);
 
 // Parse optional arguments
 argp.runArguments(args);
+
+// Check modules path is set
+if (!global.__modulesPath) {
+    var path = require('path');
+    global.__modulesPath = path.resolve('./modules/');
+}
 
 // Check startup modes
 if (!args || args.length === 0) {
@@ -74,5 +79,13 @@ process.on('uncaughtException', function(err) {
     console.critical(err);
 });
 
-integf.setIntegrations(startArgs);
-startup.run();
+process.on('SIGHUP', function () {
+    console.warn('SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...');
+    startup.stop();
+});
+
+process.on('SIGINT', function () {
+    startup.stop();
+});
+
+startup.run(startArgs);

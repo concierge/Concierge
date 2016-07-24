@@ -1,13 +1,13 @@
 ﻿/**
- * Provides helper functions for working with files.
- *
- * Written By:
- * 		Matthew Knox
- *
- * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
- */
+    * Provides helper functions for working with files.
+    *
+    * Written By:
+    *              Matthew Knox
+    *
+    * License:
+    *              MIT License. All code unless otherwise specified is
+    *              Copyright (c) Matthew Knox and Contributors 2015.
+    */
 
 var fs = require('fs');
 
