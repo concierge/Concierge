@@ -1,4 +1,4 @@
-var discord = require('discord.js'),
+let discord = require('discord.js'),
     request = require('request'),
     callback = null,
     api = null,
@@ -8,7 +8,7 @@ var discord = require('discord.js'),
     lookUpChannel = function(threadId) {
         let channel = null;
 
-        for (var key in bot.channels) {
+        for (let key in bot.channels) {
             if (!(key && key.trim().length > 0 && !isNaN(key))) {
                 continue;
             }
@@ -17,17 +17,35 @@ var discord = require('discord.js'),
                 return channel;
             }
         }
-        for (var key in bot.privateChannels) {
-            if (!(key && key.trim().length > 0 && !isNaN(key))) {
+        for (let pKey in bot.privateChannels) {
+            if (!(pKey && pKey.trim().length > 0 && !isNaN(pKey))) {
                 continue;
             }
-            channel = bot.privateChannels[key];
+            channel = bot.privateChannels[pKey];
             if (channel.id === threadId) {
                 return channel;
             }
         }
 
         return channel;
+    },
+
+    getUsers = function() {
+        let users = {},
+            user;
+
+        for (let key in bot.users) {
+            if (!(key && key.trim().length > 0 && !isNaN(key))) {
+                continue;
+            }
+            user = bot.users[key];
+            users[user.id] = {
+                name: user.username,
+                id: user.id,
+                tag: '@' + user.username + '#' + user.discriminator
+            };
+        }
+        return users;
     },
 
     sendTyping = function(threadId) {
@@ -43,7 +61,7 @@ var discord = require('discord.js'),
     addMentions = function (message) {
         let users = getUsers();
         for (let value in users) {
-            var index = message.indexOf(users[value].name);
+            let index = message.indexOf(users[value].name);
             if (index > 0) {
                 message = message.substr(0, index) + '<@' + users[value].id + '>' + message.substr(index + users[value].name.length);
             }
@@ -83,26 +101,8 @@ var discord = require('discord.js'),
         bot.setChannelName(channel, title);
     },
 
-    getUsers = function(threadId) {
-        var users = {},
-            user;
-
-        for (var key in bot.users) {
-            if (!(key && key.trim().length > 0 && !isNaN(key))) {
-                continue;
-            }
-            user = bot.users[key];
-            users[user.id] = {
-                name: user.username,
-                id: user.id,
-                tag: '@' + user.username + '#' + user.discriminator
-            }
-        }
-        return users;
-    },
-
     recMessage = function(message) {
-        var event = shim.createEvent(message.channel.id, message.author.id, message.author.username, removeMentions(message.cleanContent));
+        let event = shim.createEvent(message.channel.id, message.author.id, message.author.username, removeMentions(message.cleanContent));
         callback(api, event);
     },
 
@@ -122,7 +122,7 @@ var discord = require('discord.js'),
                 bot.setUsername(exports.config.name);
             }
             console.debug($$`Discord is ready`);
-        })
+        });
 
         bot.on('message', function(message) {
             if (bot.user.id !== message.author.id) {
@@ -132,7 +132,7 @@ var discord = require('discord.js'),
     };
 
 exports.start = function(cb) {
-    var functions = {
+    let functions = {
             sendMessage: sendMessage,
             sendFile: sendFile,
             sendTyping: sendTyping,
