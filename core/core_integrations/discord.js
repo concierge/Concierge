@@ -117,7 +117,7 @@ let discord = require('discord.js'),
         if (!messageList || messageList.length <= 0) {
             return;
         }
-        var message = messageList[0];
+        let message = messageList[0];
         messageList.splice(0, 1);
         sendSingleMessage(message, threadId, channel, sendMultipleMessages.bind(this, messageList, threadId, channel));
     },
