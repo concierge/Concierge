@@ -59,7 +59,7 @@ let discord = require('discord.js'),
                 let numChars = charLimit - messages[messagesIndex].length;
                 let chars = spl[i].substr(0, numChars);
                 spl[i] = spl[i].substr(numChars);
-                messages[messagesIndex] = messages[messagesIndex] + chars;
+                messages[messagesIndex] += chars;
                 messagesIndex++;
                 messages[messagesIndex] = '';
             }
