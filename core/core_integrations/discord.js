@@ -56,8 +56,9 @@ let discord = require('discord.js'),
 
         for (let i = 0; i < spl.length; i++) {
             while (spl[i].length > charLimit) {
-                let chars = spl[i].substr(0, charLimit - messages[messagesIndex].length);
-                spl[i] = spl[i].substr(charLimit - messages[messagesIndex].length);
+                let numChars = charLimit - messages[messagesIndex].length;
+                let chars = spl[i].substr(0, numChars);
+                spl[i] = spl[i].substr(numChars);
                 messages[messagesIndex] = messages[messagesIndex] + chars;
                 messagesIndex++;
                 messages[messagesIndex] = '';
