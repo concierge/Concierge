@@ -19,6 +19,7 @@ All of these requirements can be bypassed within good reason by a core developme
 |---|---|
 |Facebook|[@mrkno](https://github.com/mrkno)|
 |Grunt|[@Awarua-](https://github.com/Awarua-)|
+|Discord|[@Awarua-](https://github.com/Awarua-)|
 |Messenger|[@mrkno](https://github.com/mrkno)|
 |MS/Skype Bots|[@Awarua-](https://github.com/Awarua-)|
 |Skype|[@mrkno](https://github.com/mrkno)|
