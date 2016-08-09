@@ -49,6 +49,17 @@ if (!args || args.length === 0) {
     args.push('test');
 }
 
+// Arbitary location module loading requirements
+global.__rootPath = __dirname;
+global.rootPathJoin = function () {
+    var a = [global.__rootPath],
+        path = require('path');
+    for (var i = 0; i < arguments.length; i++) {
+        a.push(arguments[i]);
+    }
+    return path.join.apply(this, a);
+};
+
 // Check startup integrations
 var startArgs = [];
 for (var i = 0; i < args.length; i++) {

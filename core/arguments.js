@@ -44,8 +44,8 @@ let consolec = require('./unsafe/console.js'),
             expects: ['DIRECTORY'],
             run: function (value) {
                 let path = require('path');
+                global.__modulesPath = path.resolve(value[0]);
                 console.warn(`Modules directory set to "${value}".`);
-                global.__modulesPath = path.resolve(value);
             }
         },
         {
