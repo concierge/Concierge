@@ -13,7 +13,7 @@
 var path = require('path');
 require('babel-register')({
     plugins: [
-        path.join(__dirname, "require.js")
+        path.join(__dirname, 'require.js')
     ]
 });
 require('babel-polyfill');

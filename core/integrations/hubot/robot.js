@@ -63,7 +63,7 @@ exports.brain = {
                 return users[i];
             }
         }
-        
+
         if (options && options.room) {
             if (!threadUsers[options.room]) {
                 threadUsers[options.room] = {};

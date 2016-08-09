@@ -39,7 +39,7 @@ let consolec = require('./unsafe/console.js'),
         },
         {
             long: '--moduledir',
-            short: '-d',
+            short: '-m',
             description: 'Sets the search path for modules used by the bot.',
             expects: ['DIRECTORY'],
             run: function (value) {

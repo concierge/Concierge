@@ -35,15 +35,19 @@ let exec = require('child_process').execSync,
     },
 
     install = function(name) {
-        console.info($$`Installing "${name}" from npm.`);
+        let t = global.$$, // translations might not have loaded
+            startStr = t ? t`Installing "${name}" from npm.` : `Installing "${name}" from npm.`,
+            endStr = t ? t`Installation complete.` : `Installation complete.`;
+
+        console.info(startStr);
         command(['install', name]);
-        console.info($$`Installation complete.`);
+        console.info(endStr);
     };
 
 exports.requireOrInstall = function (req, name) {
     coffeescriptRequireInjector();
     let parsed = path.parse(name);
-    if (((parsed.ext === '.js' || parsed.ext === '.coffee') && 
+    if (((parsed.ext === '.js' || parsed.ext === '.coffee') &&
         (parsed.dir.startsWith('.') || parsed.dir.startsWith('/') || parsed.dir.startsWith('\\'))) || parsed.root.length > 0) {
         return req(name); // try to prevent needless npm install
     }
