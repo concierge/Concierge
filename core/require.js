@@ -6,27 +6,27 @@
  *         Matthew Knox
  *
  * License:
- *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2016.
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2016.
  */
 
 'use strict';
 
 var babylon = require('babylon'),
     inst = require('./install.js'),
-	runOnce = false;
+    runOnce = false;
 
 global.requireHook = function (req) {
-	if (!runOnce) { // prevent re-init
-		let newPath = process.env.NODE_PATH || '';
-		if (newPath.length > 0) {
-			newPath += /^win/.test(process.platform) ? ';' : ':';
-		}
-		newPath += global.rootPathJoin('node_modules');
-		process.env.NODE_PATH = newPath;
-		require("module").Module._initPaths();
-		runOnce = true;
-	}
+    if (!runOnce) { // prevent re-init
+        let newPath = process.env.NODE_PATH || '';
+        if (newPath.length > 0) {
+            newPath += /^win/.test(process.platform) ? ';' : ':';
+        }
+        newPath += global.rootPathJoin('node_modules');
+        process.env.NODE_PATH = newPath;
+        require('module').Module._initPaths();
+        runOnce = true;
+    }
 
     var func = function (mod) {
         return inst.requireOrInstall(req, mod);
