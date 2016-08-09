@@ -28,6 +28,7 @@ Then start one or more of the available integrations:<br/>
 	- Existing Integrations. *Look here for documentation on how to set them up.*
 		- [Facebook Integration](doc/integrations/Facebook.md)
 		- [Slack Integration](doc/integrations/Slack.md)
+		- [Discord Integration](doc/integrations/Discord.md)
 		- [Skype Integration](doc/integrations/Skype.md)
 		- [Telegram Integration](doc/integrations/Telegram.md)
 		- [Messenger Bots](doc/integrations/Messenger.md)

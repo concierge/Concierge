@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "chai": "^3.5.0",
-    "grunt": "latest",
+    "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-mocha-cli": "^2.1.0",
     "grunt-run": "^0.6.0",
@@ -38,7 +38,7 @@
   "scripts": {
     "test": "grunt test",
     "start": "node main.js",
-	"debug": "node main.js --debug --timestamp"
+    "debug": "node main.js --debug --timestamp"
   },
   "engines": {
     "node": "6.2.1"
