@@ -25,10 +25,11 @@ let exec = require('child_process').execSync,
     coffeescriptRequireInjector = function () {
         if (!csHasLoaded && global.coffeescriptLoaded) {
             let cs = require('coffee-script'),
-                orig = cs._compileFile;
+                orig = cs._compileFile,
+                requirejs = require('./require.js');
             cs._compileFile = function () {
                 let res = orig.apply(this, arguments);
-                return require('./require.js').injectionString + res;
+                return requirejs.injectionString + res;
             };
             csHasLoaded = true;
         }

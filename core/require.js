@@ -13,9 +13,21 @@
 'use strict';
 
 var babylon = require('babylon'),
-    inst = require('./install.js');
+    inst = require('./install.js'),
+	runOnce = false;
 
 global.requireHook = function (req) {
+	if (!runOnce) { // prevent re-init
+		let newPath = process.env.NODE_PATH || '';
+		if (newPath.length > 0) {
+			newPath += /^win/.test(process.platform) ? ';' : ':';
+		}
+		newPath += global.rootPathJoin('node_modules');
+		process.env.NODE_PATH = newPath;
+		require("module").Module._initPaths();
+		runOnce = true;
+	}
+
     var func = function (mod) {
         return inst.requireOrInstall(req, mod);
     };
