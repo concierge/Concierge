@@ -12,7 +12,6 @@
 var fs              = require('fs'),
     path            = require('path'),
     files           = require.once('./../files.js'),
-    modulesDir      = 'modules',
     coreMoulesDir   = 'core/core_modules',
     descriptor      = 'kassy.json',
 
@@ -79,12 +78,12 @@ exports.verifyModule = function (location, disabled) {
 };
 
 exports.listModules = function (disabled) {
-    var data = files.filesInDirectory('./' + modulesDir),
+    var data = files.filesInDirectory(global.__modulesPath),
         modules = listCoreModules();
 
     for (var i = 0; i < data.length; i++) {
         try {
-            var candidate = path.resolve(path.join(modulesDir, data[i])),
+            var candidate = path.resolve(path.join(global.__modulesPath, data[i])),
                 output = exports.verifyModule(candidate, disabled);
             if (output) {
                 modules[output.name] = output;

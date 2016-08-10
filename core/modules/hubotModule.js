@@ -12,7 +12,6 @@
 var fs = require('fs'),
     path = require('path'),
     files = require.once('./../files.js'),
-    modulesDir = 'modules',
     descriptor = 'hubot.json',
     pkg = 'package.json',
     Robot = require.once('./hubot/robot.js');
@@ -74,12 +73,12 @@ exports.verifyModule = function (location, disabled) {
 };
 
 exports.listModules = function (disabled) {
-    var data = files.filesInDirectory('./' + modulesDir),
+    var data = files.filesInDirectory(global.__modulesPath),
         modules = {};
 
     for (var i = 0; i < data.length; i++) {
         try {
-            var candidate = path.resolve(path.join(modulesDir, data[i])),
+            var candidate = path.resolve(path.join(global.__modulesPath, data[i])),
                 output = exports.verifyModule(candidate, disabled);
             if (output) {
                 modules[output.name] = output;

@@ -46,6 +46,7 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
             var m = loaders[module.__loaderUID].loadModule(module, platform.config);
             m.__loaderPriority = module.priority;
+            m.__version = module.version;
             if (module.folderPath) {
                 m.__folderPath = module.folderPath;
             }

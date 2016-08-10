@@ -21,6 +21,17 @@
 
 'use strict';
 
+// Arbitary location module loading requirements
+global.__rootPath = __dirname;
+global.rootPathJoin = function () {
+    var a = [global.__rootPath],
+        path = require('path');
+    for (var i = 0; i < arguments.length; i++) {
+        a.push(arguments[i]);
+    }
+    return path.join.apply(this, a);
+};
+
 // Load NodeJS Modifications/Variables
 require('./core/prototypes.js');
 require('./core/status.js');

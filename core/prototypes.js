@@ -10,7 +10,12 @@
  */
 'use strict';
 
-require('babel-register');
+var path = require('path');
+require('babel-register')({
+    plugins: [
+        path.join(__dirname, 'require.js')
+    ]
+});
 require('babel-polyfill');
 
 // string.toProperCase

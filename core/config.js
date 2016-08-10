@@ -14,7 +14,7 @@ var fs = require('fs'),
     modConfig = null,
     modConfigFile = 'config.json',
     sysConfig = null,
-    sysConfigZones = ['output', 'disabled', 'update', 'admin', 'kpm', 'i18n', 'firstRun', 'loopback'],
+    sysConfigZones = ['output', 'disabled', 'update', 'admin', 'i18n', 'firstRun', 'loopback'],
     sysConfigFile = 'config.json';
 
 var loadConfig = function (location) {
@@ -92,6 +92,21 @@ exports.getConfig = function (m) {
         return cfg;
     }
     return sysConfig[m];
+};
+
+exports.getLoadedModuleConfig = function (moduleName) {
+    if (!modConfig) {
+        modConfig = {};
+    }
+
+    if (!modConfig[moduleName]) {
+        let location = path.join(global.__modulesPath, moduleName, modConfigFile);
+        modConfig[moduleName] = {
+            location: location,
+            data: loadConfig(location)
+        };
+    }
+    return modConfig[moduleName];
 };
 
 exports.loadModuleConfig = function (module, location, ignoreCache) {

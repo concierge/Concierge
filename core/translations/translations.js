@@ -105,10 +105,9 @@ module.exports = function(strings, ...values) {
     const context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
 
     if (!contextMap.hasOwnProperty(context)) {
-        const translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(contextMatches[0]) + contextMatches[0].length), 'i18n/');
+        const translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(path.sep, global.__modulesPath.length + 1)), 'i18n/');
         contextMap[context] = new TranslatorService(translationsDirectory);
     }
-
     return contextMap[context].translate(strings, values);
 };
 
