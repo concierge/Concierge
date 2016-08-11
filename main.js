@@ -54,6 +54,9 @@ if (!global.__modulesPath) {
     global.__modulesPath = path.resolve('./modules/');
 }
 
+require('coffee-script').register();
+global.coffeescriptLoaded = true;
+
 // Check startup modes
 if (!args || args.length === 0) {
     console.info('No integrations specified, defaulting to \'test\'.');

@@ -91,10 +91,6 @@ exports.setIntegrations = function (integrations) {
     var i = 0;
     try {
         for (i = 0; i < integrations.length; i++) {
-            if (!global.coffeescriptLoaded && integrations[i].start.endsWith('.coffee')) {
-                require('coffee-script').register();
-                global.coffeescriptLoaded = true;
-            }
             integrations[i].instance = require.once(integrations[i].start);
 
             if (integrations[i].instance.use) {

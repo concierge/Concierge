@@ -96,11 +96,6 @@ exports.listModules = function (disabled) {
 };
 
 exports.loadModule = function (module, config) {
-    if (!global.coffeescriptLoaded && module.startup.endsWith('.coffee')) {
-        require('coffee-script').register();
-        global.coffeescriptLoaded = true;
-    }
-
     try {
         var modulePath = module.folderPath,
             startPath = path.join(modulePath, module.startup),

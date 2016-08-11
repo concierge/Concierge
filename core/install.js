@@ -13,6 +13,8 @@ let exec = require('child_process').execSync,
     path = require('path'),
     fs = require('fs'),
     csHasLoaded = false,
+    nativeReloadHacksCache = {},
+    nativeReloadHacks = ['deasync'],
 
     command = function(args) {
         args.unshift('--silent');
@@ -52,9 +54,14 @@ exports.requireOrInstall = function (req, name) {
         (parsed.dir.startsWith('.') || parsed.dir.startsWith('/') || parsed.dir.startsWith('\\'))) || parsed.root.length > 0) {
         return req(name); // try to prevent needless npm install
     }
+    
+    if (nativeReloadHacksCache.hasOwnProperty(name)) {
+        return nativeReloadHacksCache[name];
+    }
 
+    var r;
     try {
-        return req(name);
+        r = req(name);
     }
     catch (e) {
         if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
@@ -66,9 +73,14 @@ exports.requireOrInstall = function (req, name) {
         catch (p) {
             install(name);
         }
+        r = require(name);
     }
-
-    return require(name);
+    
+    // Native bindings fail to reload in node. Leave if you want restarting or hotswapping to work...
+    if (nativeReloadHacks.includes(name) || name.endsWith('.node')) {
+        nativeReloadHacksCache[name] = r;
+    }
+    return r;
 };
 
 exports.update = function() {
