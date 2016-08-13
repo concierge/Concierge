@@ -1,4 +1,6 @@
 # Concierge
+[![Build Status](https://travis-ci.org/concierge/Concierge.png)](https://travis-ci.org/concierge/Concierge)
+
 (Karma + Sassy) * (Facebook + Slack + Skype + Hipchat + Telegram) = Concierge
 
 <i>It does **way** more than this now...</i>
