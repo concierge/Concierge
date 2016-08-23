@@ -22,7 +22,7 @@ Configuration takes the form of the `admin` section in the main `config.json` fi
 }
 ```
 
-For example, if you had the users "foo" and "bar". "foo" should be able to shutdown and update, but "bar" should only be able to update. The following configuration would acheive that (there are many ways of acheiving the same goal):
+For example, if you had the users "foo" and "bar". "foo" should be able to shutdown and update, but "bar" should only be able to update. The following configuration would achieve that (there are many ways of acheiving the same goal):
 ```json
 {
     "admin": {
@@ -46,4 +46,4 @@ For example, if you had the users "foo" and "bar". "foo" should be able to shutd
 - Permissions can have any name
 - If no permission is added to a core module, then everyone will have access
 - Users without access to a module will not see help for that module and will not receive responses from it
-- It is possible to lock out everyone from a core module. In the case that both `/shutdown` and `/restart` have no users that can access them it is not possible to shutdown while safely saving module configuration.
+- It is possible to lock out everyone from a core module. In the case that both `/shutdown` and `/restart` have no users that can access them - it is not possible to shutdown while safely saving module configuration.
