@@ -260,6 +260,26 @@ Robot.prototype.respond = function (regex, callback) {
     });
 };
 
+Robot.prototype.messageRoom = function (room, messages) {
+    let apis = this.platform.getIntegrationApis();
+    for (let api of apis) {
+        try { // we have no way of working out which integration this room is on...
+            for (let msg of messages) {
+                api.sendMessage(msg, room);
+            }
+        }
+        catch (e) {
+            continue; // hope an exception is thrown for an invalid room...
+        }
+    }
+};
+
+Robot.prototype.reply = function (envelope, messages) {
+    let api = this.platform.getIntegrationApis()[envelope.event.event_source],
+        resp = new Responder(api, envelope.event, null, messages);
+    resp.send(messages);
+};
+
 Robot.prototype.catchAll = function (callback) {
     this.listeners.push(callback);
 };
@@ -307,6 +327,27 @@ Robot.prototype.loadFile = function (scriptsPath, script) {
         this._help = hj.help;
     }
     this.instances.push(new Instance(this));
+};
+
+Robot.prototype.load = function (scriptsPath) {
+    if (!this.loadFile) {
+        return; // avoid the .load() module call
+    }
+    try {
+        // I wish someone would tell me why existsSync is deprecated...
+        let stats = fs.lstatSync(scriptsPath);
+        if (!stats.isDirectory()) {
+            throw new Error('Load directory must exist.');
+        }
+        let files = fs.readdirSync(scriptsPath).sort(); // load in same order as hubot
+        for (let i = 0; i < files.length; i++) {
+            this.loadFile(scriptsPath, files[i]);
+        }
+    }
+    catch (e) {
+        console.critical(e);
+        return; // nothing to load
+    }
 };
 
 Robot.prototype.http = require('scoped-http-client').create;
