@@ -152,13 +152,21 @@ module.exports.hook = function(func, context = null) {
 
 /**
  * Sets the current locale of the system.
- * @param {string} localeString the string to set the locale to. E.g. 'en' for english.
+ * @param {string} localeString the string to set the locale to. E.g. 'en' for English.
  * @returns {undefined} does not currently return a value.
  */
 module.exports.setLocale = function (localeString) {
     if (localeString) {
         currentLocale = localeString;
     }
+};
+
+/**
+ * Gets the current locale of the system.
+ * @returns {string} returns locale string. E.g. 'en' for English.
+ */
+module.exports.getLocale = function () {
+    return currentLocale;
 };
 
 /**
