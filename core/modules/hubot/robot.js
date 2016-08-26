@@ -261,11 +261,14 @@ Robot.prototype.respond = function (regex, callback) {
 };
 
 Robot.prototype.messageRoom = function (room, messages) {
+    if (!Array.isArray(messages)) {
+        messages = [messages];
+    }
     let apis = this.platform.getIntegrationApis();
-    for (let api of apis) {
+    for (let api in apis) {
         try { // we have no way of working out which integration this room is on...
             for (let msg of messages) {
-                api.sendMessage(msg, room);
+                apis[api].sendMessage(msg, room);
             }
         }
         catch (e) {
