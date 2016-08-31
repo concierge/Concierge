@@ -27,37 +27,51 @@ let Responder = class {
         this.event = event;
         this.match = match;
         this.message = message;
+        this.envelope = message;
     }
 
     random(arr) {
         return this.api.random(arr);
     }
 
-    send() {
-        for (var i = 0; i < arguments.length; i++) {
-            switch (getType(arguments[i])) {
+    _internalSend(thread_id, data) {
+        for (var i = 0; i < data.length; i++) {
+            switch (getType(data[i])) {
             case 'message':
-                this.api.sendMessage(arguments[i], this.event.thread_id);
+                this.api.sendMessage(data[i], thread_id);
                 break;
             case 'url':
-                this.api.sendUrl(arguments[i], this.event.thread_id);
+                this.api.sendUrl(data[i], thread_id);
                 break;
             case 'image':
-                this.api.sendImage('url', arguments[i], '', this.event.thread_id);
+                this.api.sendImage('url', data[i], '', thread_id);
                 break;
             case 'file':
-                this.api.sendFile('file', arguments[i], '', this.event.thread_id);
+                this.api.sendFile('file', data[i], '', thread_id);
                 break;
             }
         }
+    }
+
+    send() {
+        this._internalSend(this.event.thread_id, arguments);
+    }
+
+    emote() {
+        this.send.apply(this, arguments);
+    }
+
+    reply() {
+        this.send.apply(this, arguments);
+    }
+
+    messageRoom(room, strings) {
+        this._internalSend(room, strings);
     }
 
     http() {
         return this.api.http.apply(this, arguments);
     }
 };
-
-Responder.prototype.emote = Responder.prototype.send;
-Responder.prototype.reply = Responder.prototype.send;
 
 module.exports = Responder;
