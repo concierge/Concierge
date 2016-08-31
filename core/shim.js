@@ -106,6 +106,10 @@ exports.createIntegration = function (platform) {
     }
 
     platform.sendMessageToMultiple = sendMessageToMultiple;
+    platform.http = require('scoped-http-client').create;
+    platform.random = (arr) => {
+        return arr[Math.floor(Math.random() * arr.length)];
+    };
 
     return platform;
 };
