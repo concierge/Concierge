@@ -517,7 +517,6 @@ var request = require.safe('request'),
         messageQueue = {};
         inTransaction = {};
         waitingForFirstTransaction = {};
-        clearedMessageQueue = true;
     },
 
     clearTimeouts = function() {
@@ -532,7 +531,6 @@ var request = require.safe('request'),
                 delete team.pongTimeout;
             }
         });
-        clearedTimeouts = true;
     };
 
 exports.getApi = function() {
@@ -568,8 +566,6 @@ exports.start = function (callback) {
 exports.stop = function() {
     console.debug('slack-> start shutdown');
     shuttingDown = true;
-    clearedMessageQueue = false;
-    clearedTimeouts = false;
 
     // Finish Message queue
     clearMessageQueue();
