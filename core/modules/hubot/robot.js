@@ -233,31 +233,25 @@ Robot.prototype.match = function (event, commandPrefix) {
     return !!event.__robotCallbackListeners;
 };
 
-Robot.prototype.listen = function (matcher, callback) {
+Robot.prototype.listen = function (matcher, options, callback) {
     this.listeners.push({
         matcher: matcher,
-        callback: callback
+        callback: callback || options
     });
 };
 
-Robot.prototype.hear = function (regex, callback) {
-    this.listeners.push({
-        matcher: function (msg) {
-            return msg.event.body.match(regex);
-        },
-        callback: callback
-    });
+Robot.prototype.hear = function (regex, options, callback) {
+    this.listen(function (msg) {
+        return msg.event.body.match(regex);
+    }, options, callback);
 };
 
-Robot.prototype.respond = function (regex, callback) {
-    this.listeners.push({
-        matcher: function (msg) {
-            var prefix = msg.prefix.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-            var reg = eval('/^' + prefix + regex.toString().substring(1));
-            return msg.event.body.match(reg);
-        },
-        callback: callback
-    });
+Robot.prototype.respond = function (regex, options, callback) {
+    this.listen(function (msg) {
+        var prefix = msg.prefix.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+        var reg = eval('/^' + prefix + regex.toString().substring(1));
+        return msg.event.body.match(reg);
+    }, options, callback);
 };
 
 Robot.prototype.messageRoom = function (room, messages) {
@@ -283,8 +277,8 @@ Robot.prototype.reply = function (envelope, messages) {
     resp.send(messages);
 };
 
-Robot.prototype.catchAll = function (callback) {
-    this.listeners.push(callback);
+Robot.prototype.catchAll = function (options, callback) {
+    this.listeners.push(options || callback);
 };
 
 Robot.prototype.receive = function (message) {

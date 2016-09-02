@@ -69,7 +69,7 @@ exports.setIntegrationConfigs = function (platform) {
     global.shim.current = platform;
     for (var i = 0; i < selectedIntegrations.length; i++) {
         selectedIntegrations[i].instance.platform = platform;
-        selectedIntegrations[i].instance.config = platform.config.loadOutputConfig(selectedIntegrations[i].name);
+        selectedIntegrations[i].instance.config = platform.config.getSystemConfig('output')[selectedIntegrations[i].name];
 
         for (var name in selectedIntegrations[i].instance.config) {
             if (name.startsWith('ENV_') && name === name.toUpperCase()) {

@@ -16,7 +16,8 @@ const figlet = require('figlet'),
 class Platform extends EventEmitter {
     constructor(integrations) {
         super();
-        this.config = require.once('./config.js');
+        let ConfigService = require.once('./config.js');
+        this.config = new ConfigService();
         this.integrationManager = require.once('./integrations/integrations.js');
         this.integrationManager.setIntegrations(integrations);
         this.defaultPrefix = '/';
@@ -129,14 +130,15 @@ class Platform extends EventEmitter {
 
         // Load system config
         console.warn($$`LoadingSystemConfig`);
-        $$.setLocale(this.config.getConfig('i18n').locale);
+        console.log(this);
+        $$.setLocale(this.config.getSystemConfig('i18n').locale);
         this.integrationManager.setIntegrationConfigs(this);
-        let firstRun = this.config.getConfig('firstRun');
+        let firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
             firstRun.hasRun = true;
             this._firstRun();
         }
-        this.allowLoopback = !!this.config.getConfig('loopback').enabled;
+        this.allowLoopback = !!this.config.getSystemConfig('loopback').enabled;
 
         // Load modules
         console.warn($$`LoadingModules`);
@@ -164,7 +166,7 @@ class Platform extends EventEmitter {
         // Unload user modules
         this.modulesLoader.unloadAllModules(this.config);
 
-        this.config.saveSystemConfig();
+        this.config.saveConfig();
         this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
 
         console.warn($$`${this.packageInfo.name} Shutdown`);
