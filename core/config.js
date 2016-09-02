@@ -11,7 +11,8 @@
 
 let path = require('path'),
     fs = require('fs'),
-    configFileName = 'config.json';
+    configFileName = 'config.json',
+    globalScope = '%';
 
 class ConfigService {
     constructor() {
@@ -27,7 +28,7 @@ class ConfigService {
      */
     loadConfig(scope, name) {
         if (!scope) {
-            scope = '%';
+            scope = globalScope;
         }
 
         if (this.configCache.hasOwnProperty(scope)) {
@@ -35,7 +36,7 @@ class ConfigService {
         }
 
         let configPath;
-        if (scope === '%') {
+        if (scope === globalScope) {
             configPath = global.rootPathJoin(configFileName);
         }
         else {
@@ -90,7 +91,10 @@ class ConfigService {
      */
     getSystemConfig(section) {
         let config = this.loadConfig();
-        return config[section] || {};
+        if (config[section] === void(0)) {
+            config[section] = {};
+        }
+        return config[section];
     }
 
     /**
@@ -101,7 +105,7 @@ class ConfigService {
      */
     saveConfig(scope) {
         if (!scope) {
-            scope = '%';
+            scope = globalScope;
         }
 
         if (!this.configCache.hasOwnProperty(scope)) {

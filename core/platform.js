@@ -130,7 +130,6 @@ class Platform extends EventEmitter {
 
         // Load system config
         console.warn($$`LoadingSystemConfig`);
-        console.log(this);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
         this.integrationManager.setIntegrationConfigs(this);
         let firstRun = this.config.getSystemConfig('firstRun');
