@@ -10,24 +10,13 @@ let scopedHttpClient = require('scoped-http-client'),
                 apis[integ].sendMessage(message, intThreads[i]);
             }
         }
-    },
-
-    _loopbackWrapper = (origionalSend, api) => {
-        return (data, thread) => {
-            origionalSend(data, thread);
-            if (exports.current && exports.current.allowLoopback) {
-                let newEvent = exports.createEvent(thread, -1, 'Bot', data);
-                newEvent.event_source = 'loopback';
-                exports.current.onMessage(api, newEvent);
-            }
-        };
     };
 
 let IntegrationApi = module.exports = class {
     constructor(prefix) {
         this.commandPrefix = prefix || '/';
-        this.sendMessage = _loopbackWrapper(this.sendMessage, this);
-        this.sendUrl = _loopbackWrapper(this.sendUrl, this);
+        this.sendMessage = IntegrationApi._loopbackWrapper(this.sendMessage, this);
+        this.sendUrl = IntegrationApi._loopbackWrapper(this.sendUrl, this);
     }
 
     sendMessage() {
@@ -40,32 +29,32 @@ let IntegrationApi = module.exports = class {
 
     sendImage(type, image, description, thread) {
         switch(type) {
-            case 'url': // fallback to sending a url
-                this.sendMessage(description, thread);
-                this.sendUrl(image, thread);
-                break;
-            case 'file': // fallback to sending a file
-                this.sendFile(type, image, description, thread);
-                break;
-            default: // fallback to sending a message
-                this.sendMessage(description, thread);
-                this.sendMessage($$`I also have something to send you but cant seem to do so...`, thread);
-                break;
+        case 'url': // fallback to sending a url
+            this.sendMessage(description, thread);
+            this.sendUrl(image, thread);
+            break;
+        case 'file': // fallback to sending a file
+            this.sendFile(type, image, description, thread);
+            break;
+        default: // fallback to sending a message
+            this.sendMessage(description, thread);
+            this.sendMessage($$`I also have something to send you but cant seem to do so...`, thread);
+            break;
         }
     }
 
     sendFile(type, file, description, thread) {
         this.sendMessage(description, thread);
         switch(type) {
-            case 'url': // fallback to sending a url
-                this.sendUrl(file, thread);
-                break;
-            case 'file': // fallback to sending a message
-                this.sendMessage($$`I have a file to send you but cant seem to do so...`, thread);
-                break;
-            default: // fallback to sending a message
-                this.sendMessage($$`I have something to send you but cant seem to do so...`, thread);
-                break;
+        case 'url': // fallback to sending a url
+            this.sendUrl(file, thread);
+            break;
+        case 'file': // fallback to sending a message
+            this.sendMessage($$`I have a file to send you but cant seem to do so...`, thread);
+            break;
+        default: // fallback to sending a message
+            this.sendMessage($$`I have something to send you but cant seem to do so...`, thread);
+            break;
         }
     }
 
@@ -104,7 +93,7 @@ let IntegrationApi = module.exports = class {
     }
 
     static createIntegration(implementation) {
-        let integ = new IntegrationApi(implementation),
+        let integ = new IntegrationApi(implementation.commadPrefix),
             properties = integ._getBaseClassProperties();
         for (let property of properties) {
             if (implementation.hasOwnProperty(property)) {
@@ -134,5 +123,16 @@ let IntegrationApi = module.exports = class {
             event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
         }
         return event;
+    }
+
+    static _loopbackWrapper(origionalSend, api) {
+        return (data, thread) => {
+            origionalSend.call(api, data, thread);
+            if (exports.current && exports.current.allowLoopback) {
+                let newEvent = exports.createEvent(thread, -1, 'Bot', data);
+                newEvent.event_source = 'loopback';
+                exports.current.onMessage(api, newEvent);
+            }
+        };
     }
 };

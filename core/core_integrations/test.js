@@ -40,7 +40,7 @@ exports.start = function (callback) {
             }
             return obj;
         }
-    };
+    }
     api = new TestIntegration(exports.config.commandPrefix);
 
     cli = cline();
