@@ -13,20 +13,46 @@ let scopedHttpClient = require('scoped-http-client'),
     };
 
 let IntegrationApi = module.exports = class {
+    /**
+     * constructor - Creates a new integration API.
+     *
+     * @param  {string} prefix the command prefix for this integration.
+     */
     constructor(prefix) {
         this.commandPrefix = prefix || '/';
         this.sendMessage = IntegrationApi._loopbackWrapper(this.sendMessage, this);
         this.sendUrl = IntegrationApi._loopbackWrapper(this.sendUrl, this);
     }
 
+    /**
+     * sendMessage - Send a message to a chat.
+     *
+     * @param  {string} message the message to send.
+     * @param  {string} thread  the ID of the thread to send the message to.
+     */
     sendMessage() {
         throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
     }
 
+    /**
+     * sendUrl - Embeds a URL within a chat.
+     *
+     * @param  {string} url    the url to embed.
+     * @param  {string} thread the ID of the thread to embed the url in.
+     */
     sendUrl(url, thread) {
         this.sendMessage(url, thread); // fallback to sending a message
     }
 
+    /**
+     * sendImage - Send an image to a chat.
+     *
+     * @param  {string} type type of image that is being sent.
+     * By default this can be 'url' or 'file' although individual integrations can expand support to other types.
+     * @param  {(string|Object)} image image object for the type provided.
+     * @param  {string} description description of the image being sent.
+     * @param  {string} thread      the ID of the thread to send the image to.
+     */
     sendImage(type, image, description, thread) {
         switch(type) {
         case 'url': // fallback to sending a url
@@ -43,6 +69,15 @@ let IntegrationApi = module.exports = class {
         }
     }
 
+    /**
+     * sendFile - Send a file to a chat.
+     *
+     * @param  {string} type type of file that is being sent.
+     * By default this can be 'url' or 'file' although individual integrations can expand support to other types.
+     * @param  {(string|Object)} file file object for the type provided.
+     * @param  {type} description description of the file being sent.
+     * @param  {type} thread       the ID of the thread to send the file to.
+     */
     sendFile(type, file, description, thread) {
         this.sendMessage(description, thread);
         switch(type) {
@@ -58,30 +93,90 @@ let IntegrationApi = module.exports = class {
         }
     }
 
+    /**
+     * sendTyping - starts the self-cancelling typing indicator.
+     *
+     * Note: typing indicators should be self-cancelling; that is, when this method is called
+     * the integration should work out for itself when to stop the typing indicator.
+     * For example, this could be done:
+     * - on sending a message
+     * - after a short timeout (if no message is ever sent)
+     *
+     * @param  {string} thread the thread ID of the thread to send the typing indicator to.
+     */
     sendTyping(thread) {
         this.sendMessage($$`Working on it...`, thread); // fallback to sending a message
     }
 
+    /**
+     * setTitle - sets the title of a chat thread.
+     *
+     * @param  {string} title  the new title of the thread.
+     * @param  {string} thread the thread ID of the thread to set the title of.
+     */
     setTitle(title, thread) { // fallback to sending a message
         this.sendMessage($$`If I could set the title of this chat I would set it to "${title}"`, thread);
     }
 
+    /**
+     * sendPrivateMessage - sends a private message to a person.
+     *
+     * @param  {string} message message to send.
+     * @param  {string} thread  the ID of the person to send the message to.
+     * @see {@link sendMessage}
+     */
     sendPrivateMessage(message, thread) {
         this.sendMessage(message, thread);
     }
 
+    /**
+     * sendMessageToMultiple - sends a message to mutiple loaded integrations.
+     * NB: This method should NOT be overridden.
+     *
+     * @param  {string} message message to send.
+     * @param  {Object} threads object representing the threads to send the message to.
+     * @example
+     * For example, to send the message "Hello World!" to the Facebook threads 1234 and 5678
+     * as well as the Slack threads 'abcd' and 'efgh':
+     * api.sendMessageToMultiple("Hello World!", {
+     *     "facebook": [1234, 5678],
+     *     "slack": ['abcd', 'efgh']
+     * });
+     */
     sendMessageToMultiple(message, threads) {
         sendMessageToMultiple(message, threads);
     }
 
+    /**
+     * getUsers - gets the users within a thread.
+     *
+     * @param  {string} thread thread to get the users of.
+     * @return {Object} an object similar to the following:
+     * {
+     *     '<someUserId>': {
+     *         name: '<someUserName>'
+     *     }
+     * }
+     */
     getUsers() {
         return {};
     }
 
+    /**
+     * random - convenience method for selecting random items from an array.
+     *
+     * @param  {Array} arr array to select a random item from.
+     * @return {Object} random item of the array.
+     */
     random(arr) {
         return arr[Math.floor(Math.random() * arr.length)];
     }
 
+    /**
+     * http - convenience method for performing http requests.
+     * @see {@link https://github.com/technoweenie/node-scoped-http-client}, client.create for API details.
+     * @return {Object} an http.clientRequest.
+     */
     http() {
         return scopedHttpClient.create.apply(this, arguments);
     }
@@ -92,6 +187,12 @@ let IntegrationApi = module.exports = class {
         return items.concat(Object.keys(this));
     }
 
+    /**
+     * createIntegration - creates a new integration based on an object rather than an ES6 class.
+     *
+     * @param  {Object} implementation implementation of the integration as an object.
+     * @return {IntegrationApi} an implementation of the API.
+     */
     static createIntegration(implementation) {
         let integ = new IntegrationApi(implementation.commadPrefix),
             properties = integ._getBaseClassProperties();
@@ -106,6 +207,16 @@ let IntegrationApi = module.exports = class {
         return integ;
     }
 
+    /**
+     * createEvent - creates an event to be passed from an integration to the modules.
+     *
+     * @param  {string} thread     the ID of the thread that the message was received from.
+     * @param  {string} senderId   the ID of the sender of the message.
+     * @param  {string} senderName the name of the message sender. This should be a nickname,
+     * full name details are retreivable though getUsers. @see {@link getUsers}
+     * @param  {string} message    the message string that was received.
+     * @return {Object}            an object representing an event.
+     */
     static createEvent(thread, senderId, senderName, message) {
         let event = {
             thread_id: thread,
