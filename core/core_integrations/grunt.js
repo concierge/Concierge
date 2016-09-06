@@ -104,7 +104,7 @@ exports.start = function(cb) {
         sendFile: sendFile,
         sendTyping: sendTyping,
         setTitle: setTitle,
-        commadPrefix: '/'
+        commandPrefix: '/'
     };
     api = shim.createIntegration(functions);
 

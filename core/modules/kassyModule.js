@@ -35,19 +35,14 @@ var fs              = require('fs'),
         return modules;
     },
 
-    verifyModuleDescriptior = function (kj, disabled) {
+    verifyModuleDescriptior = function (kj) {
         if (!kj.name || !kj.startup || !kj.version) {
-            return false;
-        }
-
-        if (disabled === true && exports.disabledConfig &&
-            exports.disabledConfig[kj.name] && exports.disabledConfig[kj.name] === true) {
             return false;
         }
         return true;
     };
 
-exports.verifyModule = function (location, disabled) {
+exports.verifyModule = function (location) {
     var stat = fs.statSync(location);
     if (!stat.isDirectory()) {
         return null;
@@ -66,7 +61,7 @@ exports.verifyModule = function (location, disabled) {
     }
 
     var kj = require.once(p);
-    if (!verifyModuleDescriptior(kj, disabled)) {
+    if (!verifyModuleDescriptior(kj)) {
         return null;
     }
 
@@ -77,14 +72,14 @@ exports.verifyModule = function (location, disabled) {
     return kj;
 };
 
-exports.listModules = function (disabled) {
+exports.listModules = function () {
     var data = files.filesInDirectory(global.__modulesPath),
         modules = listCoreModules();
 
     for (var i = 0; i < data.length; i++) {
         try {
             var candidate = path.resolve(path.join(global.__modulesPath, data[i])),
-                output = exports.verifyModule(candidate, disabled);
+                output = exports.verifyModule(candidate);
             if (output) {
                 modules[output.name] = output;
             }
@@ -168,7 +163,7 @@ exports.loadModule = function (module, config) {
         throw new Error($$`Could not load module '${module.name}'. Does it have a syntax error?`);
     }
     if (!module.bypassConfig) {
-        m.config = config.loadModuleConfig(module, modulePath);
+        m.config = config.loadConfig(modulePath, module.name);
     }
     m.__coreOnly = module.__coreOnly;
     m.name = module.name;
