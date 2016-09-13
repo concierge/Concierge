@@ -29,6 +29,9 @@ let IntegrationApi = module.exports = class {
      *
      * @param  {string} message the message to send.
      * @param  {string} thread  the ID of the thread to send the message to.
+     * @example
+     * To send 'Hello World' to the current thread:
+     * api.sendMessage('Hello World', event.thread_id);
      */
     sendMessage() {
         throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
@@ -39,6 +42,9 @@ let IntegrationApi = module.exports = class {
      *
      * @param  {string} url    the url to embed.
      * @param  {string} thread the ID of the thread to embed the url in.
+     * @example
+     * To send 'http://google.com' to the current thread:
+     * api.sendUrl('http://google.com', event.thread_id);
      */
     sendUrl(url, thread) {
         this.sendMessage(url, thread); // fallback to sending a message
@@ -52,6 +58,9 @@ let IntegrationApi = module.exports = class {
      * @param  {(string|Object)} image image object for the type provided.
      * @param  {string} description description of the image being sent.
      * @param  {string} thread      the ID of the thread to send the image to.
+     * @example
+     * To send the image 'http://i.imgur.com/unrseYB.png' to the current thread with the description 'Hello World':
+     * api.sendImage('url', 'http://i.imgur.com/unrseYB.png', 'Hello World', event.thread_id);
      */
     sendImage(type, image, description, thread) {
         switch(type) {
@@ -103,6 +112,9 @@ let IntegrationApi = module.exports = class {
      * - after a short timeout (if no message is ever sent)
      *
      * @param  {string} thread the thread ID of the thread to send the typing indicator to.
+     * @example
+     * To start the typing indicator in the current thread:
+     * api.sendTyping(event.thread_id);
      */
     sendTyping(thread) {
         this.sendMessage($$`Working on it...`, thread); // fallback to sending a message
@@ -113,6 +125,9 @@ let IntegrationApi = module.exports = class {
      *
      * @param  {string} title  the new title of the thread.
      * @param  {string} thread the thread ID of the thread to set the title of.
+     * @example
+     * To set the title of the current thread to 'Hello World':
+     * api.sendTyping('Hello World', event.thread_id);
      */
     setTitle(title, thread) { // fallback to sending a message
         this.sendMessage($$`If I could set the title of this chat I would set it to "${title}"`, thread);
@@ -167,6 +182,9 @@ let IntegrationApi = module.exports = class {
      *
      * @param  {Array} arr array to select a random item from.
      * @return {Object} random item of the array.
+     * @example
+     * let array = ['foo', 'bar', 'baz'];
+     * let randomItem = api.random(array); // foo, bar or baz
      */
     random(arr) {
         return arr[Math.floor(Math.random() * arr.length)];
