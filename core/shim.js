@@ -127,7 +127,7 @@ let IntegrationApi = module.exports = class {
      * @param  {string} thread the thread ID of the thread to set the title of.
      * @example
      * To set the title of the current thread to 'Hello World':
-     * api.sendTyping('Hello World', event.thread_id);
+     * api.setTitle('Hello World', event.thread_id);
      */
     setTitle(title, thread) { // fallback to sending a message
         this.sendMessage($$`If I could set the title of this chat I would set it to "${title}"`, thread);
