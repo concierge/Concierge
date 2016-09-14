@@ -23,8 +23,9 @@ Then start one or more of the available integrations:<br/>
 
 ### All Documentation
 - [Creating Modules](doc/ModuleCreation.md)
-	- [API](doc/api/Api.md)
-	- [Event](doc/api/Event.md)
+	- [Module Methods](doc/api/Module.md)
+	- [API Object](doc/api/Api.md)
+	- [Event Object](doc/api/Event.md)
 	- [kassy.json](doc/api/Kassy.json.md)
 	- [Translations](doc/api/Translation.md)
 - [KPM Modules Table](https://github.com/concierge/Concierge/wiki/KPM-Table)
