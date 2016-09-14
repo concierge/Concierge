@@ -8,8 +8,8 @@ These functions should be implemented as needed on the `exports` object of your 
 <dt><a href="#match">match(event, commandPrefix)</a></dt>
 <dd><p>Evaluates if the module should be run for the given event.</p>
 </dd>
-~~<dt><a href="#matchd">match(text, commandPrefix)</a></dt>~~ __Deprecated__
-~~<dd><p>Evaluates if the module should be run for the given text.</p>~~
+<dt><b>Deprecated&nbsp;</b><a href="#matchd">match(text, commandPrefix)</a></dt>
+<dd><p>Evaluates if the module should be run for the given text.</p>
 </dd>
 <dt><a href="#help">help(commandPrefix)</a></dt>
 <dd><p>Gets help text for the module.</p></dd>
@@ -27,13 +27,13 @@ These properties are set automatically by Concierge on the `exports` object. The
 <dd><p>Object for storing configuration data of the module within.</p></dd>
 <dt><a href="#platform">platform</a></dt>
 <dd><p>A reference to the Concierge core platform. This provides access to control methods of the bot and a means to get access directly to integration APIs.</p></dd>
-<dt><a href="#version">\__version</a></dt>
+<dt><a href="#version">__version</a></dt>
 <dd><p>The version of the module from `kassy.json`.</p></dd>
-~~<dt><a href="#coreOnly">\__coreOnly</a></dt>~~ __Deprecated__
-~~<dd><p>Is the module a core module.</p></dd>~~
-<dt><a href="#loaderPriority">\__loaderPriority</a></dt>
+<dt><b>Deprecated&nbsp;</b><a href="#coreOnly">__coreOnly</a></dt>
+<dd><p>Is the module a core module.</p></dd>
+<dt><a href="#loaderPriority">__loaderPriority</a></dt>
 <dd><p>The loading priority as an integer from `kassy.json`.</p></dd>
-<dt><a href="#folderPath">\__folderPath</a></dt>
+<dt><a href="#folderPath">__folderPath</a></dt>
 <dd><p>The folder that the module is stored within.</p></dd>
 </dl>
 
