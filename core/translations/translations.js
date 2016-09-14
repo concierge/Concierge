@@ -117,7 +117,7 @@ module.exports = function(strings, ...values) {
  * the sections outside of the `${x}` sections of the format string.
  * @param {Array<string>} values input format values. These are the values of strings
  * contained within `${x}` sections of the format string.
- * @param {string} the context in which to translate.
+ * @param {string} context the context in which to translate.
  * @returns {string} the translated string.
  */
 module.exports.translate = function(strings, values, context) {
