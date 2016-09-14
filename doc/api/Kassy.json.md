@@ -50,7 +50,7 @@ This is a basic example of a module named `foo`.
 
 <a name="name"></a>
 ## name ⇒ <code>string</code>
-**Required**
+**Required**  
 **Kind**: Object property
 
 The name of the module.
@@ -58,7 +58,7 @@ Where possible this string should be unique to prevent problems installing and r
 
 <a name="version"></a>
 ## version ⇒ <code>float</code>
-**Required**
+**Required**  
 **Kind**: Object property
 
 The version of the module.
@@ -66,7 +66,7 @@ While not absolutely nessecery, it is recommended that this value is updated eve
 
 <a name="startup"></a>
 ## startup ⇒ <code>string</code>
-**Required**
+**Required**  
 **Kind**: Object property
 
 The file that is the entry point for the module.
@@ -74,7 +74,7 @@ Usually this file will be a JavaScript file located in the same directory as the
 
 <a name="command"></a>
 ## command ⇒ <code>string</code>
-**Required** if and only if `exports.match` has not been provided within your module. See [Module.md#match](./Module.md#match).
+**Required** if and only if `exports.match` has not been provided within your module. See [Module.md#match](./Module.md#match).  
 **Kind**: Object property
 
 The string that each command to the module should be prefixed with.
@@ -95,7 +95,7 @@ This is the equivilent of the regular expression: `/^\/foo(?=($|\s))/`.
 
 <a name="help"></a>
 ## help ⇒ <code>array[array[string, string, string?]]</code>
-**Optional** should not be provided if `exports.help` has has been implemented. See [Module.md#help](./Module.md#help).
+**Optional** should not be provided if `exports.help` has has been implemented. See [Module.md#help](./Module.md#help).  
 **Kind**: Object property
 
 Help text associated with this module.
@@ -105,7 +105,7 @@ The any string within an entry can contain the special substring `{{commandPrefi
 
 <a name="priority"></a>
 ## priority ⇒ <code>string</code> | <code>integer</code>
-**Optional**
+**Optional**  
 **Kind**: Object property
 
 Where in the execution order of modules to execute this module. Lower numbers have higher priority.

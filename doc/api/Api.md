@@ -232,7 +232,7 @@ Convenience method for performing http requests.
 **Returns**: <code>Object</code> - an `http.clientRequest`.  
 **See**: [https://github.com/technoweenie/node-scoped-http-client](https://github.com/technoweenie/node-scoped-http-client), `client.create` for API details.
 
-<a name="http"></a>
+<a name="commandPrefix"></a>
 ## commandPrefix ⇒ <code>string</code>
 The prefix that should be used before commands on the current integration.  
 Using the prefix is optional but highly recommended within your commands.
