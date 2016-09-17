@@ -14,13 +14,13 @@ Concierge supports two primary module formats:
 ### Kassy Module Format
 For a "Hello World" example see [here](https://github.com/concierge/HelloConcierge).
 
-The basic module for a Concierge module will created as a new directory within the `modules` directory of Concierge (*not to be confused with `node_modules`</b>*).
+The basic module for a Concierge module will created as a new directory within the `modules` directory of Concierge (*not to be confused with `node_modules`*).
 It will contain the following files:
 - `someModule.js` - an ES6, strict mode JavaScript file that will be the basis of the module. [See here](./api/Module.md) for the methods that this should implement.
 - `kassy.json` - a file describing your module, that can be used by Concierge to start it. [See here](./api/Kassy.json.md) for the properties that should be in this file.
 
 #### Dependencies
-Concierge has been created using [Node.JS](https://nodejs.org/). As with any Node.JS application, it is possible to depend on other Node.JS modules using `require`. Within Concierge, `require` has been extended to automatically install any dependency it does not have/cannot find from [NPM](https://www.npmjs.com/).
+Concierge has been created using [Node.JS](https://nodejs.org/). As with any Node.JS application, it is possible to depend on other Node.JS modules using `require`. Within Concierge, `require` has been extended to automatically install modules from [NPM](https://www.npmjs.com/) if they are not found locally.  
 For example, if you inserted the statement `require('foo')` into a module and `foo` was an NPM module that had not already been installed, `foo` would be installed before letting your module continue execution.
 
 Additional methods are also available with require:

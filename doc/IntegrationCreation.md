@@ -6,7 +6,7 @@ Integrations can take two forms:
 - A Hubot Adapter. These can be installed as a directory within the `core/core_integrations` directory.
 
 ## Concierge Integration Format
-Each integration must be in its own JavaScript file located within the directory `core/core_integrations`. If additional files are required for an output module they must not be located within this directory or a subdirectory of it - this is to ensure that Concierge can accurately search for new integrations. Integrations take their name from the script name.
+Each integration must be in its own JavaScript file or directory located within the directory `core/core_integrations`. If a directory is used, it must contain a `package.json` file which has both the `name` (name of the integration) and `main` (entry point of the integration) properties within it. Stand-alone JavaScript files will derive their integration name from the name of the script file. No two integrations are allowed to have the same name.
 
 ### Methods
 Each integration must provide the methods found in [Integration.md](./api/Integration.md).
@@ -23,7 +23,7 @@ let event = shim.createEvent(thread_id, sender_id, sender_name, body);
 ```
 
 ### API
-The API must provide all of the methods found in [Api.md](./Api.md). As it is not possible for every platform to provide every API, it is possible to use the globally provided `shim` object to simplify the process of creating this API as seen below. It is recommended you only create an API once per call of the `start method`. At the most basic level, the `sendMessage` method **must** be provided.
+The API must provide all of the methods found in [Api.md](./api/Api.md). As it is not possible for every platform to provide every API, it is possible to use the globally provided `shim` object to simplify the process of creating this API as seen below. It is recommended you only create an API once per call of the `start method`. At the most basic level, the `sendMessage` method **must** be provided.
 
 #### Appoach 1: ES6 Class Extension
 Extend only the methods needed and create a new instance of the class. A `commandPrefix` must be passed during instantiation of the base class.
