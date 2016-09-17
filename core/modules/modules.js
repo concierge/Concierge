@@ -13,10 +13,10 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
     conflict        = 1,
     loadedModules   = [],
 
-    listModules = function (disabled) {
+    listModules = function () {
         var modules = {};
         for (var i = 0; i < loaders.length; i++) {
-            var m = loaders[i].listModules(disabled);
+            var m = loaders[i].listModules();
             for (var key in m) {
                 var t = key;
                 while (modules[t]) {
@@ -46,6 +46,7 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
             var m = loaders[module.__loaderUID].loadModule(module, platform.config);
             m.__loaderPriority = module.priority;
+            m.__version = module.version;
             if (module.folderPath) {
                 m.__folderPath = module.folderPath;
             }
@@ -124,10 +125,10 @@ exports.loadAllModules = function(platform) {
     }
 };
 
-exports.verifyModule = function (path, disabled) {
+exports.verifyModule = function (path) {
     var mod = null;
     for (var i = 0; i < loaders.length; i++) {
-        mod = loaders[i].verifyModule(path, disabled);
+        mod = loaders[i].verifyModule(path);
         if (mod) {
             if (!mod.priority || mod.priority === 'normal') {
                 mod.priority = 0;
@@ -154,9 +155,7 @@ exports.unloadModule = function(mod, config) {
         if (mod.unload) {
             mod.unload();
         }
-        if (mod.config) {
-            config.saveModuleConfig(mod.name);
-        }
+        config.saveConfig(mod.name);
         mod.platform = null;
         var index = loadedModules.indexOf(mod);
         loadedModules.splice(index, 1);

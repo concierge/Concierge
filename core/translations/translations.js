@@ -105,10 +105,9 @@ module.exports = function(strings, ...values) {
     const context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
 
     if (!contextMap.hasOwnProperty(context)) {
-        const translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(contextMatches[0]) + contextMatches[0].length), 'i18n/');
+        const translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(path.sep, global.__modulesPath.length + 1)), 'i18n/');
         contextMap[context] = new TranslatorService(translationsDirectory);
     }
-
     return contextMap[context].translate(strings, values);
 };
 
@@ -118,7 +117,7 @@ module.exports = function(strings, ...values) {
  * the sections outside of the `${x}` sections of the format string.
  * @param {Array<string>} values input format values. These are the values of strings
  * contained within `${x}` sections of the format string.
- * @param {string} the context in which to translate.
+ * @param {string} context the context in which to translate.
  * @returns {string} the translated string.
  */
 module.exports.translate = function(strings, values, context) {
@@ -153,13 +152,21 @@ module.exports.hook = function(func, context = null) {
 
 /**
  * Sets the current locale of the system.
- * @param {string} localeString the string to set the locale to. E.g. 'en' for english.
+ * @param {string} localeString the string to set the locale to. E.g. 'en' for English.
  * @returns {undefined} does not currently return a value.
  */
 module.exports.setLocale = function (localeString) {
     if (localeString) {
         currentLocale = localeString;
     }
+};
+
+/**
+ * Gets the current locale of the system.
+ * @returns {string} returns locale string. E.g. 'en' for English.
+ */
+module.exports.getLocale = function () {
+    return currentLocale;
 };
 
 /**

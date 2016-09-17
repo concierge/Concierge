@@ -67,9 +67,13 @@ exports.listIntegrations = function () {
 
 exports.setIntegrationConfigs = function (platform) {
     global.shim.current = platform;
+    var outputConfig = platform.config.getSystemConfig('output');
     for (var i = 0; i < selectedIntegrations.length; i++) {
         selectedIntegrations[i].instance.platform = platform;
-        selectedIntegrations[i].instance.config = platform.config.loadOutputConfig(selectedIntegrations[i].name);
+        if (outputConfig[selectedIntegrations[i].name] === void(0)) {
+            outputConfig[selectedIntegrations[i].name] = {};
+        }
+        selectedIntegrations[i].instance.config = outputConfig[selectedIntegrations[i].name];
 
         for (var name in selectedIntegrations[i].instance.config) {
             if (name.startsWith('ENV_') && name === name.toUpperCase()) {
@@ -91,10 +95,6 @@ exports.setIntegrations = function (integrations) {
     var i = 0;
     try {
         for (i = 0; i < integrations.length; i++) {
-            if (!global.coffeescriptLoaded && integrations[i].start.endsWith('.coffee')) {
-                require('coffee-script').register();
-                global.coffeescriptLoaded = true;
-            }
             integrations[i].instance = require.once(integrations[i].start);
 
             if (integrations[i].instance.use) {

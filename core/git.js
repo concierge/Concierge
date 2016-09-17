@@ -10,7 +10,12 @@ var exec = require('child_process').execSync,
             return callback(null, stdOut.toString());
         }
         catch (error) {
-            return callback(error.stderr.toString(), null);
+            try{
+                return callback(error.stderr.toString(), null);
+            }
+            catch (error2) {
+                throw error;
+            }
         }
     },
 

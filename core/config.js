@@ -9,122 +9,118 @@
     *              Copyright (c) Matthew Knox and Contributors 2015.
     */
 
-var fs = require('fs'),
-    path = require('path'),
-    modConfig = null,
-    modConfigFile = 'config.json',
-    sysConfig = null,
-    sysConfigZones = ['output', 'disabled', 'update', 'admin', 'kpm', 'i18n', 'firstRun'],
-    sysConfigFile = 'config.json';
+let path = require('path'),
+    fs = require('fs'),
+    configFileName = 'config.json',
+    globalScope = '%';
 
-var loadConfig = function (location) {
-    try {
-        var data = fs.readFileSync(location, 'utf8');
-        return JSON.parse(data);
+class ConfigService {
+    constructor() {
+        this.configCache = {};
     }
-    catch (e) {
-        console.debug($$`No or invalid configuration file found at "${location}".`);
-        return {};
-    }
-};
 
-var saveIndividualConfig = function (location, data) {
-    fs.writeFileSync(location, JSON.stringify(data, function(key, value) {
-        if (sysConfigZones.includes(key) && Object.keys(value).length === 0) {
-            return void (0); // deliberate use of undefined, will cause property to be deleted.
+    /**
+     * loadConfig - loads the configuration of a module.
+     *
+     * @param  {string} scope Name or path to the configuration file. Leave empty for global config.
+     * @param  {string} name  Name of the module. Required if {scope} is a path.
+     * @return {Object}       An object representing the configuration.
+     */
+    loadConfig(scope, name) {
+        if (!scope) {
+            scope = globalScope;
         }
-        return value;
-    }, 4), 'utf8');
-};
 
-exports.saveModuleConfig = function(mod) {
-    try {
-        var m = modConfig[mod];
-        var exists = false;
+        if (this.configCache.hasOwnProperty(scope)) {
+            return this.configCache[scope].data;
+        }
+
+        let configPath;
+        if (scope === globalScope) {
+            configPath = global.rootPathJoin(configFileName);
+        }
+        else {
+            let p = path.parse(scope);
+            if (!!p.dir) {
+                configPath = path.join(scope, configFileName);
+                if (!name) {
+                    throw new Error('No name provided for loaded module.');
+                }
+                scope = name;
+            }
+            else {
+                configPath = path.join(global.__modulesPath, scope, configFileName);
+            }
+        }
+
+        let data;
         try {
-            fs.statSync(m.location);
-            exists = true;
-        } catch (e) { } // fs.existsSync is deprecated for some unknown reason
-
-        // don't bother saving if there is no config to overwrite and no config to save
-        if (Object.keys(m).length !== 0 || exists) {
-            saveIndividualConfig(m.location, m.data);
+            let temp = fs.readFileSync(configPath, 'utf8');
+            data = JSON.parse(temp);
         }
-        delete modConfig[mod];
-        return true;
-    } catch (e) {
-        console.error($$`An error occured while saving the configuration file.`);
-        console.critical(e);
-        return false;
+        catch (e) {
+            console.debug($$`No or invalid configuration file found at "${configPath}".`);
+            data = {};
+        }
+
+        if (this.configCache.hasOwnProperty(scope)) {
+            for (let key of Object.keys(this.configCache[scope].data)) {
+                data[key] = this.configCache[scope].data[key];
+            }
+        }
+
+        for (let key of Object.keys(data)) {
+            if (key.startsWith('ENV_') && key === key.toUpperCase()) {
+                process.env[key.substr(4)] = data[key];
+            }
+        }
+        this.configCache[scope] = {
+            name: scope,
+            location: configPath,
+            data: data
+        };
+
+        return data;
+    }
+
+    /**
+     * getSystemConfig - Convenience method for safely getting system configuration sections.
+     *
+     * @param  {string} section Section of the configuration file to retrieve.
+     * @return {Object}         The section, or empty object if undefined.
+     */
+    getSystemConfig(section) {
+        let config = this.loadConfig();
+        if (config[section] === void(0)) {
+            config[section] = {};
+        }
+        return config[section];
+    }
+
+    /**
+     * saveConfig - Save the configuration of a module.
+     *
+     * @param  {string} scope The name of the module to save.
+     * @return {undefined}    Returns nothing.
+     */
+    saveConfig(scope) {
+        if (!scope) {
+            scope = globalScope;
+        }
+
+        if (!this.configCache.hasOwnProperty(scope)) {
+            throw new Error('No such config to save.');
+        }
+        let config = this.configCache[scope],
+            data = JSON.stringify(config.data, (key, value) => {
+                // deliberate use of undefined, will cause property to be deleted.
+                return value === null || typeof value === 'object' && Object.keys(value).length === 0 ? void (0) : value;
+            }, 4);
+        try {
+            fs.writeFileSync(config.location, data, 'utf8');
+            delete this.configCache[scope];
+        } catch (e) {}
     }
 };
 
-exports.saveSystemConfig = function () {
-    try {
-        saveIndividualConfig(sysConfigFile, sysConfig);
-        sysConfig = null;
-        return true;
-    } catch (e) {
-        console.error($$`An error occured while saving the configuration file.`);
-        console.critical(e);
-        return false;
-    }
-};
-
-exports.getConfig = function (m) {
-    var isSystem = sysConfigZones.includes(m);
-
-    if (!sysConfig) {
-        sysConfig = loadConfig(sysConfigFile);
-    }
-
-    if (!isSystem && !sysConfig[m]) {
-        return {};
-    }
-    else if (!sysConfig[m]) {
-        sysConfig[m] = {};
-    }
-
-    if (!isSystem) {
-        console.warn($$`Configuration data for module ${m} stored in deprecated location.`);
-        var cfg = sysConfig[m];
-        delete sysConfig[m];
-        return cfg;
-    }
-    return sysConfig[m];
-};
-
-exports.loadModuleConfig = function (module, location, ignoreCache) {
-    if (!modConfig) {
-        modConfig = {};
-    }
-
-    if (modConfig[module.name] && !ignoreCache) {
-        return modConfig[module.name];
-    }
-
-    var loc = path.join(location, modConfigFile),
-        configData = loadConfig(loc),
-        deprecatedDataA = exports.getConfig(module.name),
-        deprecatedDataB = exports.getConfig(module.name + '.js');
-    for (var name in deprecatedDataA) {
-        configData[name] = deprecatedDataA[name];
-    }
-    for (var name in deprecatedDataB) {
-        configData[name] = deprecatedDataB[name];
-    }
-
-    modConfig[module.name] = {
-        location: path.join(location, modConfigFile),
-        data: configData
-    };
-    return configData;
-};
-
-exports.loadOutputConfig = function (outputName) {
-    var config = exports.getConfig(sysConfigZones[0]);
-    if (!config[outputName]) {
-        config[outputName] = {};
-    }
-    return config[outputName];
-};
+module.exports = ConfigService;

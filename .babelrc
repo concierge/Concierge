@@ -1,7 +1,6 @@
 {
     "plugins": [
-        "transform-strict-mode",
-        "./core/require.js"
+        "transform-strict-mode"
     ],
     "presets": [
         "es2015"

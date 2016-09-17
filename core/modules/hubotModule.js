@@ -12,24 +12,18 @@
 var fs = require('fs'),
     path = require('path'),
     files = require.once('./../files.js'),
-    modulesDir = 'modules',
     descriptor = 'hubot.json',
     pkg = 'package.json',
     Robot = require.once('./hubot/robot.js');
 
-var verifyModuleDescriptior = function (hj, disabled) {
+var verifyModuleDescriptior = function (hj) {
     if (!hj.name || !hj.startup || !hj.version) {
-        return false;
-    }
-
-    if (disabled === true && exports.disabledConfig &&
-        exports.disabledConfig[hj.name] && exports.disabledConfig[hj.name] === true) {
         return false;
     }
     return true;
 };
 
-exports.verifyModule = function (location, disabled) {
+exports.verifyModule = function (location) {
     var stat = fs.statSync(location);
     if (!stat.isDirectory()) {
         return null;
@@ -63,7 +57,7 @@ exports.verifyModule = function (location, disabled) {
         fs.writeFileSync(desc, JSON.stringify(hj, null, 4), 'utf8');
     }
 
-    if (!verifyModuleDescriptior(hj, disabled)) {
+    if (!verifyModuleDescriptior(hj)) {
         return null;
     }
 
@@ -73,14 +67,14 @@ exports.verifyModule = function (location, disabled) {
     return hj;
 };
 
-exports.listModules = function (disabled) {
-    var data = files.filesInDirectory('./' + modulesDir),
+exports.listModules = function () {
+    var data = files.filesInDirectory(global.__modulesPath),
         modules = {};
 
     for (var i = 0; i < data.length; i++) {
         try {
-            var candidate = path.resolve(path.join(modulesDir, data[i])),
-                output = exports.verifyModule(candidate, disabled);
+            var candidate = path.resolve(path.join(global.__modulesPath, data[i])),
+                output = exports.verifyModule(candidate);
             if (output) {
                 modules[output.name] = output;
             }
@@ -97,17 +91,12 @@ exports.listModules = function (disabled) {
 };
 
 exports.loadModule = function (module, config) {
-    if (!global.coffeescriptLoaded && module.startup.endsWith('.coffee')) {
-        require('coffee-script').register();
-        global.coffeescriptLoaded = true;
-    }
-
     try {
         var modulePath = module.folderPath,
             startPath = path.join(modulePath, module.startup),
             m = require.once(startPath);
 
-        var cfg = config.loadModuleConfig(module, modulePath);
+        var cfg = config.loadConfig(modulePath, module.name);
         return new Robot(m, module, cfg);
     }
     catch (e) {

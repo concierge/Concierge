@@ -12,6 +12,7 @@ var Robot = function(Instance, descriptor, config) {
     this.catchAllListeners = [];
     this.instances = [];
 
+    let self = this;
     this.brain = {
         on: function(event, callback) {
             if (event === 'loaded') {
@@ -19,7 +20,75 @@ var Robot = function(Instance, descriptor, config) {
             }
         },
         emit: function() {},
-        data: config
+        data: config,
+        users: function () {
+            // Welcome to hack land, where hacks are common place.
+            // We access event_source and thread_id from the stack trace so that this is thread safe.
+            const origPrepareStackTrace = Error.prepareStackTrace;
+            Error.prepareStackTrace = function(_, stack) {
+                return stack;
+            };
+            const err = new Error();
+            const stack = err.stack;
+            Error.prepareStackTrace = origPrepareStackTrace;
+            let res = [];
+            for (let i = 1; i < stack.length; i++) {
+                let funcName = stack[i].getFunctionName() || "";
+                if (funcName.startsWith('dataWrapperFunction')) {
+                    let data = funcName.replace(/\u200d/g, ' ').split('\u200b'),
+                        users = this.platform.getIntegrationApis()[data[1]].getUsers(data[2]);
+                    for (let id in users) {
+                        res.push({
+                            name: users[id].name,
+                            id: id,
+                            email_address: 'unknown@unknown.unknown'
+                        });
+                    }
+                    break;
+                }
+            }
+            return res;
+        }.bind(self),
+        usersForRawFuzzyName: function(fuzzyName) {
+            let users = this.users(),
+                lower = fuzzyName.toLowerCase();
+            for (let i = 0; i < users.length; i++) {
+                if (!users[i].name.toLowerCase().startsWith(lower)) {
+                    users.splice(i, 1);
+                    i--;
+                }
+            }
+            return users;
+        },
+        usersForFuzzyName: function(fuzzyName) {
+            let rawFuzzyName = this.usersForRawFuzzyName(fuzzyName),
+                lower = fuzzyName.toLowerCase();
+            for (let i = 0; i < rawFuzzyName.length; i++) {
+                if (rawFuzzyName[i].name.toLowerCase() === lower) {
+                    return [rawFuzzyName[i]];
+                }
+            }
+            return rawFuzzyName;
+        },
+        userForName: function (fuzzyName) {
+            let users = this.users(),
+                lower = fuzzyName.toLowerCase();
+            for (let i = 0; i < users.length; i++) {
+                if (users[i].name.toLowerCase() === lower) {
+                    return users[i];
+                }
+            }
+            return null;
+        },
+        userForId: function (id) {
+            let users = this.users();
+            for (let i = 0; i < users.length; i++) {
+                if (users[i].id === id) {
+                    return users[i];
+                }
+            }
+            return null;
+        }
     };
 
     this.instances.push(new Instance(this));
@@ -115,10 +184,16 @@ Robot.prototype.run = function (api, event) {
         return;
     }
 
-    for (var i = 0; i < event.__robotCallbackListeners.length; i++) {
-        var responder = new Responder(api, event, event.__robotCallbackListeners[i].match, event.__robotCallbackMessage);
-        event.__robotCallbackListeners[i].callback(responder);
-    }
+    // hack to allow accessing of data via a stacktrace... don't even ask.
+    let funcName = ('dataWrapperFunction\u200b' + event.event_source + '\u200b' + event.thread_id).replace(/ /g, '\u200d');
+    var wrapper = function() {
+        for (let i = 0; i < event.__robotCallbackListeners.length; i++) {
+            let responder = new Responder(api, event, event.__robotCallbackListeners[i].match, event.__robotCallbackMessage);
+            event.__robotCallbackListeners[i].callback(responder);
+        }
+    };
+    Object.defineProperty(wrapper, "name", { value: funcName });
+    wrapper();
 };
 
 Robot.prototype.match = function (event, commandPrefix) {
@@ -158,35 +233,52 @@ Robot.prototype.match = function (event, commandPrefix) {
     return !!event.__robotCallbackListeners;
 };
 
-Robot.prototype.listen = function (matcher, callback) {
+Robot.prototype.listen = function (matcher, options, callback) {
     this.listeners.push({
         matcher: matcher,
-        callback: callback
+        callback: callback || options
     });
 };
 
-Robot.prototype.hear = function (regex, callback) {
-    this.listeners.push({
-        matcher: function (msg) {
-            return msg.event.body.match(regex);
-        },
-        callback: callback
-    });
+Robot.prototype.hear = function (regex, options, callback) {
+    this.listen(function (msg) {
+        return msg.event.body.match(regex);
+    }, options, callback);
 };
 
-Robot.prototype.respond = function (regex, callback) {
-    this.listeners.push({
-        matcher: function (msg) {
-            var prefix = msg.prefix.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
-            var reg = eval('/^' + prefix + regex.toString().substring(1));
-            return msg.event.body.match(reg);
-        },
-        callback: callback
-    });
+Robot.prototype.respond = function (regex, options, callback) {
+    this.listen(function (msg) {
+        var prefix = msg.prefix.replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, '\\$&');
+        var reg = eval('/^' + prefix + regex.toString().substring(1));
+        return msg.event.body.match(reg);
+    }, options, callback);
 };
 
-Robot.prototype.catchAll = function (callback) {
-    this.listeners.push(callback);
+Robot.prototype.messageRoom = function (room, messages) {
+    if (!Array.isArray(messages)) {
+        messages = [messages];
+    }
+    let apis = this.platform.getIntegrationApis();
+    for (let api in apis) {
+        try { // we have no way of working out which integration this room is on...
+            for (let msg of messages) {
+                apis[api].sendMessage(msg, room);
+            }
+        }
+        catch (e) {
+            continue; // hope an exception is thrown for an invalid room...
+        }
+    }
+};
+
+Robot.prototype.reply = function (envelope, messages) {
+    let api = this.platform.getIntegrationApis()[envelope.event.event_source],
+        resp = new Responder(api, envelope.event, null, messages);
+    resp.send(messages);
+};
+
+Robot.prototype.catchAll = function (options, callback) {
+    this.listeners.push(options || callback);
 };
 
 Robot.prototype.receive = function (message) {
@@ -232,6 +324,27 @@ Robot.prototype.loadFile = function (scriptsPath, script) {
         this._help = hj.help;
     }
     this.instances.push(new Instance(this));
+};
+
+Robot.prototype.load = function (scriptsPath) {
+    if (!this.loadFile) {
+        return; // avoid the .load() module call
+    }
+    try {
+        // I wish someone would tell me why existsSync is deprecated...
+        let stats = fs.lstatSync(scriptsPath);
+        if (!stats.isDirectory()) {
+            throw new Error('Load directory must exist.');
+        }
+        let files = fs.readdirSync(scriptsPath).sort(); // load in same order as hubot
+        for (let i = 0; i < files.length; i++) {
+            this.loadFile(scriptsPath, files[i]);
+        }
+    }
+    catch (e) {
+        console.critical(e);
+        return; // nothing to load
+    }
 };
 
 Robot.prototype.http = require('scoped-http-client').create;

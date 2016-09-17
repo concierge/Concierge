@@ -1,61 +1,49 @@
 ## Integration Creation
-Integrating a new platform into Kassy is a relatively simple process. It can be thought of as a special kind of module that provides I/O for Kassy.
+Integrating a new chat platform into Concierge is a relatively simple process. It can be thought of as a special kind of module that provides I/O for Concierge.
 
-Each integration must be in its own javascript file located within the directory `core/output`. If additional files are required for an output module they must not be located within this directory or a subdirectory of it - this is to ensure that Kassy can accurately search for new integrations.
+Integrations can take two forms:
+- A Native Script (see below).
+- A Hubot Adapter. These can be installed as a directory within the `core/core_integrations` directory.
+
+## Concierge Integration Format
+Each integration must be in its own JavaScript file located within the directory `core/core_integrations`. If additional files are required for an output module they must not be located within this directory or a subdirectory of it - this is to ensure that Concierge can accurately search for new integrations. Integrations take their name from the script name.
 
 ### Methods
-Each integration must provide the following methods:
+Each integration must provide the methods found in [Integration.md](./api/Integration.md).
 
-#### `exports.start(callback)`
-Called when the integration should start up.
+<a name="HandlingMessages"></a>
+## Handling Messages - API and Event
+When messages are received by your integration they need to be passed to the callback method. This callback takes an `api` and an `event`.
 
-Arguments:
-- `callback` - A function that should be called when a message is received. See below for details. Function.
-- <i>Return:</i> `undefined`
-
-###### `callback(api, event)`
-Should be called when a message is received from your chat service.
-
-Arguments:
-- `api` - Provides methods for the end modules to call. Refer to [module documentation](ModuleCreation.md) under the API section for what should be provided. Note also that not all methods need be provided if you are using shim (see below). Object.
-- `event` - Provides details about the message received. Refer to [module documentation](ModuleCreation.md) under the event section for what should be provided. Note that the fields starting with `argument` should not be provided, can be generated using shim (see below). Object.
-- <i>Returns:</i> `undefined`
-
-#### `exports.stop()`
-Called when the integration should stop.
-
-Please note: in order to ensure restarting actually correctly reloads changes, it is necessary to treat this method as if it is synchronous. For the most part this can be a best effort job, and at the very least prevent new messages being received after this method is called. It is imperative that after this method is called, your integration halts such that no background operation is keeping Kassy alive.
-
-Arguments:
-- <i>Return:</i> `undefined`
-
-### Shim
-Not all chat platforms provide every piece of functionality. As a result implementing the API for each one of the missing bits of functionality is a needless hassle. Instead `shim` should be used in your integration. It will provide fallback methods where you have not created them.
-
-Usage Example:
+### Event
+The event is an object of the format found in [Event.md](./Event.md).  
+The easiest way to generate this object is to use the globally defined object `shim` as can be seen in the following example:
+```js
+let event = shim.createEvent(thread_id, sender_id, sender_name, body);
 ```
-var myApiObject = {
-  sendMessage = function(....){}
-};
 
-var api = shim.createIntegration(myApiObject); // pass this api to callback
-```
-This will ensure that although the `myApiObject` only provides a `sendMessage()` implementation, the api generated will have all methods, with fallbacks.
-It will also ensure that any future APIs that are created will not break your integration.
+### API
+The API must provide all of the methods found in [Api.md](./Api.md). As it is not possible for every platform to provide every API, it is possible to use the globally provided `shim` object to simplify the process of creating this API as seen below. It is recommended you only create an API once per call of the `start method`. At the most basic level, the `sendMessage` method **must** be provided.
 
-Shim can also be used to generate event objects for a callback.
-Example:
-```
-exports.start = function(callback) {
-....
-  var threadId = getThreadId(),
-    content = getMessageBody(),
-    senderId = getSenderId(),
-    senderName = getSenderName();
-
-  var event = shim.createEvent(threadId, senderId, senderName, content);
-  callback(api, event);
-...
+#### Appoach 1: ES6 Class Extension
+Extend only the methods needed and create a new instance of the class. A `commandPrefix` must be passed during instantiation of the base class.
+```js
+class TestIntegration extends shim {
+    sendMessage(message, thread) {
+        // some implementation of sendMessage
+    }
 }
+let api = new TestIntegration(exports.config.commandPrefix);
 ```
-This will simply copy the required fields into a new object that can be used with the callback.
+
+#### Approach 2: Object Definition
+Create an object with only the methods needed. This will at runtime extend the IntegrationApi class as needed. The `commandPrefix` for your module should be provided within the object.
+```js
+let apiObject = {
+    commandPrefix: exports.config.commandPrefix,
+    sendMessage: function(message, thread) {
+        // some implementation of sendMessage
+    }
+};
+let api = shim.createIntegration(apiObject);
+```
