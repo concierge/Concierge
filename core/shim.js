@@ -199,7 +199,6 @@ let IntegrationApi = module.exports = class {
         return scopedHttpClient.create.apply(this, arguments);
     }
 
-
     /**
     * _chunkMessage - convenience method for chunking messages.
     * @param {String} message message to chunk.
@@ -220,7 +219,7 @@ let IntegrationApi = module.exports = class {
                 let pos = limit - 1,
                     char = message.charAt(pos);
 
-                while (pos > 0 && (char !== '\n' || char !== ' ' || char !== '.')) {
+                while (pos > 0 && char !== '\n' && char !== ' ' && char !== '.') {
                     pos--;
                     char = message.charAt(pos);
                 }
@@ -228,7 +227,7 @@ let IntegrationApi = module.exports = class {
                     pos = limit - 1;
                 }
                 messages.push(message.slice(0, pos + 1));
-                message = message.slice(pos + 2);
+                message = message.slice(pos + 1);
             }
             messages.push(message);
         }
