@@ -199,6 +199,45 @@ let IntegrationApi = module.exports = class {
         return scopedHttpClient.create.apply(this, arguments);
     }
 
+    /**
+    * _chunkMessage - convenience method for chunking messages.
+    * @param {String} message message to chunk.
+    * @param {Integer} limit the chunking size.
+    * @param {Function} ?callback callback is passed the messages.
+    * @return {Array} of messages.
+    * @example
+    * let text = 'A really long string';
+    * let messages = _chunkMessage(text, 5); // ['A ', 'really', ' long', ' stri', 'ng']
+    */
+    static _chunkMessage(message, limit, callback) {
+        let messages = [];
+        if (!limit || isNaN(limit)) {
+            messages.push(message);
+        }
+        else {
+            while (message.length > limit) {
+                let pos = limit - 1,
+                    char = message.charAt(pos);
+
+                while (pos > 0 && char !== '\n' && char !== ' ' && char !== '.') {
+                    pos--;
+                    char = message.charAt(pos);
+                }
+                if (pos === 0) {
+                    pos = limit - 1;
+                }
+                messages.push(message.slice(0, pos + 1));
+                message = message.slice(pos + 1);
+            }
+            messages.push(message);
+        }
+
+        if (callback) {
+            callback(messages);
+        }
+        return messages;
+    }
+
     _getBaseClassProperties() {
         let items = Object.getOwnPropertyNames(IntegrationApi.prototype);
         items.splice(items.indexOf('constructor'), 1);
