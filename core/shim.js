@@ -199,6 +199,39 @@ let IntegrationApi = module.exports = class {
         return scopedHttpClient.create.apply(this, arguments);
     }
 
+    _chunkMessage(message, limit, callback) {
+        let messages = [];
+        if (!limit || isNaN(limit)) {
+            messages.push(message);
+        }
+        else {
+            while (message.length > limit) {
+                let pos = limit;
+                let char = message.charAt(pos);
+
+                while (pos > 0 && (char !== '\n' || char !== ' ' || char !== '.')) {
+                    pos--;
+                    char = message.charAt(pos);
+                }
+                if (pos === 0) {
+                    limit = Number.MAX_SAFE_INTEGER;
+                }
+                else {
+                    messages.push(message.substr(0, pos));
+                    message = message.substr(pos);
+                }
+            }
+            messages.push(message);
+        }
+
+        if (callback) {
+            callback(messages);
+        }
+        else {
+            return messages;
+        }
+    }
+
     _getBaseClassProperties() {
         let items = Object.getOwnPropertyNames(IntegrationApi.prototype);
         items.splice(items.indexOf('constructor'), 1);
