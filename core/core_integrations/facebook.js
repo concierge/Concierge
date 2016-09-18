@@ -73,6 +73,9 @@ exports.start = function(callback) {
             commandPrefix: exports.config.commandPrefix,
             sendMessage: function(message, thread) {
                 stopTyping();
+                if (!thread) {
+                    throw new Error('A thread ID must be specified.');
+                }
                 api.sendMessage({body:message}, thread);
             },
             sendUrl: function(url, thread) {

@@ -26,13 +26,13 @@ exports.start = function (callback) {
         exports.config.commandHistory = [];
     }
 
-    api = api = shim.createIntegration({
-        commandPrefix: exports.config.commandPrefix,
-        sendMessage: function (text) {
-            console.log(chalk.bold('' + text));
-        },
-        getUsers: function (thread) {
-            var obj = {};
+    class TestIntegration extends shim {
+        sendMessage(text) {
+            console.log(chalk.bold('\r' + text));
+        }
+
+        getUsers(thread) {
+            let obj = {};
             if (thread == exports.config.threadId) {
                 obj[exports.config.senderId] = {
                     name: exports.config.senderName
@@ -40,7 +40,8 @@ exports.start = function (callback) {
             }
             return obj;
         }
-    });
+    }
+    api = new TestIntegration(exports.config.commandPrefix);
 
     cli = cline();
     cli.command('*', function (input) {

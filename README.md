@@ -8,7 +8,7 @@
 Concierge is a modular, easily extensible general purpose chat bot. Small node.js modules can be written for it then placed in the modules directory - some examples can be found [here](https://github.com/concierge/Concierge/wiki/KPM-Table). Current pre-installed modules are located [here](https://github.com/concierge/Concierge/tree/master/modules), additional modules can be created or installed through the built in package manager. Existing modules include a variety of functionality from getting animated gifs to running arbitrary sandboxed JavaScript code, voting and giving karma.
 
 ## Basic Usage
-First clone the repository and install required npm packages:
+Make sure that both git, node and npm are available in your path. Once that is done, clone the repository and install required npm packages:
 ```
 git clone https://github.com/concierge/Concierge.git
 cd Concierge
@@ -23,8 +23,13 @@ Then start one or more of the available integrations:<br/>
 
 ### All Documentation
 - [Creating Modules](doc/ModuleCreation.md)
+	- [Module Methods](doc/api/Module.md)
+	- [API Object](doc/api/Api.md)
+	- [Event Object](doc/api/Event.md)
+	- [kassy.json](doc/api/Kassy.json.md)
+	- [Translations](doc/api/Translation.md)
 - [KPM Modules Table](https://github.com/concierge/Concierge/wiki/KPM-Table)
-- [Special Commands](doc/SpecialCommands.md)
+- [Default Commands](doc/DefaultCommands.md)
 - [Usage Example/Overview](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118)
 - Integrations (Integrations are chat platforms that Concierge integrates into)
 	- Existing Integrations. *Look here for documentation on how to set them up.*
@@ -36,8 +41,8 @@ Then start one or more of the available integrations:<br/>
 		- [Messenger Bots](doc/integrations/Messenger.md)
 		- [Testing Mode](doc/integrations/Testing.md)
 	- [Creating Integrations](doc/IntegrationCreation.md)
+		- [Integration Methods](doc/api/Integration.md)
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
-- [Admin Controls](doc/AdminControls.md)
 - [Docker](doc/Docker.md)
 - [Contributing](doc/Contributing.md)
 
