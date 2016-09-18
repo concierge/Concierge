@@ -76,7 +76,8 @@ var getTimestampString = function() {
 getOutputString = function(data) {
     if (timestamp) {
         var time = getTimestampString(),
-            spl = data.toString().split('\n');
+            spl = String(data).split('\n');
+
         if (lastNewline) {
             time = '\n' + time;
             lastNewline = false;
