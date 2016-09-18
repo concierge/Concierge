@@ -50,7 +50,6 @@ let api = shim.createIntegration(apiObject);
 
 ### Convenience Methods
 
-<a name="\_chunkMessage"></a>
 #### \_chunkMessage(message, limit, callback) => <code>Array</code>
 Splits a message into chunks with a given message size, returns an array of messages. Includes an optional callback which is passed the array of messages.
 
@@ -63,10 +62,10 @@ Splits a message into chunks with a given message size, returns an array of mess
 | ?callback | <code>Function</code> | optional callback. |
 
 **Example**  
-chunk 'This is a test of a very long message. But one that is not too long\n I mean come on how much text do you expect me to make up for this. I\'m simply too lazy to do more.'
+chunk <code>"This is a test of a very long message. But one that is not too long\n I mean come on how much text do you expect me to make up for this. I\'m simply too lazy to do more."</code>
 ```js
 let message = 'This is a test of a very long message. But one that is not too long\n I mean come on how much text do you expect me to make up for this. I\'m simply too lazy to do more.',
  newMesage = _chunkMessage(message, 10);
 
- \\ [ 'This is a ', 'test of a ', 'very long ', 'message. ', 'But one ', 'that is ', 'not too ', 'long\n I ', 'mean come ', 'on how ', 'much text ', 'do you ', 'expect me ', 'to make ', 'up for ', 'this. I\'m ', 'simply ', 'too lazy ', 'to do ', 'more.' ]
+ // [ 'This is a ', 'test of a ', 'very long ', 'message. ', 'But one ', 'that is ', 'not too ', 'long\n I ', 'mean come ', 'on how ', 'much text ', 'do you ', 'expect me ', 'to make ', 'up for ', 'this. I\'m ', 'simply ', 'too lazy ', 'to do ', 'more.' ]
 ```
