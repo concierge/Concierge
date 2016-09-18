@@ -66,21 +66,24 @@ var request = require.safe('request'),
 
     sendMessage = function(message, thread) {
         var teamInfo = getChannelIdAndTeamId(thread);
+        var messages = shim._chunkMessage(message, 3500);
 
-        if (teamInfo.token !== null) {
-            var body = {
-                token: teamInfo.token,
-                channel: teamInfo.channel_id,
-                username: exports.config.name,
-                link_names: 1,
-                text: message,
-                unfurl_links: true,
-                icon_url: exports.config.icon
-            };
-            addMessageToQueue(teamInfo.team_id, body, 'https://slack.com/api/chat.postMessage');
-        }
-        else {
-            console.debug('slack-> No slack team found!!!');
+        for (var splitMessage of messages) {
+            if (teamInfo.token !== null) {
+                var body = {
+                    token: teamInfo.token,
+                    channel: teamInfo.channel_id,
+                    username: exports.config.name,
+                    link_names: 1,
+                    text: splitMessage,
+                    unfurl_links: true,
+                    icon_url: exports.config.icon
+                };
+                addMessageToQueue(teamInfo.team_id, body, 'https://slack.com/api/chat.postMessage');
+            }
+            else {
+                console.debug('slack-> No slack team found!!!');
+            }
         }
     },
 
