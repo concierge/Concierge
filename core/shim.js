@@ -199,27 +199,36 @@ let IntegrationApi = module.exports = class {
         return scopedHttpClient.create.apply(this, arguments);
     }
 
-    _chunkMessage(message, limit, callback) {
+
+    /**
+    * _chunkMessage - convenience method for chunking messages.
+    * @param {String} message message to chunk.
+    * @param {Integer} limit the chunking size.
+    * @param {Function} ?callback callback is passed the messages.
+    * @return {Array} of messages.
+    * @example
+    * let text = 'A really long string';
+    * let messages = _chunkMessage(text, 5); // ['A ', 'really', ' long', ' stri', 'ng']
+    */
+    static _chunkMessage(message, limit, callback) {
         let messages = [];
         if (!limit || isNaN(limit)) {
             messages.push(message);
         }
         else {
             while (message.length > limit) {
-                let pos = limit;
-                let char = message.charAt(pos);
+                let pos = limit - 1,
+                    char = message.charAt(pos);
 
                 while (pos > 0 && (char !== '\n' || char !== ' ' || char !== '.')) {
                     pos--;
                     char = message.charAt(pos);
                 }
                 if (pos === 0) {
-                    limit = Number.MAX_SAFE_INTEGER;
+                    pos = limit - 1;
                 }
-                else {
-                    messages.push(message.substr(0, pos));
-                    message = message.substr(pos);
-                }
+                messages.push(message.slice(0, pos + 1));
+                message = message.slice(pos + 2);
             }
             messages.push(message);
         }
@@ -227,9 +236,7 @@ let IntegrationApi = module.exports = class {
         if (callback) {
             callback(messages);
         }
-        else {
-            return messages;
-        }
+        return messages;
     }
 
     _getBaseClassProperties() {
