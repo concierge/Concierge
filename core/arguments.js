@@ -39,13 +39,13 @@ let consolec = require('./unsafe/console.js'),
         },
         {
             long: '--moduledir',
-            short: '-d',
+            short: '-m',
             description: 'Sets the search path for modules used by the bot.',
             expects: ['DIRECTORY'],
             run: function (value) {
                 let path = require('path');
+                global.__modulesPath = path.resolve(value[0]);
                 console.warn(`Modules directory set to "${value}".`);
-                global.__modulesPath = path.resolve(value);
             }
         },
         {
