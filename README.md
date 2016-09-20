@@ -40,7 +40,7 @@ Navigate to Concierge's root directory (in the directory that contains main.js) 
     }
 }
 ```
-Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets.
+Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets. The `commandPrefix` is a textual marker. Any messages meant for Concierge must begin with the `commandPrefix`.
 
 **NOTE**: Facebook account which is configured into Concierge will NOT be usable to send commands to itself (you will need two accounts). The reasons behind this are documented [here](https://github.com/concierge/Concierge/issues/77#issuecomment-209161404) and [here](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118).
 
@@ -68,6 +68,7 @@ Awesome job finishing up the tedious bits. Let's have some fun now.
 - Start Concierge with Facebook's integration name *(so it knows which integration to connect with)* by using `node main.js facebook`.
 - Open your non-Concierge Facebook account and send this message to the Concierge-configured account: `/ping`
 - It should reply back with something like:
+
 > Concierge 4.0.0 @ Raven (Linux x64)
 
 If you've successfully received a message back from Concierge,
