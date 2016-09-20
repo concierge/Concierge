@@ -40,7 +40,7 @@ Navigate to Concierge's root directory (in the directory that contains main.js) 
     }
 }
 ```
-Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets. The `commandPrefix` is a textual marker. Any messages meant for Concierge must begin with the `commandPrefix`.
+Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets. The `commandPrefix` is a textual marker. Any messages meant for Concierge should begin with the `commandPrefix`.
 
 **NOTE**: Facebook account which is configured into Concierge will NOT be usable to send commands to itself (you will need two accounts). The reasons behind this are documented [here](https://github.com/concierge/Concierge/issues/77#issuecomment-209161404) and [here](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118).
 
