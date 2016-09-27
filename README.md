@@ -100,6 +100,7 @@ Now you can customize your Concierge by installing or creating your own modules.
 		- [Skype Integration](doc/integrations/Skype.md)
 		- [Telegram Integration](doc/integrations/Telegram.md)
 		- [Messenger Bots](doc/integrations/Messenger.md)
+        - [MSBot](doc/integrations/MSBot.md)
 		- [Testing Mode](doc/integrations/Testing.md)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 		- [Integration Methods](doc/api/Integration.md)

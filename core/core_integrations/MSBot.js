@@ -12,17 +12,14 @@ let fs = require('fs'),
     userCache = {},
 
     sendMessage = (message, threadId) => {
-        let address = buildAddress(threadId);
-        shim._chunkMessage(message, 500000, (messages) => {
-            for(message of messages) {
-                let botMessage = new builder.Message();
-                botMessage.address(address);
-                botMessage.text(message);
-                botMessage.textFormat('plain');
-                botMessage.textLocale(locale);
-                botService.send(botMessage);
-            }
-        });
+        let address = buildAddress(threadId),
+            botMessage = new builder.Message();
+            
+        botMessage.address(address);
+        botMessage.text(message);
+        botMessage.textFormat('plain');
+        botMessage.textLocale(locale);
+        botService.send(botMessage);
     },
 
     sendImage = (type, image, description, threadId) => {
@@ -36,10 +33,11 @@ let fs = require('fs'),
 
             message.address(address);
             message.addAttachment({
-                content: description,
+                content: image,
                 contentType: mime.lookup(image),
                 contentUrl: image
             });
+            message.text(description);
             botService.send(message);
             break;
         default: // fallback to sending a message
