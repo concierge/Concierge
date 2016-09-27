@@ -3,9 +3,6 @@
   "version": "4.0.0-alpha.4.2",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
-  "engines": {
-    "node": "6.2.1"
-  },
   "dependencies": {
     "babel-plugin-transform-strict-mode": "^6.3.13",
     "babel-polyfill": "^6.3.14",
@@ -46,6 +43,9 @@
     "test": "grunt test",
     "start": "node main.js",
     "debug": "node main.js --debug --timestamp"
+  },
+  "engines": {
+    "node": "6.2.1"
   },
   "repository": {
     "type": "git",
