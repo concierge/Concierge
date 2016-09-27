@@ -7,18 +7,17 @@ let fs = require('fs'),
     server = null,
     botService = null,
     api = null,
-    locale = $$.getLocale(),
     bot = {},
     userCache = {},
 
     sendMessage = (message, threadId) => {
         let address = buildAddress(threadId),
             botMessage = new builder.Message();
-            
+
         botMessage.address(address);
         botMessage.text(message);
         botMessage.textFormat('plain');
-        botMessage.textLocale(locale);
+        botMessage.textLocale($$.getLocale());
         botService.send(botMessage);
     },
 
@@ -57,7 +56,7 @@ let fs = require('fs'),
 
     sendTyping = (threadId) => {
         let address = buildAddress(threadId),
-            message = {type: 'typing', address: address, textLocale: locale};
+            message = {type: 'typing', address: address, textLocale: $$.getLocale()};
 
         botService.send(message);
     },
@@ -72,7 +71,7 @@ let fs = require('fs'),
         }
 
         if (!userCache[session.message.address.user.id]) {
-            userCache[session.message.address.user.id] = session.message.address.user.name
+            userCache[session.message.address.user.id] = session.message.address.user.name;
         }
 
         let message = session.message.text.replace(/<[^"]+"([^"]+)[^\/]+\/at>/g, (match, p1, offset, string) => {
@@ -119,10 +118,10 @@ exports.start = (cb) => {
     botService = new builder.UniversalBot(connector);
 
     api = shim.createIntegration({
-		sendMessage: sendMessage,
+        sendMessage: sendMessage,
         sendTyping: sendTyping,
         sendImage: sendImage,
-		commandPrefix: config.commandPrefix,
+        commandPrefix: config.commandPrefix,
         sendUrl: sendUrl,
         getUsers: getUsers
     });
@@ -133,7 +132,7 @@ exports.start = (cb) => {
     botService.dialog('/', intents);
 
     intents.onDefault([
-        function (session, results) {
+        (session, results) => {
             receiveMessage(session);
         }
     ]);
