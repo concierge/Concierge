@@ -1,7 +1,6 @@
 let fs = require('fs'),
     restify = require('restify'),
     builder = require('botbuilder'),
-    entities = require('entities'),
     mime = require('mime'),
     callback = null,
     server = null,
@@ -9,6 +8,11 @@ let fs = require('fs'),
     api = null,
     bot = {},
     userCache = {},
+
+    buildAddress = (threadId) => {
+        let contents = threadId.split('\0');
+        return {bot: bot[contents[1]], conversation: {id: contents[0]}, serviceUrl: 'https://' + contents[1] + '.botframework.com', useAuth: true};
+    },
 
     sendMessage = (message, threadId) => {
         let address = buildAddress(threadId),
@@ -22,7 +26,7 @@ let fs = require('fs'),
     },
 
     sendImage = (type, image, description, threadId) => {
-        switch(type) {
+        switch (type) {
         case 'file':
             api.sendFile(type, image, description, threadId);
             break;
@@ -74,7 +78,7 @@ let fs = require('fs'),
             userCache[session.message.address.user.id] = session.message.address.user.name;
         }
 
-        let message = session.message.text.replace(/<[^"]+"([^"]+)[^\/]+\/at>/g, (match, p1, offset, string) => {
+        let message = session.message.text.replace(/<[^"]+"([^"]+)[^\/]+\/at>/g, (match, p1, offset) => {
             if (p1 === bot[session.message.source].id && offset === 0) {
                 return '';
             }
@@ -85,11 +89,6 @@ let fs = require('fs'),
         });
         let event = shim.createEvent(session.message.address.conversation.id + '\0' + session.message.source, session.message.user.id, session.message.user.name,  message);
         callback(api, event);
-    },
-
-    buildAddress = (threadId) => {
-        let contents = threadId.split('\0');
-        return {bot: bot[contents[1]], conversation: {id: contents[0]}, serviceUrl: 'https://' + contents[1] + '.botframework.com', useAuth: true};
     };
 
 exports.getApi = () => {
