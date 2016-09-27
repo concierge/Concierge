@@ -18,7 +18,7 @@ Replace each of the angle bracketed strings (`<...>`) with the respective inform
 
 Notes:
 - To obtain a TLS certificate easily, the Lets Encrypt project has [easy ways of doing this](https://letsencrypt.org/getting-started/).
-- Currently MSBots works on platforms supported [here]().
+- Currently MSBots works on platforms supported [here](https://docs.botframework.com/en-us/csharp/builder/sdkreference/gettingstarted.html#channels).
 - Port defaults to 8000.
 - If using a service like ngrok, you do not need to supply a key or cert.
 - To setup your bot register it [here](https://dev.botframework.com/bots/new).
