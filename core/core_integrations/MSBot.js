@@ -1,88 +1,147 @@
-var fs = require('fs'),
+let fs = require('fs'),
     restify = require('restify'),
     builder = require('botbuilder'),
+    entities = require('entities'),
+    mime = require('mime'),
     callback = null,
     server = null,
     botService = null,
     api = null,
+    locale = $$.getLocale(),
+    bot = {},
+    userCache = {},
 
-    sendMessage = function(message, thread) {
-        console.log(thread.message);
-        // console.log(message);
-        // console.log(session.send.toString());
-        thread.send(message);
+    sendMessage = (message, threadId) => {
+        let address = buildAddress(threadId);
+        shim._chunkMessage(message, 500000, (messages) => {
+            for(message of messages) {
+                let botMessage = new builder.Message();
+                botMessage.address(address);
+                botMessage.text(message);
+                botMessage.textFormat('plain');
+                botMessage.textLocale(locale);
+                botService.send(botMessage);
+            }
+        });
     },
 
-    sendFile = function(type, image, description, thread) {
-        console.log("sending attachment");
-        // Assumes the file type is always image, (only Image and Video supported atm)
-        botService.sendAttachment(thread, description, 'Image', image);
+    sendImage = (type, image, description, threadId) => {
+        switch(type) {
+        case 'file':
+            api.sendFile(type, image, description, threadId);
+            break;
+        case 'url' :
+            let address = buildAddress(threadId),
+                message = new builder.Message();
+
+            message.address(address);
+            message.addAttachment({
+                content: description,
+                contentType: mime.lookup(image),
+                contentUrl: image
+            });
+            botService.send(message);
+            break;
+        default: // fallback to sending a message
+            sendMessage(description, threadId);
+            sendMessage($$`I also have something to send you but cant seem to do so...`, threadId);
+            break;
+        }
     },
 
-    receiveMessage = function(session) {
-        var event = null,
-            message = {
-                thread_id: session,
-                sender_id: session.message.user,
-                sender_name: session.message.fromDisplayName,
-                content: session.message.content
-            };
+    sendUrl = (url, threadId) => {
+        let address = buildAddress(threadId),
+            message = new builder.Message();
+        message.address(address);
+        message.text(url);
+        botService.send(message);
+    },
 
-        event = shim.createEvent(message.thread_id, message.sender_id, message.sender_name, message.content);
+    sendTyping = (threadId) => {
+        let address = buildAddress(threadId),
+            message = {type: 'typing', address: address, textLocale: locale};
+
+        botService.send(message);
+    },
+
+    getUsers = () => {
+        return userCache;
+    },
+
+    receiveMessage = (session) => {
+        if (!bot[session.message.source]) {
+            bot[session.message.source] = session.message.address.bot;
+        }
+
+        if (!userCache[session.message.address.user.id]) {
+            userCache[session.message.address.user.id] = session.message.address.user.name
+        }
+
+        let message = session.message.text.replace(/<[^"]+"([^"]+)[^\/]+\/at>/g, (match, p1, offset, string) => {
+            if (p1 === bot[session.message.source].id && offset === 0) {
+                return '';
+            }
+            if (userCache[p1]) {
+                return userCache[p1];
+            }
+            return match;
+        });
+        let event = shim.createEvent(session.message.address.conversation.id + '\0' + session.message.source, session.message.user.id, session.message.user.name,  message);
         callback(api, event);
+    },
+
+    buildAddress = (threadId) => {
+        let contents = threadId.split('\0');
+        return {bot: bot[contents[1]], conversation: {id: contents[0]}, serviceUrl: 'https://' + contents[1] + '.botframework.com', useAuth: true};
     };
 
-exports.getApi = function() {
+exports.getApi = () => {
     return api;
 };
 
-exports.start = function(cb) {
-    var config = exports.config;
+exports.start = (cb) => {
+    let config = exports.config;
     callback = cb;
-    var connector = new builder.ChatConnector({ appId: config.app_id, appPassword: config.app_secret_password });
-    botService = new builder.UniversalBot(connector);
-    // botService = new skype.BotService({
-    //     messaging: {
-    //         botId: '28:<bot’s id="' + config.name + '">',
-    //         serverUrl : 'https://apis.skype.com',
-    //         requestTimeout : 15000,
-    //         appId: config.app_id,
-    //         appSecret: config.app_secret_password
-    //     }
-    // });
+    if (config.cert && config.key) {
+        server = restify.createServer({
+            certificate: fs.readFileSync(config.cert),
+            key: fs.readFileSync(config.key)
+        });
+    }
+    else {
+        server = restify.createServer();
+    }
 
-    botService.dialog('/', [
-        function(session) {
-            receiveMessage(session);
-        }
-    ]);
-
-    server = restify.createServer({
-        certificate: fs.readFileSync(config.cert),
-        key: fs.readFileSync(config.key)
-        // httpsServerOptions: {
-        //     ca: fs.readFileSync(config.ca)
-        // }
+    const port = config.port || 8000;
+    server.listen(port, () => {
+        console.debug(`${server.name} listening to ${server.url}`);
     });
 
-    // server = restify.createServer();
+    let connector = new builder.ChatConnector({ appId: config.app_id, appPassword: config.app_secret_password });
+    botService = new builder.UniversalBot(connector);
 
     api = shim.createIntegration({
 		sendMessage: sendMessage,
-		sendFile: sendFile,
-		commandPrefix: config.commandPrefix
+        sendTyping: sendTyping,
+        sendImage: sendImage,
+		commandPrefix: config.commandPrefix,
+        sendUrl: sendUrl,
+        getUsers: getUsers
     });
 
     server.post('/api/messages', connector.listen());
-    const port = config.port || 8000;
-    server.listen(port, function() {
-        console.debug('%s listening to %s', server.name, server.url);
-    });
 
-    botService.use(builder.Middleware.dialogVersion({ version: 1.0, resetCommand: /^reset/i }));
+    let intents = new builder.IntentDialog();
+    botService.dialog('/', intents);
+
+    intents.onDefault([
+        function (session, results) {
+            receiveMessage(session);
+        }
+    ]);
 };
 
-exports.stop = function() {
+exports.stop = () => {
     if (server !== null) {
         server.close();
     }
