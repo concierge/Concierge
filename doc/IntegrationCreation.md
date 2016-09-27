@@ -1,12 +1,22 @@
-## Integration Creation
-Integrating a new chat platform into Concierge is a relatively simple process. It can be thought of as a special kind of module that provides I/O for Concierge.
+## Creating New Integrations
+### Quick Reference
+- [Api Object](./api/Api.md)
+- [Event Object](./api/Event.md)
 
+### What is an Integration?
+An integration is a piece of code used by Concierge to connect with the specified chat platform API. It tells Concierge what to do when opening/closing a connection with the platform, how to send messages, etc. The integration acts like a middleman between Concierge and the chat platform and encapsulates their API nicely.
+
+Creating an integration for a chat platform is a relatively simple process. It can be thought of as a special kind of module that provides I/O for Concierge.
+
+- Each integration must be in its own JavaScript file or directory located within the directory `core/core_integrations`. If a directory is used, it must contain a `package.json` file which has both the `name` *(name of the integration)* and `main` *(entry point of the integration)* properties within it.
+
+- Standalone JavaScript files will derive their integration name from the name of the script file.
+- No two integrations are allowed to have the same name.
+
+### Integration Formats
 Integrations can take two forms:
 - A Native Script (see below).
 - A Hubot Adapter. These can be installed as a directory within the `core/core_integrations` directory.
-
-## Concierge Integration Format
-Each integration must be in its own JavaScript file or directory located within the directory `core/core_integrations`. If a directory is used, it must contain a `package.json` file which has both the `name` (name of the integration) and `main` (entry point of the integration) properties within it. Stand-alone JavaScript files will derive their integration name from the name of the script file. No two integrations are allowed to have the same name.
 
 ### Methods
 Each integration must provide the methods found in [Integration.md](./api/Integration.md).
