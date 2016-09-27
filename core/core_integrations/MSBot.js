@@ -132,7 +132,7 @@ exports.start = (cb) => {
     botService.dialog('/', intents);
 
     intents.onDefault([
-        (session, results) => {
+        (session) => {
             receiveMessage(session);
         }
     ]);
