@@ -13,8 +13,8 @@ let exec = require('child_process').execSync,
     path = require('path'),
     fs = require('fs'),
     csHasLoaded = false,
-    nativeReloadHacksCache = {},
-    nativeReloadHacks = ['deasync'],
+    npmDirectory = global.rootPathJoin('node_modules'),
+    nativeModules = Object.getOwnPropertyNames(process.binding('natives')),
 
     command = function(args) {
         args.unshift('--silent');
@@ -45,42 +45,37 @@ let exec = require('child_process').execSync,
         console.info(startStr);
         command(['install', name]);
         console.info(endStr);
+    },
+
+    resolve = function(request, dirName) {
+        try {
+            if (nativeModules.includes(request)) {
+                return true;
+            }
+            let parsed = path.parse(request);
+            if (parsed.ext !== '' && parsed.ext !== '.' && parsed.dir !== '') {
+                let p = path.resolve(dirName, request),
+                    file = fs.statSync(p);
+                return file && (file.isFile() || file.isDirectory());
+            }
+            else {
+                let dir = fs.statSync(path.join(npmDirectory, request));
+                return dir && dir.isDirectory();
+            }
+        }
+        catch (e) {
+            return false;
+        }
     };
 
-exports.requireOrInstall = function (req, name) {
+exports.requireOrInstall = function (req, name, dirName) {
     coffeescriptRequireInjector();
-    let parsed = path.parse(name);
-    if (((parsed.ext === '.js' || parsed.ext === '.coffee') &&
-        (parsed.dir.startsWith('.') || parsed.dir.startsWith('/') || parsed.dir.startsWith('\\'))) || parsed.root.length > 0) {
-        return req(name); // try to prevent needless npm install
-    }
-    
-    if (nativeReloadHacksCache.hasOwnProperty(name)) {
-        return nativeReloadHacksCache[name];
+    if (resolve(name, dirName)) {
+        return req(name);
     }
 
-    var r;
-    try {
-        r = req(name);
-    }
-    catch (e) {
-        if (!e || !e.code || e.code !== 'MODULE_NOT_FOUND') {
-            throw e;
-        }
-        try {
-            fs.statSync(name);
-        }
-        catch (p) {
-            install(name);
-        }
-        r = require(name);
-    }
-    
-    // Native bindings fail to reload in node. Leave if you want restarting or hotswapping to work...
-    if (nativeReloadHacks.includes(name) || name.endsWith('.node')) {
-        nativeReloadHacksCache[name] = r;
-    }
-    return r;
+    install(name);
+    return req(name);
 };
 
 exports.update = function() {

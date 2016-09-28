@@ -16,7 +16,8 @@ var babylon = require('babylon'),
     inst = require('./install.js'),
     runOnce = false;
 
-global.requireHook = function (req) {
+global.__fs = require('fs');
+global.requireHook = function (req, dirName) {
     if (!runOnce) { // prevent re-init
         let newPath = process.env.NODE_PATH || '';
         if (newPath.length > 0) {
@@ -29,7 +30,7 @@ global.requireHook = function (req) {
     }
 
     var func = function (mod) {
-        return inst.requireOrInstall(req, mod);
+        return inst.requireOrInstall(req, mod, dirName);
     };
     for (var key in req) {
         func[key] = req[key];
@@ -84,6 +85,6 @@ module.exports = function () {
     };
 };
 
-module.exports.injectionString = 'require = (global || GLOBAL).requireHook(require);';
+module.exports.injectionString = 'require = (global || GLOBAL).requireHook(require,__dirname);';
 
 exports.default = module.exports;

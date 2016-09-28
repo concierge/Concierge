@@ -1,6 +1,6 @@
 var bot = null,
     api = null,
-    TelegramBot = require.safe('node-telegram-bot-api');
+    TelegramBot = require('node-telegram-bot-api');
 
 var sendMessage = function(message, thread, opts) {
     bot.sendMessage(thread, message, opts);
