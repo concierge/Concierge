@@ -73,14 +73,14 @@ let discord = require('discord.js'),
         let channel = lookUpChannel(threadId);
         channel.stopTyping();
         switch (type) {
-            case 'file':
-            case 'url':
-                channel.sendFile(file, '', description);
-                break;
-            default:
-                channel.sendMessage(description);
-                channel.sendMessage($$`I also have something to send you but cant seem to do so...`);
-                break;
+        case 'file':
+        case 'url':
+            channel.sendFile(file, '', description);
+            break;
+        default:
+            channel.sendMessage(description);
+            channel.sendMessage($$`I also have something to send you but cant seem to do so...`);
+            break;
         }
     },
 
