@@ -5,32 +5,16 @@ let discord = require('discord.js'),
     bot = null,
     avatarB64 = null,
 
-    lookUpChannel = function(threadId) {
-        let channel = null;
-
-        for (let key in bot.channels) {
-            if (!(key && key.trim().length > 0 && !isNaN(key))) {
-                continue;
-            }
-            channel = bot.channels[key];
-            if (channel.id === threadId) {
-                return channel;
-            }
-        }
-        for (let pKey in bot.privateChannels) {
-            if (!(pKey && pKey.trim().length > 0 && !isNaN(pKey))) {
-                continue;
-            }
-            channel = bot.privateChannels[pKey];
-            if (channel.id === threadId) {
-                return channel;
-            }
+    lookUpChannel = (threadId) => {
+        let channel = bot.channels.find(val => val.id === threadId);
+        if (channel) {
+            return channel;
         }
 
-        return channel;
+        return null;
     },
 
-    getUsers = function() {
+    getUsers = () => {
         let users = {},
             user;
 
@@ -48,45 +32,12 @@ let discord = require('discord.js'),
         return users;
     },
 
-    sentenceSplitter = function(message) {
-        const charLimit = 2000;
-        let spl = message.split('\n'),
-            messages = [''],
-            messagesIndex = 0;
-
-        for (let i = 0; i < spl.length; i++) {
-            while (spl[i].length > charLimit) {
-                let numChars = charLimit - messages[messagesIndex].length;
-                let chars = spl[i].substr(0, numChars);
-                spl[i] = spl[i].substr(numChars);
-                messages[messagesIndex] += chars;
-                messagesIndex++;
-                messages[messagesIndex] = '';
-            }
-            if (messages[messagesIndex].length + spl[i].length > charLimit) {
-                messagesIndex++;
-                messages[messagesIndex] = '';
-                i--;
-            }
-            else {
-                messages[messagesIndex] = messages[messagesIndex] + spl[i] + '\n';
-            }
-        }
-
-        return messages;
-    },
-
-    sendTyping = function(threadId) {
+    sendTyping = (threadId) => {
         let channel = lookUpChannel(threadId);
-        bot.startTyping(channel);
+        channel.startTyping();
     },
 
-    stopTyping = function(threadId) {
-        let channel = lookUpChannel(threadId);
-        bot.stopTyping(channel);
-    },
-
-    addMentions = function (message) {
+    addMentions = (message) => {
         let users = getUsers();
         for (let value in users) {
             let index = message.indexOf(users[value].name);
@@ -97,7 +48,7 @@ let discord = require('discord.js'),
         return message;
     },
 
-    removeMentions = function(message) {
+    removeMentions = (message) => {
         let users = getUsers();
         for (let value in users) {
             let index = message.indexOf(users[value].tag);
@@ -108,73 +59,79 @@ let discord = require('discord.js'),
         return message;
     },
 
-    sendSingleMessage = function(message, threadId, channel, callback) {
-        stopTyping(threadId);
-        bot.sendMessage(channel, message, callback);
-    },
-
-    sendMultipleMessages = function(messageList, threadId, channel) {
-        if (!messageList || messageList.length <= 0) {
-            return;
-        }
-        let message = messageList[0];
-        messageList.splice(0, 1);
-        sendSingleMessage(message, threadId, channel, sendMultipleMessages.bind(this, messageList, threadId, channel));
-    },
-
-    sendMessage = function(message, threadId) {
+    sendMessage = (message, threadId) => {
         let channel = lookUpChannel(threadId);
         message = addMentions(message);
-        message = sentenceSplitter(message);
-        sendMultipleMessages(message, threadId, channel);
+        let messages = shim._chunkMessage(message, 2000);
+        for (let message of messages) {
+            channel.stopTyping();
+            channel.sendMessage(message);
+        }
     },
 
-    sendFile = function(type, file, description, threadId) {
+    sendFile = (type, file, description, threadId) => {
         let channel = lookUpChannel(threadId);
-        stopTyping(threadId);
-        bot.sendFile(channel, file, description);
+        channel.stopTyping();
+        switch (type) {
+            case 'file':
+            case 'url':
+                channel.sendFile(file, '', description);
+                break;
+            default:
+                channel.sendMessage(description);
+                channel.sendMessage($$`I also have something to send you but cant seem to do so...`);
+                break;
+        }
     },
 
-    setTitle = function(title, threadId) {
+    sendUrl = (url, threadId) => {
         let channel = lookUpChannel(threadId);
-        bot.setChannelName(channel, title);
+        channel.stopTyping();
+        channel.sendFile(url);
     },
 
-    recMessage = function(message) {
+    setTitle = (title, threadId) => {
+        let channel = lookUpChannel(threadId);
+        channel.setName(title);
+    },
+
+    recMessage = (message) => {
         let event = shim.createEvent(message.channel.id, message.author.id, message.author.username, removeMentions(message.cleanContent));
         callback(api, event);
     },
 
-    initialiseBot = function(token) {
+    initialiseBot = (token) => {
         bot = new discord.Client( {
-            autoReconnect: true,
-            forceFetchUsers: true
+            auto_reconnect: true,
+            fetch_all_members: true
         });
 
-        bot.loginWithToken(token);
-
-        bot.on('ready', function() {
-            if (bot.avatar !== avatarB64) {
-                bot.setAvatar(avatarB64);
+        bot.on('ready', () => {
+            if (bot.user.avatar !== avatarB64) {
+                bot.user.setAvatar(avatarB64);
             }
             if (exports.config.name) {
-                bot.setUsername(exports.config.name);
+                bot.user.setUsername(exports.config.name);
             }
             console.debug($$`Discord is ready`);
         });
 
-        bot.on('message', function(message) {
+        bot.on('message', (message) => {
             if (bot.user.id !== message.author.id) {
                 recMessage(message);
             }
         });
+
+        bot.login(token);
     };
 
-exports.start = function(cb) {
+exports.start = (cb) => {
     let functions = {
             sendMessage: sendMessage,
             sendFile: sendFile,
             sendTyping: sendTyping,
+            sendUrl: sendUrl,
+            sendImage: sendFile,
             setTitle: setTitle,
             getUsers: getUsers,
             commandPrefix: exports.config.commandPrefix
@@ -193,7 +150,7 @@ exports.start = function(cb) {
 
     if (exports.config.avatarUrl) {
         request(exports.config.avatarUrl,
-            function(error, response, body) {
+            (error, response, body) => {
                 if (!error && response.statusCode === 200) {
                     avatarB64 = 'data:' +
                         response.headers['content-type'] +
@@ -208,11 +165,11 @@ exports.start = function(cb) {
     }
 };
 
-exports.getApi = function() {
+exports.getApi = () => {
     return api;
 };
 
-exports.stop = function() {
+exports.stop = () => {
     if (bot !== null) {
         bot.destroy();
     }
