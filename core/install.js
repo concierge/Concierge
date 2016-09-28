@@ -47,23 +47,30 @@ let exec = require('child_process').execSync,
         console.info(endStr);
     },
 
-    resolve = function(request) {
+    resolve = function(request, dirName) {
         try {
             if (nativeModules.includes(request)) {
                 return true;
             }
-            let dir = fs.statSync(path.join(npmDirectory, request));
-            return dir && dir.isDirectory();
+            let parsed = path.parse(request);
+            if (parsed.ext !== '' && parsed.ext !== '.') {
+                let p = path.resolve(dirName, request),
+                    file = fs.statSync(p);
+                return file && (file.isFile() || file.isDirectory());
+            }
+            else {
+                let dir = fs.statSync(path.join(npmDirectory, request));
+                return dir && dir.isDirectory();
+            }
         }
         catch (e) {
             return false;
         }
     };
 
-exports.requireOrInstall = function (req, name) {
+exports.requireOrInstall = function (req, name, dirName) {
     coffeescriptRequireInjector();
-    let parsed = path.parse(name);
-    if (parsed.ext !== '' || resolve(name)) {
+    if (resolve(name, dirName)) {
         return req(name);
     }
 
