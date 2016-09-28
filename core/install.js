@@ -53,7 +53,7 @@ let exec = require('child_process').execSync,
                 return true;
             }
             let parsed = path.parse(request);
-            if (parsed.ext !== '' && parsed.ext !== '.') {
+            if (parsed.ext !== '' && parsed.ext !== '.' && parsed.dir !== '') {
                 let p = path.resolve(dirName, request),
                     file = fs.statSync(p);
                 return file && (file.isFile() || file.isDirectory());
