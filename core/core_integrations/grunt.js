@@ -1,4 +1,4 @@
-var WebSocketServer = require.once('ws').Server,
+var WebSocketServer = require('ws').Server,
     wss = null,
     functions = null,
     api = null,
