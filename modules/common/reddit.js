@@ -1,4 +1,4 @@
-var reddit = require.safe('redwrap');
+var reddit = require('redwrap');
 
 exports.reddit = function(thing, numberOfQueries, callback) {
     reddit.r(thing).limit(numberOfQueries, function(err, req){
