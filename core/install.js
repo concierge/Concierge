@@ -14,7 +14,7 @@ let exec = require('child_process').execSync,
     fs = require('fs'),
     csHasLoaded = false,
     nativeReloadHacksCache = {},
-    nativeReloadHacks = ['deasync'], 
+    nativeReloadHacks = ['deasync'],
     npmDirectory = global.rootPathJoin('node_modules'),
     nativeModules = Object.getOwnPropertyNames(process.binding('natives')),
 
