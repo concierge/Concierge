@@ -110,8 +110,8 @@ Send a file to a chat.
 | --- | --- | --- |
 | type | <code>string</code> | type of file that is being sent. By default this can be 'url' or 'file' although individual integrations can expand support to other types. |
 | file | <code>string</code> &#124; <code>Object</code> | file object for the type provided. |
-| description | <code>type</code> | description of the file being sent. |
-| thread | <code>type</code> | the ID of the thread to send the file to. |
+| description | <code>string</code> | description of the file being sent. |
+| thread | <code>string</code> | the ID of the thread to send the file to. |
 
 <a name="sendTyping"></a>
 
