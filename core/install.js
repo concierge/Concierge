@@ -13,6 +13,8 @@ let exec = require('child_process').execSync,
     path = require('path'),
     fs = require('fs'),
     csHasLoaded = false,
+    nativeReloadHacksCache = {},
+    nativeReloadHacks = ['deasync'], 
     npmDirectory = global.rootPathJoin('node_modules'),
     nativeModules = Object.getOwnPropertyNames(process.binding('natives')),
 
@@ -70,12 +72,22 @@ let exec = require('child_process').execSync,
 
 exports.requireOrInstall = function (req, name, dirName) {
     coffeescriptRequireInjector();
+    let r;
     if (resolve(name, dirName)) {
-        return req(name);
+        if (nativeReloadHacksCache.hasOwnProperty(name)) {
+            return nativeReloadHacksCache[name];
+        }
+        r = req(name);
+    }
+    else {
+        install(name);
+        r = req(name);
     }
 
-    install(name);
-    return req(name);
+    if (nativeReloadHacks.includes(name) || name.endsWith('.node')) {
+        nativeReloadHacksCache[name] = r;
+    }
+    return r;
 };
 
 exports.update = function() {
