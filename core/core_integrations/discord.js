@@ -72,15 +72,12 @@ let discord = require('discord.js'),
     sendFile = (type, file, description, threadId) => {
         let channel = lookUpChannel(threadId);
         channel.stopTyping();
-        switch (type) {
-        case 'file':
-        case 'url':
+        if (type) {
             channel.sendFile(file, '', description);
-            break;
-        default:
+        }
+        else {
             channel.sendMessage(description);
             channel.sendMessage($$`I also have something to send you but cant seem to do so...`);
-            break;
         }
     },
 
