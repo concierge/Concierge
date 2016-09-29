@@ -72,17 +72,13 @@ let exec = require('child_process').execSync,
 
 exports.requireOrInstall = function (req, name, dirName) {
     coffeescriptRequireInjector();
-    let r;
-    if (resolve(name, dirName)) {
-        if (nativeReloadHacksCache.hasOwnProperty(name)) {
-            return nativeReloadHacksCache[name];
-        }
-        r = req(name);
-    }
-    else {
+    if (!resolve(name, dirName)) {
         install(name);
-        r = req(name);
     }
+    else if (nativeReloadHacksCache.hasOwnProperty(name)) {
+        return nativeReloadHacksCache[name];
+    }
+    let r = req(name);
 
     if (nativeReloadHacks.includes(name) || name.endsWith('.node')) {
         nativeReloadHacksCache[name] = r;
