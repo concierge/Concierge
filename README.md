@@ -1,5 +1,5 @@
 # Concierge
-[![Build Status](https://travis-ci.org/concierge/Concierge.png)](https://travis-ci.org/concierge/Concierge)
+[![Build Status](https://travis-ci.org/concierge/Concierge.png)](https://travis-ci.org/concierge/Concierge) [![Build status](https://ci.appveyor.com/api/projects/status/eis48if0bf8ynq69?svg=true)](https://ci.appveyor.com/project/mrkno/concierge) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0d267567f8874ad2ae3d72ac44c9c492)](https://www.codacy.com/app/Concierge/Concierge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=concierge/Concierge&amp;utm_campaign=Badge_Grade)
 
 (Karma + Sassy) * (Discord + Facebook + Messenger + Slack + Skype + Telegram) = Concierge
 
@@ -40,7 +40,7 @@ Navigate to Concierge's root directory (in the directory that contains main.js) 
     }
 }
 ```
-Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets.
+Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets. The `commandPrefix` is a textual marker. Any messages meant for Concierge should begin with the `commandPrefix`.
 
 **NOTE**: Facebook account which is configured into Concierge will NOT be usable to send commands to itself (you will need two accounts). The reasons behind this are documented [here](https://github.com/concierge/Concierge/issues/77#issuecomment-209161404) and [here](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118).
 
@@ -68,6 +68,7 @@ Awesome job finishing up the tedious bits. Let's have some fun now.
 - Start Concierge with Facebook's integration name *(so it knows which integration to connect with)* by using `node main.js facebook`.
 - Open your non-Concierge Facebook account and send this message to the Concierge-configured account: `/ping`
 - It should reply back with something like:
+
 > Concierge 4.0.0 @ Raven (Linux x64)
 
 If you've successfully received a message back from Concierge,
@@ -100,7 +101,8 @@ Now you can customize your Concierge by installing or creating your own modules.
 		- [Skype Integration](doc/integrations/Skype.md)
 		- [Telegram Integration](doc/integrations/Telegram.md)
 		- [Messenger Bots](doc/integrations/Messenger.md)
-		- [Testing Mode](doc/integrations/Testing.md)
+ 		- [MSBot](doc/integrations/MSBot.md)
+ 		- [Testing Mode](doc/integrations/Testing.md)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 		- [Integration Methods](doc/api/Integration.md)
 - [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)

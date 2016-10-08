@@ -84,8 +84,8 @@ let IntegrationApi = module.exports = class {
      * @param  {string} type type of file that is being sent.
      * By default this can be 'url' or 'file' although individual integrations can expand support to other types.
      * @param  {(string|Object)} file file object for the type provided.
-     * @param  {type} description description of the file being sent.
-     * @param  {type} thread       the ID of the thread to send the file to.
+     * @param  {string} description description of the file being sent.
+     * @param  {string} thread       the ID of the thread to send the file to.
      */
     sendFile(type, file, description, thread) {
         this.sendMessage(description, thread);

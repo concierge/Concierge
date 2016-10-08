@@ -1,29 +1,16 @@
 module.exports = function(grunt) {
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
-        mochacli: {
+        mochaTest: {
             options: {
                 require: ['chai'],
-                files: ['test/acceptance/*.js', 'test/unit/*.js']
+                reporter: 'spec',
+                colors: true,
+                growl: true,
+                recursive: true,
+                dely: true
             },
-            spec: {
-                options: {
-                    reporter: 'spec',
-                    colors: true,
-                    growl: true,
-                    recursive: true,
-                    dely: true
-                }
-            },
-            nyan: {
-                options: {
-                    reporter: 'nyan',
-                    colors: true,
-                    growl: true,
-                    recursive: true,
-                    dely: true
-                }
-            }
+            src: ['test/acceptance/*.js', 'test/unit/*.js']
         },
         watch: {
             test: {
@@ -54,14 +41,13 @@ module.exports = function(grunt) {
             }
         }
     });
-    grunt.loadNpmTasks('grunt-mocha-cli');
+    grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-watch');
     grunt.loadNpmTasks('grunt-run');
 
     grunt.registerTask('wall', ['run:concierge', 'watch:all']);
     grunt.registerTask('wcore', ['run:concierge', 'watch:core']);
     grunt.registerTask('wtest', ['run:concierge', 'watch:test']);
-    grunt.registerTask('test', ['run:concierge', 'mochacli:spec']);
-    grunt.registerTask('nyan', ['run:concierge', 'mochacli:nyan']);
+    grunt.registerTask('test', ['run:concierge', 'mochaTest']);
     grunt.registerTask('default', ['run:concierge', 'watch:core']);
 };

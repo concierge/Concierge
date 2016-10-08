@@ -1,5 +1,5 @@
-var request = require.safe('request'),
-    WebSocket = require.safe('ws'),
+var request = require('request'),
+    WebSocket = require('ws'),
     platform = null,
     sockets = [],
     eventReceivedCallback = null,

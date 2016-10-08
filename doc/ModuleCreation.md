@@ -6,6 +6,16 @@
 - [Module Methods](./api/Module.md)
 - [Translations](./api/Translation.md)
 
+### What is a Module?
+A module is a piece of code that tells Concierge what to respond with after receiving messages from any chat platform. It is meant to only handle messages specified with the associated command.
+
+For example, a module meant to respond with current time will only handle messages beginning with `/time` where `/` is the `commandPrefix` specifying messages for Concierge and `time` is the command, specifying messages for the our module.
+
+A module needs to tell Concierge three things:
+- Associated command for the module
+- A *help* message, to inform the user about what the module is for
+- And the logic code that prepares the response for Concierge to send back.
+
 ### Module Formats
 Concierge supports two primary module formats:
 - Kassy (see below for details, recommended). This is the native module format for Concierge and is the most supported.
