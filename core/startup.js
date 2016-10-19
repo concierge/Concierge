@@ -34,11 +34,11 @@ exports.run = function (startArgsP) {
         global.$$ = require.once('./translations/translations.js');
 
         // quickest way to clone in JS, prevents reuse of same object between startups
-        let startClone = JSON.parse(JSON.stringify(startArgs)),
+        const startClone = JSON.parse(JSON.stringify(startArgs)),
             Platform = require.once('./platform.js');
-        platform = new Platform(startClone);
+        platform = new Platform();
         platform.on('shutdown', checkShutdownCode);
-        platform.start();
+        platform.start(startClone);
     }
     catch (e) {
         console.critical(e);

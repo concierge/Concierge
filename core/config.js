@@ -117,7 +117,9 @@ class ConfigService {
                 return value === null || typeof value === 'object' && Object.keys(value).length === 0 ? void (0) : value;
             }, 4);
         try {
-            fs.writeFileSync(config.location, data, 'utf8');
+            if (!!data) { // there is data to write
+                fs.writeFileSync(config.location, data, 'utf8');
+            }
             delete this.configCache[scope];
         } catch (e) {}
     }

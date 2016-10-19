@@ -6,50 +6,19 @@
  *
  * License:
  *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *		Copyright (c) Matthew Knox and Contributors 2016.
  */
 
-var loaders         = [require.once('./kassyModule.js'), require.once('./hubotModule.js')],
-    conflict        = 1,
-    loadedModules   = [],
+let loaders         = [require.once('./kassy/kassyModule.js'), require.once('./hubot/hubotModule.js')],
+    files           = require.once(rootPathJoin('core/files.js')),
+    path            = require('path'),
+    loaded          = {},
 
-    listModules = function () {
-        var modules = {};
-        for (var i = 0; i < loaders.length; i++) {
-            var m = loaders[i].listModules();
-            for (var key in m) {
-                var t = key;
-                while (modules[t]) {
-                    t = key + conflict++;
-                }
-                modules[t] = m[key];
-                modules[t].__loaderUID = i;
-                if (!modules[t].priority || modules[t].priority === 'normal') {
-                    modules[t].priority = 0;
-                }
-                else if (modules[t].priority === 'first') {
-                    modules[t].priority = Number.MIN_SAFE_INTEGER;
-                }
-                else if (modules[t].priority === 'last') {
-                    modules[t].priority = Number.MAX_SAFE_INTEGER;
-                }
-                else {
-                    modules[t].priority = 0;
-                }
-            }
-        }
-        return modules;
-    },
-
-    loadModuleInternal = function (module, platform) {
+    loadModuleInternal = (module, platform) => {
         try {
             console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
-            var m = loaders[module.__loaderUID].loadModule(module, platform.config);
-            m.__loaderPriority = module.priority;
-            m.__version = module.version;
-            if (module.folderPath) {
-                m.__folderPath = module.folderPath;
-            }
+            const m = loaders[module.__loaderUID].loadModule(module, platform.config);
+            m.__descriptor = module;
             m.platform = platform;
             console.info(console.isDebug() ? $$`Loading Succeeded` : $$`[DONE]`);
             return m;
@@ -62,73 +31,102 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
         }
     },
 
-    insertSorted = function (module) {
-        if (loadedModules.length === 0) {
-            loadedModules.push(module);
-            return;
-        }
-
-        var upper = 0,
-            middle = Math.floor(loadedModules.length / 2),
-            lower = loadedModules.length - 1;
-
-        while (lower !== middle && upper !== middle) {
-            if (module.__loaderPriority === loadedModules[middle].__loaderPriority) {
-                break;
+    insertSorted = (module) => {
+        for (let type of module.__descriptor.type) {
+            if (!loaded[type]) loaded[type] = [];
+            const loadedModules = loaded[type];
+            if (loadedModules.length === 0) {
+                loadedModules.push(module);
+                return;
             }
-            if (module.__loaderPriority < loadedModules[middle].__loaderPriority) {
-                lower = middle;
-                middle = Math.floor(upper + (lower - upper) / 2);
-                if (middle === 0 || lower === middle) {
+
+            let upper = 0,
+                middle = Math.floor(loadedModules.length / 2),
+                lower = loadedModules.length - 1;
+
+            while (lower !== middle && upper !== middle) {
+                if (module.__descriptor.priority === loadedModules[middle].__descriptor.priority) {
                     break;
                 }
-            }
-            else {
-                upper = middle;
-                middle = Math.floor(upper + (lower - upper) / 2);
-                if (middle === loadedModules.length - 1 || upper === middle) {
-                    middle++;
-                    break;
+                if (module.__descriptor.priority < loadedModules[middle].__descriptor.priority) {
+                    lower = middle;
+                    middle = Math.floor(upper + (lower - upper) / 2);
+                    if (middle === 0 || lower === middle) {
+                        break;
+                    }
+                }
+                else {
+                    upper = middle;
+                    middle = Math.floor(upper + (lower - upper) / 2);
+                    if (middle === loadedModules.length - 1 || upper === middle) {
+                        middle++;
+                        break;
+                    }
                 }
             }
+            loadedModules.splice(middle, 0, module);
         }
-        loadedModules.splice(middle, 0, module);
     };
 
-exports.getLoadedModules = function () {
-    return loadedModules;
+exports.getLoadedModules = (type) => {
+    return loaded[type] || [];
 };
 
-exports.loadModule = function(module, platform) {
-    var ld = loadModuleInternal(module, platform);
-    if (ld) {
-        insertSorted(ld);
-        if (ld.load) {
-            ld.load.call(ld.platform);
+exports.loadModule = (module, platform) => {
+    const ld = loadModuleInternal(module, platform);
+    if (!ld) return;
+    insertSorted(ld);
+    if (module.__descriptor.type.includes('integration') && !module.config.commandPrefix) {
+        module.config.commandPrefix = platform.defaultPrefix;
+    }
+    if (ld.load) ld.load.call(ld.platform);
+};
+
+exports.loadAllModules = (platform) => {
+    const data = files.filesInDirectory(global.__modulesPath);
+
+    for (let i = 0; i < data.length; i++) {
+        try {
+            const candidate = path.resolve(path.join(global.__modulesPath, data[i])),
+                output = exports.verifyModule(candidate);
+            if (output) {
+                exports.loadModule(output, platform);
+            }
+            else {
+                console.debug($$`Skipping "${data[i]}". It isn't a module.`);
+            }
+        }
+        catch (e) {
+            console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
+            console.critical(e);
+            continue;
         }
     }
 };
 
-exports.loadAllModules = function(platform) {
-    var m = listModules();
-    for (var mod in m) {
-        var ld = loadModuleInternal(m[mod], platform);
-        if (ld) {
-            insertSorted(ld);
+exports.startIntegration = (callback, integration) => {
+    if (typeof (integration) === 'string') {
+        const filtered = loaded.integration.filter(val => val.__descriptor.name === integration);
+        if (filtered.length !== 1) {
+            throw new Error('Cannot find integration to start.');
         }
+        integration = filtered[0];
     }
 
-    for (var i = 0; i < loadedModules.length; i++) {
-        if (loadedModules[i].load) {
-            loadedModules[i].load.call(loadedModules[i].platform);
-        }
+    if (integration.__running) {
+        throw new Error('The specified integration is already running.');
     }
+
+    integration.__running = true;
+    integration.start((api, event) => {
+        event.event_source = integration.__descriptor.name;
+        callback(api, event);
+    });
 };
 
-exports.verifyModule = function (path) {
-    var mod = null;
-    for (var i = 0; i < loaders.length; i++) {
-        mod = loaders[i].verifyModule(path);
+exports.verifyModule = (path) => {
+    for (let i = 0; i < loaders.length; i++) {
+        const mod = loaders[i].verifyModule(path);
         if (mod) {
             if (!mod.priority || mod.priority === 'normal') {
                 mod.priority = 0;
@@ -143,35 +141,54 @@ exports.verifyModule = function (path) {
                 continue;
             }
             mod.__loaderUID = i;
-            break;
+            return mod;
         }
-    }
-    return mod;
-};
-
-exports.unloadModule = function(mod, config) {
-    try {
-        console.debug($$`Unloading module "${mod.name}".`);
-        if (mod.unload) {
-            mod.unload();
-        }
-        config.saveConfig(mod.name);
-        mod.platform = null;
-        var index = loadedModules.indexOf(mod);
-        loadedModules.splice(index, 1);
-        if (!mod.__coreOnly) {
-            $$.removeContextIfExists(mod.name);
-        }
-    }
-    catch (e) {
-        console.error($$`Unloading module "${mod.name}" failed.`);
-        console.critical(e);
     }
     return null;
 };
 
-exports.unloadAllModules = function(config) {
-    while (loadedModules.length > 0) {
-        exports.unloadModule(loadedModules[0], config);
+exports.unloadModule = (mod, config) => {
+    try {
+        console.debug($$`Unloading module "${mod.__descriptor.name}".`);
+        if (mod.__running) exports.stopIntegration(mod);
+        if (mod.unload) mod.unload();
+        config.saveConfig(mod.__descriptor.name);
+        mod.platform = null;
+        for (let type of mod.__descriptor.type) {
+            const index = loaded[type].indexOf(mod);
+            loaded[type].splice(index, 1);
+        }
+        $$.removeContextIfExists(mod.__descriptor.name);
     }
+    catch (e) {
+        console.error($$`Unloading module "${mod.__descriptor.name}" failed.`);
+        console.critical(e);
+    }
+};
+
+exports.unloadAllModules = (config) => {
+    for (let type in loaded) {
+        if (!loaded.hasOwnProperty(type)) continue;
+        const loadedModules = loaded[type];
+        while (loadedModules.length > 0) {
+            exports.unloadModule(loadedModules[0], config);
+        }
+    }
+};
+
+exports.stopIntegration = (integration) => {
+    if (typeof(integration) === 'string') {
+        const filtered = loaded.integration.filter(val => val.__descriptor.name === integration);
+        if (filtered.length !== 1) {
+            throw new Error('Cannot find integration to stop.');
+        }
+        integration = filtered[0];
+    }
+
+    if (!integration.__running) {
+        throw new Error('The specified integration is not running.');
+    }
+
+    integration.stop();
+    integration.__running = false;
 };

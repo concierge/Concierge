@@ -37,9 +37,7 @@ require('./core/prototypes.js');
 require('./core/status.js');
 require('./core/unsafe/console.js');
 
-var integf = require('./core/integrations/integrations.js'),
-    startup = require('./core/startup.js'),
-    integ = integf.listIntegrations(),
+var startup = require('./core/startup.js'),
     argp = require('./core/arguments.js'),
     args = process.argv;
 
@@ -64,24 +62,7 @@ if (!args || args.length === 0) {
 }
 
 // Check startup integrations
-var startArgs = [];
-for (var i = 0; i < args.length; i++) {
-    args[i] = args[i].toLowerCase();
-    var inte = integ.find(function(int) {
-        return int.name === args[i];
-    });
-    if (!inte) {
-        console.error('Unknown mode \'' + args[i] + '\'');
-        console.info('The integrations avalible on your system are:');
-        for (var i = 0; i < integ.length; i++) {
-            console.info('\t- \'' + integ[i].name + '\'');
-        }
-        process.exit(-2);
-    }
-    else {
-        startArgs.push(inte);
-    }
-}
+var startArgs = args.map(arg => arg.toLowerCase());
 
 process.on('uncaughtException', function(err) {
     if (console.isDebug()) {

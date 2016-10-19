@@ -14,12 +14,10 @@ const figlet = require('figlet'),
     EventEmitter = require('events').EventEmitter;
 
 class Platform extends EventEmitter {
-    constructor(integrations) {
+    constructor() {
         super();
         let ConfigService = require.once('./config.js');
         this.config = new ConfigService();
-        this.integrationManager = require.once('./integrations/integrations.js');
-        this.integrationManager.setIntegrations(integrations);
         this.defaultPrefix = '/';
         this.packageInfo = require.once('../package.json');
         this.modulesLoader = require.once('./modules/modules.js');
@@ -27,6 +25,9 @@ class Platform extends EventEmitter {
         this.onShutdown = null;
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
+
+        global.shim = require.once('./shim.js');
+        global.shim.current = this;
     }
 
     _handleTransaction (module, args) {
@@ -54,7 +55,7 @@ class Platform extends EventEmitter {
     onMessage (api, event) {
         let matchArgs = [event, api.commandPrefix],
             runArgs = [api, event],
-            loadedModules = this.modulesLoader.getLoadedModules();
+            loadedModules = this.modulesLoader.getLoadedModules('module');
 
         event.module_match_count = 0;
         for (let i = 0; i < loadedModules.length; i++) {
@@ -117,7 +118,7 @@ class Platform extends EventEmitter {
         }
     }
 
-    start () {
+    start(integrations) {
         if (this.statusFlag !== global.StatusFlag.NotStarted) {
             throw new Error($$`StartError`);
         }
@@ -131,7 +132,6 @@ class Platform extends EventEmitter {
         // Load system config
         console.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
-        this.integrationManager.setIntegrationConfigs(this);
         let firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
             firstRun.hasRun = true;
@@ -143,9 +143,10 @@ class Platform extends EventEmitter {
         console.warn($$`LoadingModules`);
         this.modulesLoader.loadAllModules(this);
 
-        // Starting output
         console.warn($$`StartingIntegrations`);
-        this.integrationManager.startIntegrations(this.onMessage.bind(this));
+        for (let integration of integrations) {
+            this.modulesLoader.startIntegration(this.onMessage.bind(this), integration);
+        }
 
         this.statusFlag = global.StatusFlag.Started;
         console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
@@ -158,9 +159,6 @@ class Platform extends EventEmitter {
         if (!flag) {
             flag = global.StatusFlag.Unknown;
         }
-
-        // Stop output integrations
-        this.integrationManager.stopIntegrations();
 
         // Unload user modules
         this.modulesLoader.unloadAllModules(this.config);

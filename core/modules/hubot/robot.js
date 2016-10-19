@@ -91,7 +91,14 @@ var Robot = function(Instance, descriptor, config) {
         }
     };
 
-    this.instances.push(new Instance(this));
+    if (!Instance.use) {
+        descriptor.type = ['module'];
+        this.instances.push(new Instance(this));
+    }
+    else {
+        descriptor.type = ['integration'];
+        this.instances.push(Instance);
+    }
 };
 
 Robot.generateHubotJson = function (folderPath, scriptLocation) {
