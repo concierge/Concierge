@@ -11,12 +11,12 @@
 */
 
 const figlet = require('figlet'),
-    EventEmitter = require('events').EventEmitter;
+    MiddlewareHandler = require.once('./middleware.js'),
+    ConfigService = require.once('./config.js');
 
-class Platform extends EventEmitter {
+class Platform extends MiddlewareHandler {
     constructor() {
         super();
-        let ConfigService = require.once('./config.js');
         this.config = new ConfigService();
         this.defaultPrefix = '/';
         this.packageInfo = require.once('../package.json');
@@ -52,8 +52,8 @@ class Platform extends EventEmitter {
         return returnVal;
     }
 
-    onMessage (api, event) {
-        let matchArgs = [event, api.commandPrefix],
+    _handleMessage(api, event) {
+        const matchArgs = [event, api.commandPrefix],
             runArgs = [api, event],
             loadedModules = this.modulesLoader.getLoadedModules('module');
 
@@ -71,12 +71,17 @@ class Platform extends EventEmitter {
 
             if (matchResult) {
                 event.module_match_count++;
-                let transactionRes = this._handleTransaction(loadedModules[i], runArgs);
+                const transactionRes = this._handleTransaction(loadedModules[i], runArgs);
                 if (event.shouldAbort || transactionRes) {
                     return;
                 }
             }
         }
+        this.emitAsync('message', api, event);
+    }
+
+    onMessage(api, event) {
+        this.runMiddleware('before', this._handleMessage, api, event);
     }
 
     getIntegrationApis () {
@@ -101,7 +106,8 @@ class Platform extends EventEmitter {
                 ['https://github.com/concierge/ping.git', 'ping'],
                 ['https://github.com/concierge/restart.git', 'restart'],
                 ['https://github.com/concierge/shutdown.git', 'shutdown'],
-                ['https://github.com/concierge/update.git', 'update']
+                ['https://github.com/concierge/update.git', 'update'],
+                ['https://github.com/concierge/test.git', 'test']
             ];
 
         for (let i = 0; i < defaultModules.length; i++) {
