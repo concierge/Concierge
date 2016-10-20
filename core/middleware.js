@@ -1,3 +1,14 @@
+/**
+ * Handles the middleware of Concierge.
+ *
+ * Written By:
+ *         Matthew Knox
+ *
+ * License:
+ *        MIT License. All code unless otherwise specified is
+ *        Copyright (c) Matthew Knox and Contributors 2016.
+ */
+
 const EventEmitter = require('events');
 
 class MiddlewareHandler extends EventEmitter {
@@ -6,6 +17,11 @@ class MiddlewareHandler extends EventEmitter {
         this.stacks = {};
     }
 
+    /**
+     * Convinience method for emitting an event asyncronously.
+     * @param {string} eventName name of the event.
+     * @param {Array<string>} args arguments to pass to the event.
+     */
     emitAsync(eventName, ...args) {
         args.unshift(eventName);
         process.nextTick(((args) => {
@@ -20,26 +36,45 @@ class MiddlewareHandler extends EventEmitter {
             return;
         }
 
-        const runner = (function(complete, stack, args, ...other) {
-            const index = this.index++;
-            if (index < stack.length) {
-                process.nextTick(stack[index].bind.apply(stack[index], args));
+        const runner = function (complete, stack, args, ...other) {
+            let newArgs;
+            if (other.length > 0) {
+                newArgs = [args[0]].concat(other);
             }
             else {
-                args.pop();
-                process.nextTick(complete.bind.apply(complete, args));
+                newArgs = args.slice();
             }
-        }).bind({ index: 0 }, complete, stack, args);
+            newArgs.push(runner.bind({ index: this.index + 1 }, complete, stack, newArgs.slice()));
+
+            if (this.index < stack.length) {
+                process.nextTick(stack[this.index].bind.apply(stack[this.index], newArgs));
+            }
+            else {
+                newArgs.pop();
+                process.nextTick(complete.bind.apply(complete, newArgs));
+            }
+        };
         args.unshift(this);
-        args.push(runner);
-        runner();
+        runner.call({ index: 0 }, complete, stack, args);
     }
 
+    /**
+     * Executes the specified middleware.
+     * @param {string} name the middleware to execute.
+     * @param {function()} complete the function to call when the middleware is complete.
+     * @param {Array<>} args the arguments to pass to each successive middleware function.
+     */
     runMiddleware(name, complete, ...args) {
         const stack = this.stacks[name] || [];
         this._middlewareRunner(complete, stack, args);
     }
 
+    /**
+     * Register middleware.
+     * @param {string} name name of the event to listen for with this middleware.
+     * @param {function()} func function to register.
+     * @returns {function()} the function that was registered.
+     */
     use(name, func) {
         if (typeof (func) !== 'function') {
             throw new Error('Middleware must be a function.');
@@ -53,6 +88,11 @@ class MiddlewareHandler extends EventEmitter {
         return func;
     }
 
+    /**
+     * Un-register middleware.
+     * @param {string} name name of the event to listen for with this middleware.
+     * @param {function()} func function to unregister.
+     */
     unuse(name, func) {
         const index = (this.stacks[name] || []).indexOf(func);
         if (index < 0) {
