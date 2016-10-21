@@ -301,7 +301,6 @@ const IntegrationApi = module.exports = class {
     static _methodWrapper(origionalSend, api) {
         return (data, thread) => {
             global.shim.current.runMiddleware('after', origionalSend.bind(api), data, thread);
-            //origionalSend.call(api, data, thread);
             if (exports.current && exports.current.allowLoopback) {
                 const newEvent = exports.createEvent(thread, -1, 'Bot', data);
                 newEvent.event_source = 'loopback';

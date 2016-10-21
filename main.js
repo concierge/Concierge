@@ -23,12 +23,9 @@
 
 // Arbitary location module loading requirements
 global.__rootPath = __dirname;
-global.rootPathJoin = function () {
-    var a = [global.__rootPath],
+global.rootPathJoin = function() {
+    const a = [global.__rootPath].concat(Array.from(arguments)),
         path = require('path');
-    for (var i = 0; i < arguments.length; i++) {
-        a.push(arguments[i]);
-    }
     return path.join.apply(this, a);
 };
 
@@ -37,7 +34,7 @@ require('./core/prototypes.js');
 require('./core/status.js');
 require('./core/unsafe/console.js');
 
-var startup = require('./core/startup.js'),
+const startup = require('./core/startup.js'),
     argp = require('./core/arguments.js'),
     args = process.argv;
 
@@ -48,7 +45,7 @@ argp.runArguments(args);
 
 // Check modules path is set
 if (!global.__modulesPath) {
-    var path = require('path');
+    const path = require('path');
     global.__modulesPath = path.resolve('./modules/');
 }
 
@@ -62,7 +59,7 @@ if (!args || args.length === 0) {
 }
 
 // Check startup integrations
-var startArgs = args.map(arg => arg.toLowerCase());
+const startArgs = args.map(arg => arg.toLowerCase());
 
 process.on('uncaughtException', function(err) {
     if (console.isDebug()) {

@@ -151,7 +151,17 @@ class Platform extends MiddlewareHandler {
 
         console.warn($$`StartingIntegrations`);
         for (let integration of integrations) {
-            this.modulesLoader.startIntegration(this.onMessage.bind(this), integration);
+            try {
+                this.modulesLoader.startIntegration(this.onMessage.bind(this), integration);
+            }
+            catch (e) {
+                if (e.message === 'Cannot find integration to start') {
+                    console.error(`Unknown integration '${integration}'`);
+                }
+                else {
+                    console.critical(e);
+                }
+            }
         }
 
         this.statusFlag = global.StatusFlag.Started;

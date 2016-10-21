@@ -49,10 +49,15 @@ exports.verifyModule = (location) => {
         fs.writeFileSync(desc, JSON.stringify(hj, null, 4), 'utf8');
     }
 
-    if (!(hj.name && hj.startup && hj.version)) return null;
-    if (!hj.folderPath) hj.folderPath = folderPath;
-    if (!hj.type) hj.type = ['module'];
-
+    if (!(hj.name && hj.startup && hj.version)) {
+        return null;
+    }
+    if (!hj.folderPath) {
+        hj.folderPath = folderPath;
+    }
+    if (!hj.type) {
+        hj.type = ['module'];
+    }
     return hj;
 };
 

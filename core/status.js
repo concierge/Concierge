@@ -10,9 +10,9 @@
  */
 
 global.StatusFlag = {
-    NotStarted: -1,
-    Unknown: 0,
-    Started: 1,
-    Shutdown: 2,
-    ShutdownShouldRestart: 3
+    NotStarted: Symbol('NotStarted'),
+    Unknown: Symbol('Unknown'),
+    Started: Symbol('Started'),
+    Shutdown: Symbol('Shutdown'),
+    ShutdownShouldRestart: Symbol('ShutdownShouldRestart')
 };

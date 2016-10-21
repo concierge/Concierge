@@ -73,8 +73,9 @@ exports.loadModule = (module, config) => {
 
         const types = [];
         for (let type in moduleTypeFunctions) {
-            if (!moduleTypeFunctions.hasOwnProperty(type))
+            if (!moduleTypeFunctions.hasOwnProperty(type)) {
                 continue;
+            }
 
             if (!moduleTypeFunctions[type].some(func => !m[func])) {
                 types.push(type);

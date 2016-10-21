@@ -39,7 +39,9 @@ class ModuleLoader extends EventEmitter {
 
     _insertSorted(module) {
         for (let type of module.__descriptor.type) {
-            if (!this._loaded[type]) this._loaded[type] = [];
+            if (!this._loaded[type]) {
+                this._loaded[type] = [];
+            }
             const loadedModules = this._loaded[type];
             if (loadedModules.length === 0) {
                 loadedModules.push(module);
@@ -82,8 +84,7 @@ class ModuleLoader extends EventEmitter {
      * object containing modules and their types/
      */
     getLoadedModules(type) {
-        if (!type) return this._loaded;
-        return this._loaded[type] || [];
+        return !type ? this._loaded : this._loaded[type] || [];
     }
 
     /**
@@ -123,7 +124,9 @@ class ModuleLoader extends EventEmitter {
             success: true,
             module: ld
         });
-        if (ld.load) ld.load.call(ld.platform);
+        if (ld.load) {
+            ld.load.call(ld.platform);
+        }
     }
 
     /**
@@ -162,7 +165,7 @@ class ModuleLoader extends EventEmitter {
         if (typeof (integration) === 'string') {
             const filtered = this._loaded.integration.filter(val => val.__descriptor.name === integration);
             if (filtered.length !== 1) {
-                throw new Error('Cannot find integration to start.');
+                throw new Error('Cannot find integration to start');
             }
             integration = filtered[0];
         }
@@ -247,8 +250,12 @@ class ModuleLoader extends EventEmitter {
         this.emit('preunload', mod);
         try {
             console.debug($$`Unloading module "${mod.__descriptor.name}".`);
-            if (mod.__running) this.stopIntegration(mod);
-            if (mod.unload) mod.unload();
+            if (mod.__running) {
+                this.stopIntegration(mod);
+            }
+            if (mod.unload) {
+                mod.unload();
+            }
             config.saveConfig(mod.__descriptor.name);
             mod.platform = null;
             for (let type of mod.__descriptor.type) {
@@ -281,7 +288,9 @@ class ModuleLoader extends EventEmitter {
      */
     unloadAllModules(config) {
         for (let type in this._loaded) {
-            if (!this._loaded.hasOwnProperty(type)) continue;
+            if (!this._loaded.hasOwnProperty(type)) {
+                continue;
+            }
             const loadedModules = this._loaded[type];
             while (loadedModules.length > 0) {
                 this.unloadModule(loadedModules[0], config);
