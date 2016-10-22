@@ -112,7 +112,7 @@ class Platform extends MiddlewareHandler {
 
         for (let i = 0; i < defaultModules.length; i++) {
             console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
-            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), ((i, err) => {
+            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), (err) => {
                 if (err) {
                     console.critical(err);
                     console.error($$`Failed to install module from "${defaultModules[i][0]}"`);
@@ -120,7 +120,7 @@ class Platform extends MiddlewareHandler {
                 else {
                     console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageInfo.version}) is now installed.`);
                 }
-            }).bind(i));
+            });
         }
     }
 
