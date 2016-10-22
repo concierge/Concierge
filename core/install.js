@@ -66,7 +66,7 @@ let exec = require('child_process').execSync,
             }
         }
         catch (e) {
-            return parsed.dir === '.' || parsed.dir === '..';
+            return parsed.dir.indexOf('.') === 0;
         }
     };
 

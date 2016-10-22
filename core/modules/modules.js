@@ -80,11 +80,20 @@ class ModuleLoader extends EventEmitter {
      * Gets all the loaded modules of a particular type.
      * If no type is provided, all modules are retreived.
      * @param {string} type the type of modules to retreive (optional).
-     * @returns {Array<>|Object<>} either an array of modules or an associative
-     * object containing modules and their types/
+     * @returns {Array<object>} either an array of modules or an associative
+     * object containing modules and their types
      */
     getLoadedModules(type) {
-        return !type ? this._loaded : this._loaded[type] || [];
+        if (type) {
+            return this._loaded[type];
+        }
+        let loaded = [];
+        for (let t in this._loaded) {
+            if (this._loaded.hasOwnProperty(t)) {
+                loaded = loaded.concat(this._loaded[t]);
+            }
+        }
+        return Array.from(new Set(loaded)); // remove duplicates
     }
 
     /**

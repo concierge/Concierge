@@ -32,7 +32,7 @@ class Platform extends MiddlewareHandler {
 
     _handleTransaction (module, args) {
         let returnVal = null;
-        const timeout = setTimeout(function () {
+        const timeout = setTimeout(() => {
             if (returnVal !== null) {
                 return;
             }
@@ -85,7 +85,7 @@ class Platform extends MiddlewareHandler {
     }
 
     getIntegrationApis () {
-        let integs = this.integrationManager.getSetIntegrations(),
+        const integs = this.integrationManager.getSetIntegrations(),
             apis = {};
         for (let key in integs) {
             if (!integs.hasOwnProperty(key)) {
@@ -112,7 +112,7 @@ class Platform extends MiddlewareHandler {
 
         for (let i = 0; i < defaultModules.length; i++) {
             console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
-            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), (err) => {
+            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), ((i, err) => {
                 if (err) {
                     console.critical(err);
                     console.error($$`Failed to install module from "${defaultModules[i][0]}"`);
@@ -120,7 +120,7 @@ class Platform extends MiddlewareHandler {
                 else {
                     console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageInfo.version}) is now installed.`);
                 }
-            });
+            }).bind(i));
         }
     }
 
@@ -131,14 +131,14 @@ class Platform extends MiddlewareHandler {
 
         console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
 
-        console.title(' ' + this.packageInfo.version);
+        console.title(` ${this.packageInfo.version}`);
         console.info('------------------------------------');
         console.warn($$`StartingSystem`);
 
         // Load system config
         console.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
-        let firstRun = this.config.getSystemConfig('firstRun');
+        const firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
             firstRun.hasRun = true;
             this._firstRun();
@@ -168,10 +168,12 @@ class Platform extends MiddlewareHandler {
         console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
     }
 
-    shutdown (flag) {
+    shutdown(flag) {
         if (this.statusFlag !== global.StatusFlag.Started) {
             throw new Error($$`ShutdownError`);
         }
+
+        this.emit('preshutdown');
         if (!flag) {
             flag = global.StatusFlag.Unknown;
         }
