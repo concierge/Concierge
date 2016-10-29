@@ -85,13 +85,10 @@ class Platform extends MiddlewareHandler {
     }
 
     getIntegrationApis () {
-        const integs = this.integrationManager.getSetIntegrations(),
+        const integs = this.modulesLoader.getLoadedModules('integration'),
             apis = {};
-        for (let key in integs) {
-            if (!integs.hasOwnProperty(key)) {
-                continue;
-            }
-            apis[key] = integs[key].getApi();
+        for (let i of integs) {
+            apis[i.__descriptor.name] = i.getApi();
         }
         return apis;
     }
