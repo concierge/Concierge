@@ -119,8 +119,8 @@ class ModuleLoader extends EventEmitter {
             return;
         }
         this._insertSorted(ld);
-        if (module.type.includes('integration') && !module.config.commandPrefix) {
-            module.config.commandPrefix = platform.defaultPrefix;
+        if (module.type.includes('integration') && !ld.config.commandPrefix) {
+            ld.config.commandPrefix = platform.defaultPrefix;
         }
         /**
          * Load event. Fired after a module is loaded, but before the module is notified via load().
@@ -191,13 +191,15 @@ class ModuleLoader extends EventEmitter {
         this.emit('prestart', integration);
         let success = true;
         try {
-            integration.__running = true;
             integration.start((api, event) => {
                 event.event_source = integration.__descriptor.name;
                 callback(api, event);
             });
+            integration.__running = true;
         }
         catch (e) {
+            console.debug(`Integration "${integration.__descriptor.name}" failed to start.`);
+            console.critical(e);
             success = false;
         }
 
@@ -338,6 +340,8 @@ class ModuleLoader extends EventEmitter {
             integration.__running = false;
         }
         catch (e) {
+            console.debug(`Integration "${integration.__descriptor.name}" failed to stop.`);
+            console.critical(e);
             success = false;
         }
 

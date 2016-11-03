@@ -88,7 +88,9 @@ class Platform extends MiddlewareHandler {
         const integs = this.modulesLoader.getLoadedModules('integration'),
             apis = {};
         for (let i of integs) {
-            apis[i.__descriptor.name] = i.getApi();
+            if (i.__running) {
+                apis[i.__descriptor.name] = i.getApi();
+            }
         }
         return apis;
     }
