@@ -134,7 +134,7 @@ class ModuleLoader extends EventEmitter {
             module: ld
         });
         if (ld.load) {
-            ld.load.call(ld.platform);
+            ld.load(ld.platform);
         }
     }
 

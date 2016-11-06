@@ -17,18 +17,20 @@ class Robot extends EventEmitter {
         this.data = this.config;
         this.ignoreHelpContext = true;
         this.logger = console;
+        this.isIntegration = !!Instance.use;
 
-        if (!Instance.use) {
+        if (this.isIntegration) {
+            descriptor.type = ['integration'];
+            this._threadUsers = {};
+            this.instances.push(Instance.use(this));
+        }
+        else {
             descriptor.type = ['module'];
             this.instances.push(new Instance(this));
         }
-        else {
-            descriptor.type = ['integration'];
-            this.instances.push(Instance);
-        }
     }
 
-    users () {
+    _inferCalleeData() {
         // Welcome to hack land, where hacks are common place.
         // We access event_source and thread_id from the stack trace so that this is thread safe.
         const origPrepareStackTrace = Error.prepareStackTrace;
@@ -36,23 +38,48 @@ class Robot extends EventEmitter {
         const err = new Error();
         const stack = err.stack;
         Error.prepareStackTrace = origPrepareStackTrace;
-        const res = [];
         for (let i = 1; i < stack.length; i++) {
             const funcName = stack[i].getFunctionName() || '';
             if (funcName.startsWith('dataWrapperFunction')) {
-                const data = funcName.replace(/\u200d/g, ' ').split('\u200b'),
-                    users = this.platform.getIntegrationApis()[data[1]].getUsers(data[2]);
-                for (let id in users) {
-                    res.push({
-                        name: users[id].name,
-                        id: id,
-                        email_address: 'unknown@unknown.unknown'
-                    });
-                }
-                break;
+                const data = funcName.replace(/\u200d/g, ' ').split('\u200b');
+                return {
+                    api: this.platform.getIntegrationApis()[data[1]],
+                    thread: data[2],
+                    source: data[1]
+                };
             }
         }
+        return null;
+    }
+
+    _convertUsers(users, thread) {
+        const res = [];
+        for (let id in users) {
+            res.push({
+                name: users[id].name,
+                id: id,
+                email_address: 'unknown@unknown.unknown',
+                room: thread
+            });
+        }
         return res;
+    }
+
+    users() {
+        if (this.isIntegration) {
+            let res = [];
+            for (let threadUsers in this._threadUsers) {
+                res = res.concat(this._threadUsers[threadUsers], threadUsers);
+            }
+            return res;
+        }
+
+        const callee = this._inferCalleeData();
+        if (!callee) {
+            return [];
+        }
+        const users = callee.api.getUsers(callee.thread);
+        return this._convertUsers(users, callee.thread);
     }
 
     usersForRawFuzzyName (fuzzyName) {
@@ -72,8 +99,22 @@ class Robot extends EventEmitter {
         return this.users().find(u => u.name.toLowerCase() === lower) || null;
     }
 
-    userForId (id) {
-        return this.users().find(u => u.id === id) || null;
+    userForId (id, options) {
+        const fuser = this.users().find(u => u.id === id) || null;
+        if (options && options.room) {
+            if (!this._threadUsers[options.room]) {
+                this._threadUsers[options.room] = {};
+            }
+            const user = {
+                name: options.name,
+                id: id,
+                email: options.email || 'unknown@unknown.unknown',
+                room: options.room
+            };
+            this._threadUsers[options.room][id] = user;
+            return user;
+        }
+        return fuser;
     }
 
     static generateHubotJson (folderPath, scriptLocation) {
@@ -161,12 +202,31 @@ class Robot extends EventEmitter {
         };
     }
 
-    start (callback) {
-        
+    start(callback) {
+        const self = this;
+        class HubotIntegration extends shim {
+            sendMessage(message, thread) {
+                const m = {
+                    room: thread
+                };
+                self.instances[0].send(m, message);
+            }
+
+            getUsers(thread) {
+                return threadUsers[thread] || {};
+            }
+        }
+        this.api = new HubotIntegration(this.config.commandPrefix);
+        this.messageCallback = callback;
+        this.instances[0].run();
     }
 
     stop() {
-        
+        this.instances[0].close();
+    }
+
+    getApi() {
+        return this.api;
     }
 
     run (api, event) {
@@ -261,7 +321,7 @@ class Robot extends EventEmitter {
     }
 
     reply (envelope, messages) {
-        let api = this.platform.getIntegrationApis()[envelope.event.event_source],
+        const api = this.platform.getIntegrationApis()[envelope.event.event_source],
             resp = new Responder(api, envelope.event, null, messages);
         resp.send(messages);
     }
@@ -271,8 +331,16 @@ class Robot extends EventEmitter {
     }
 
     receive (message) {
-        const event = shim.createEvent(message.event.thread_id, message.event.sender_id, message.event.sender_name, message.text);
-        this.platform.onMessage(api, event);
+        if (this.isIntegration) {
+            const event = shim.createEvent(message.event.thread_id, message.event.sender_id, message.event.sender_name, message.text);
+            this.messageCallback(this.api, event);
+        }
+        else {
+            const callee = this._inferCalleeData(),
+                event = shim.createEvent(callee.thread, message.user.id, message.user.name, message.text);
+            event.event_source = callee.source;
+            this.platform.onMessage(callee.api, event);
+        }
     }
 
     help (commandPrefix) {
@@ -307,7 +375,9 @@ class Robot extends EventEmitter {
     }
 
     load (scriptsPath) {
-        if (!this.loadFile) {
+        if (typeof(scriptsPath) !== 'string') {
+            this.shutdown = scriptsPath.shutdown;
+            this.name = scriptsPath.packageInfo.name;
             this.emit('loaded');
             return; // avoid the .load() module call
         }
