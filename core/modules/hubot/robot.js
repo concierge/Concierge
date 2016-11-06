@@ -1,5 +1,6 @@
-﻿const Message = require.once('./message.js'),
-    Responder = require.once('./responder.js'),
+﻿const Utils = require.once('./hubotUtils.js'),
+    Message = Utils.Message,
+    Responder = Utils.Responder,
     EventEmitter = require('events'),
     fs = require('fs'),
     path = require('path'),
