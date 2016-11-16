@@ -303,7 +303,7 @@ class ModuleLoader extends EventEmitter {
                 continue;
             }
             const loadedModules = this._loaded[type].slice();
-            for (let mod of loadedModules)
+            for (let mod of loadedModules) {
                 this.unloadModule(mod, config);
             }
         }
