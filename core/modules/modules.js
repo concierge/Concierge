@@ -302,9 +302,9 @@ class ModuleLoader extends EventEmitter {
             if (!this._loaded.hasOwnProperty(type)) {
                 continue;
             }
-            const loadedModules = this._loaded[type];
-            while (loadedModules.length > 0) {
-                this.unloadModule(loadedModules[0], config);
+            const loadedModules = this._loaded[type].slice();
+            for (let mod of loadedModules)
+                this.unloadModule(mod, config);
             }
         }
     }
