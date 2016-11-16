@@ -9,33 +9,40 @@
 *        Copyright (c) Matthew Knox and Contributors 2015.
 */
 
-var path = require('path'),
+const EventEmitter = require('events'),
+    path = require('path'),
     files = require.once('./../files.js'),
     defaultLocale = 'en',
-    currentLocale = global.__i18nLocale || defaultLocale,
     globalContext = '*',
     contextMap = {},
 
-    _getCallerFileName = function (levels = 1) {
+    _getCallerFileName = (levels = 1) => {
         const origPrepareStackTrace = Error.prepareStackTrace;
-        Error.prepareStackTrace = function(_, stack) {
-            return stack;
-        };
+        Error.prepareStackTrace = (_, stack) => stack;
         const err = new Error();
         const stack = err.stack;
         Error.prepareStackTrace = origPrepareStackTrace;
         return stack[levels].getFileName();
-    },
+    };
 
-    _translate = function(values, translationString) {
-        return translationString.replace(/\${(\d+)}/g, function (match, number) {
-            return !!values[number] ? values[number] : match;
-        });
-    },
+let currentLocale = global.__i18nLocale || defaultLocale;
 
-    _fallbackTranslate = function(strings, values) {
-        var result = '';
-        for (var i = 0, j = 0; i + j < strings.length + values.length;) {
+class TranslatorService extends EventEmitter {
+    constructor (translationsDir) {
+        super();
+        this.translations = {};
+        translationsDir = path.resolve(translationsDir);
+        const translationFiles = files.filesInDirectory(translationsDir);
+        for (let i = 0; i < translationFiles.length; i++) {
+            const translationFile = path.join(translationsDir, translationFiles[i]);
+            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = require.once(translationFile);
+        }
+        this.hook = null;
+    }
+
+    _fallbackTranslate(strings, values) {
+        let result = '';
+        for (let i = 0, j = 0; i + j < strings.length + values.length;) {
             if (i % 2 === j % 2) {
                 result += strings[i];
                 i++;
@@ -45,49 +52,50 @@ var path = require('path'),
             }
         }
         return result;
-    };
-
-var TranslatorService = function (translationsDir) {
-    this.translations = {};
-    translationsDir = path.resolve(translationsDir);
-    const translationFiles = files.filesInDirectory(translationsDir);
-    for (let i = 0; i < translationFiles.length; i++) {
-        const translationFile = path.join(translationsDir, translationFiles[i]);
-        this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = require.once(translationFile);
     }
-    this.hook = null;
-};
 
-TranslatorService.prototype.translate = function (strings, values) {
-    if (this.hook) {
-        const res = this.hook(strings, values);
-        if (res) {
-            return res;
+    _translate(values, translationString) {
+        return translationString.replace(/\${(\d+)}/g, (match, number) => {
+            return !!values[number] ? values[number] : match;
+        });
+    }
+
+    translate(strings, values) {
+        if (this.hook) {
+            const res = this.hook(strings, values);
+            if (res) {
+                return res;
+            }
         }
+    
+        let key = strings[0],
+            i = 1,
+            result;
+        for (; i < strings.length; i++) {
+            key += '${' + (i - 1) + '}' + strings[i];
+        }
+        if (strings % values === 0) {
+            key += '${' + i + '}';
+        }
+    
+        if (this.translations.hasOwnProperty(currentLocale) && this.translations[currentLocale].hasOwnProperty(key)) {
+            result = this._translate(values, this.translations[currentLocale][key]);
+        }
+        else if (this.translations.hasOwnProperty(defaultLocale) && this.translations[defaultLocale].hasOwnProperty(key)) {
+            result = this._translate(values, this.translations[defaultLocale][key]);
+        }
+        else {
+            console.debug(`Missing i18n value for key "${key}" in {current: "${currentLocale}", default:"${defaultLocale}"}.`);
+            result = this._fallbackTranslate(strings, values);
+        }
+        this.emit('translate', strings, values, result);
+        return result;
     }
 
-    var key = strings[0];
-    var i = 1;
-    for (; i < strings.length; i++) {
-        key += '${' + (i - 1) + '}' + strings[i];
+    setHook(hookFunction) {
+        this.hook = hookFunction;
     }
-    if (strings % values === 0) {
-        key += '${' + i + '}';
-    }
-
-    if (this.translations.hasOwnProperty(currentLocale) && this.translations[currentLocale].hasOwnProperty(key)) {
-        return _translate(values, this.translations[currentLocale][key]);
-    }
-    else if (this.translations.hasOwnProperty(defaultLocale) && this.translations[defaultLocale].hasOwnProperty(key)) {
-        return _translate(values, this.translations[defaultLocale][key]);
-    }
-    console.debug(`Missing i18n value for key "${key}" in {current: "${currentLocale}", default:"${defaultLocale}"}.`);
-    return _fallbackTranslate(strings, values);
-};
-
-TranslatorService.prototype.setHook = function(hookFunction) {
-    this.hook = hookFunction;
-};
+}
 
 contextMap[globalContext] = new TranslatorService('./core/translations/i18n/');
 
@@ -99,7 +107,7 @@ contextMap[globalContext] = new TranslatorService('./core/translations/i18n/');
  * contained within `${x}` sections of the format string.
  * @returns {string} the translated string.
  */
-module.exports = function(strings, ...values) {
+module.exports = (strings, ...values) => {
     const contextFileName = _getCallerFileName(2);
     const contextMatches = contextFileName.match(/modules(\\|\/).*(?=\\|\/)/g);
     const context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
@@ -120,7 +128,7 @@ module.exports = function(strings, ...values) {
  * @param {string} context the context in which to translate.
  * @returns {string} the translated string.
  */
-module.exports.translate = function(strings, values, context) {
+module.exports.translate = (strings, values, context) => {
     if (!contextMap.hasOwnProperty(context)) {
         const translationsDirectory = path.join(global.__modulesPath, context, 'i18n/');
         contextMap[context] = new TranslatorService(translationsDirectory);
@@ -136,7 +144,7 @@ module.exports.translate = function(strings, values, context) {
  * @returns {undefined} does not currently return a value.
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals#Tagged_template_literals
  */
-module.exports.hook = function(func, context = null) {
+module.exports.hook = (func, context = null) => {
     if (!context) {
         const contextFileName = _getCallerFileName(2);
         const contextMatches = contextFileName.match(/modules(\\|\/).*(?=\\|\/)/g);
@@ -144,7 +152,7 @@ module.exports.hook = function(func, context = null) {
     }
 
     if (!contextMap.hasOwnProperty(context)) {
-        throw new Error($$`Invalid translation context provided.`);
+        throw new Error(global.$$`Invalid translation context provided.`);
     }
 
     contextMap[context].setHook(func);
@@ -155,7 +163,7 @@ module.exports.hook = function(func, context = null) {
  * @param {string} localeString the string to set the locale to. E.g. 'en' for English.
  * @returns {undefined} does not currently return a value.
  */
-module.exports.setLocale = function (localeString) {
+module.exports.setLocale = (localeString) => {
     if (localeString) {
         currentLocale = localeString;
     }
@@ -165,7 +173,7 @@ module.exports.setLocale = function (localeString) {
  * Gets the current locale of the system.
  * @returns {string} returns locale string. E.g. 'en' for English.
  */
-module.exports.getLocale = function () {
+module.exports.getLocale = () => {
     return currentLocale;
 };
 
@@ -175,7 +183,7 @@ module.exports.getLocale = function () {
  * @param {string} context the translation context. Either the module name or global context identifier.
  * @returns {undefined} does not currently return a value.
  */
-module.exports.removeContextIfExists = function(context) {
+module.exports.removeContextIfExists = (context) => {
     if (contextMap.hasOwnProperty(context)) {
         delete contextMap[context];
     }

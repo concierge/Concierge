@@ -15,8 +15,9 @@
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
 let platform = null,
-    startArgs = null,
-    checkShutdownCode = (code) => {
+    startArgs = null;
+
+const checkShutdownCode = (code) => {
         if (code === StatusFlag.ShutdownShouldRestart) {
             platform.removeListener('shutdown', checkShutdownCode);
             exports.run();
@@ -26,7 +27,7 @@ let platform = null,
         }
     };
 
-exports.run = function (startArgsP) {
+exports.run = (startArgsP) => {
     try {
         if (!startArgs && startArgsP) {
             startArgs = startArgsP;
@@ -47,7 +48,7 @@ exports.run = function (startArgsP) {
     }
 };
 
-exports.stop = function() {
+exports.stop = () => {
     if (platform) {
         platform.shutdown();
     }
