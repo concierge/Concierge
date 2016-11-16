@@ -97,7 +97,12 @@ class Platform extends MiddlewareHandler {
 
     _firstRun () {
         const git = require.once('./git.js'),
-            path = require('path'),
+            path = require('path');
+        let defaultModules;
+        try {
+            defaultModules = require('../defaults.json');
+        }
+        catch (e) {
             defaultModules = [
                 ['https://github.com/concierge/creator.git', 'creator'],
                 ['https://github.com/concierge/help.git', 'help'],
@@ -108,6 +113,7 @@ class Platform extends MiddlewareHandler {
                 ['https://github.com/concierge/update.git', 'update'],
                 ['https://github.com/concierge/test.git', 'test']
             ];
+        } 
 
         for (let i = 0; i < defaultModules.length; i++) {
             console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);

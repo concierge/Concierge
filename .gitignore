@@ -13,3 +13,5 @@ tsd.json
 obj/*
 /bin/Microsoft.NodejsTools.WebRole.dll
 .DS_Store
+WE-Palette.css
+defaults.json
