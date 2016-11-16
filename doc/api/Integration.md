@@ -1,3 +1,6 @@
+# Integration
+An integration is Concierges way of interacting with different chat platforms. For example, amoungst others, there are Facebook, Skype and Test integrations.
+
 ## Functions
 These functions must be defined on the `exports` object within your integration.
 
@@ -6,30 +9,21 @@ These functions must be defined on the `exports` object within your integration.
 <dd><p>Starts the integration.</p></dd>
 <dt><a href="#stop">stop()</a></dt>
 <dd><p>Stops the integration.</p></dd>
-<dt><a href="#stop">stop()</a></dt>
-<dd><p>Stops the integration.</p></dd>
 <dt><a href="#getApi">getApi() ⇒ <code>IntegrationApi</code></a></dt>
 <dd><p>Gets the API provided by this integration.</p></dd>
 </dl>
 
 ## Properties
-These properties are defined on the `exports` object within your integration. They are provided by default and should not be modified unless you know what you are doing.
-
-<dl>
-<dt><a href="#config">config ⇒ <code>Object</code></a></dt>
-<dd><p>Provides persistent storage for configuration.</p></dd>
-<dt><a href="#platform">platform ⇒ <code>Platform</code></a></dt>
-<dd><p>A reference to the Concierge core platform.</p></dd>
-</dl>
+All properties avalible to a module are also set on a service. *See [Modules](./Module.md)*. Additionally, if not set, within the `config` property a `commandPrefix` string will be set by default.
 
 <hr />
 
 <a name="start"></a>
 ## start(callback)
-Starts the integration.  
+Starts the integration.
 Until this is called, the integration should assume properties such as `config` do not exist.
 
-**Required**  
+**Required**
 **Kind**: API method
 
 | Param | Type | Description |
@@ -38,29 +32,17 @@ Until this is called, the integration should assume properties such as `config` 
 
 <a name="stop"></a>
 ## stop()
-Stops the integration.  
-This method is treated as if it is synchronous, by the time it finishes executing the module should be stopped.
+Stops the integration.
+This method is treated as if it is synchronous, by the time it finishes executing the integration should be stopped.
 
-**Required**  
+**Required**
 **Kind**: API method
 
 <a name="getApi"></a>
 ## getApi() ⇒ <code>IntegrationApi</code>
-Gets the API provided by this integration.  
+Gets the API provided by this integration.
 This method will only ever be called when the integration is running. See [IntegrationCreation.md#HandlingMessages](../IntegrationCreation.md#HandlingMessages) for how to create an API object.
 
-**Required**  
-**Kind**: API method  
+**Required**
+**Kind**: API method
 **See**: [Concierge API](./Api.md).
-
-<a name="config"></a>
-## config ⇒ <code>Object</code>
-**Kind**: Object property
-
-Object for storing configuration data of the module within. Any property set on this object will automatically be persisted between restarts of your module.
-
-<a name="platform"></a>
-## platform ⇒ <code>Platform</code>
-**Kind**: Object property
-
-A reference to the Concierge core platform. This provides access to control methods of the bot and a means to get access directly to integration APIs. Refer to JSDoc in platform.js for details.

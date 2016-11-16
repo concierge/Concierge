@@ -8,14 +8,12 @@ An integration is a piece of code used by Concierge to connect with the specifie
 
 Creating an integration for a chat platform is a relatively simple process. It can be thought of as a special kind of module that provides I/O for Concierge.
 
-- Each integration must be in its own JavaScript file or directory located within the directory `core/core_integrations`. If a directory is used, it must contain a `package.json` file which has both the `name` *(name of the integration)* and `main` *(entry point of the integration)* properties within it.
-
-- Standalone JavaScript files will derive their integration name from the name of the script file.
+- Each integration must be in its own module located within the modules directory.
 - No two integrations are allowed to have the same name.
 
 ### Integration Formats
 Integrations can take two forms:
-- A Native Script (see below).
+- A Native Module (see below).
 - A Hubot Adapter. These can be installed as a directory within the `core/core_integrations` directory.
 
 ### Methods
@@ -26,8 +24,8 @@ Each integration must provide the methods found in [Integration.md](./api/Integr
 When messages are received by your integration they need to be passed to the callback method. This callback takes an `api` and an `event`.
 
 ### Event
-The event is an object of the format found in [Event.md](./Event.md).  
-The easiest way to generate this object is to use the globally defined object `shim` as can be seen in the following example:
+The event is an object of the format found in [Event.md](./Event.md).
+The best way to generate this object is to use the globally defined object `shim` as can be seen in the following example:
 ```js
 let event = shim.createEvent(thread_id, sender_id, sender_name, body);
 ```
@@ -71,7 +69,7 @@ Splits a message into chunks with a given message size, returns an array of mess
 | limit | <code>Integer</code> | the size of each message chunk. |
 | ?callback | <code>Function</code> | optional callback. |
 
-**Example**  
+**Example**
 Chunk <code>"This is a test of a very long message. But one that is not too long\n I mean come on how much text do you expect me to make up for this. I'm simply too lazy to do more."</code>
 ```js
 let message = 'This is a test of a very long message. But one that is not too long\n I mean come on how much text do you expect me to make up for this. I\'m simply too lazy to do more.',
