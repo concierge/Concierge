@@ -61,14 +61,12 @@ exports.verifyModule = (location) => {
     return hj;
 };
 
-exports.loadModule = (module, config) => {
+exports.loadModule = (module) => {
     try {
         const modulePath = module.folderPath,
             startPath = path.join(modulePath, module.startup),
             m = require.once(startPath);
-
-        const cfg = config.loadConfig(modulePath, module.name);
-        return new Robot(m, module, cfg);
+        return new Robot(m, module);
     }
     catch (e) {
         console.critical(e);

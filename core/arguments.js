@@ -49,6 +49,15 @@ let consolec = require('./unsafe/console.js'),
             }
         },
         {
+            long: '--configserv',
+            short: '-c',
+            description: 'Overrides the builtin configuration service with another.',
+            expects: ['FILE'],
+            run: function (value) {
+                global.__configService = value[0];
+            }
+        },
+        {
             long: '--help',
             short: '-h',
             description: 'Shows this help.',

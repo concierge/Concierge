@@ -53,7 +53,7 @@ exports.verifyModule = (location) => {
     return kj;
 };
 
-exports.loadModule = (module, config) => {
+exports.loadModule = (module) => {
     const modulePath = module.folderPath;
     let startPath   = module.startup,
         m;
@@ -92,7 +92,6 @@ exports.loadModule = (module, config) => {
             }
         }
         module.type = types;
-        m.config = config.loadConfig(modulePath, module.name);
     }
     catch (e) {
         console.critical(e);

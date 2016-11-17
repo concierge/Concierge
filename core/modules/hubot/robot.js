@@ -7,10 +7,10 @@
     http = require('scoped-http-client').create;
 
 class Robot extends EventEmitter {
-    constructor(Instance, descriptor, config) {
+    constructor(Instance, descriptor) {
         super();
         this._descriptor = descriptor;
-        this.config = config;
+        this.config = {};
         this.listeners = [];
         this.catchAllListeners = [];
         this.instances = [];
@@ -19,15 +19,13 @@ class Robot extends EventEmitter {
         this.ignoreHelpContext = true;
         this.logger = console;
         this.isIntegration = !!Instance.use;
-
+        this.instances.push(Instance);
         if (this.isIntegration) {
-            descriptor.type = ['integration'];
+            this._descriptor.type = ['integration'];
             this._threadUsers = {};
-            this.instances.push(Instance.use(this));
         }
         else {
-            descriptor.type = ['module'];
-            this.instances.push(new Instance(this));
+            this._descriptor.type = ['module'];
         }
     }
 
@@ -379,6 +377,8 @@ class Robot extends EventEmitter {
         if (typeof(scriptsPath) !== 'string') {
             this.shutdown = scriptsPath.shutdown;
             this.name = scriptsPath.packageInfo.name;
+            const Instance = this.instances.pop();
+            this.instances.push(this.isIntegration ? Instance.use(this) : new Instance(this));
             this.emit('loaded');
             return; // avoid the .load() module call
         }

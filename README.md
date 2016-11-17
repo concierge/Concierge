@@ -106,7 +106,7 @@ Now you can customize your Concierge by installing or creating your own modules.
  		- [Testing Mode](https://github.com/concierge/testing)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 		- [Integration Methods](doc/api/Integration.md)
-- [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
+- [**CLI Arguments**, Debugging and Logging](doc/Options.md)
 - [Docker](doc/Docker.md)
 - [Contributing](doc/Contributing.md)
 

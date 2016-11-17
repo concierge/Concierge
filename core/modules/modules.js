@@ -14,18 +14,19 @@ const EventEmitter = require('events'),
     path = require('path');
 
 class ModuleLoader extends EventEmitter {
-    constructor() {
+    constructor(platform) {
         super();
         this._loaders = [require.once('./kassy/kassyModule.js'), require.once('./hubot/hubotModule.js')];
         this._loaded = {};
+        this.platform = platform;
     }
 
-    _loadModuleInternal(module, platform) {
+    _loadModuleInternal(module) {
         try {
             console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
-            const m = this._loaders[module.__loaderUID].loadModule(module, platform.config);
+            const m = this._loaders[module.__loaderUID].loadModule(module);
             m.__descriptor = module;
-            m.platform = platform;
+            m.platform = this.platform;
             console.info(console.isDebug() ? $$`Loading Succeeded` : $$`[DONE]`);
             return m;
         }
@@ -99,18 +100,17 @@ class ModuleLoader extends EventEmitter {
     /**
      * Loads a module based on a provided module descriptor.
      * @param {Object<>} module the module descriptor.
-     * @param {Object<>} platform a reference to the loaded platform.
      * @fires ModuleLoader#preload
      * @fires ModuleLoader#load
      */
-    loadModule(module, platform) {
+    loadModule(module) {
         /**
          * Preload event. Fired before a module is loaded.
          * @event ModuleLoader#preload
          * @type {object} module descriptor.
          */
         this.emit('preload', module);
-        const ld = this._loadModuleInternal(module, platform);
+        const ld = this._loadModuleInternal(module);
         if (!ld) {
             this.emit('load', {
                 success: false,
@@ -119,9 +119,6 @@ class ModuleLoader extends EventEmitter {
             return;
         }
         this._insertSorted(ld);
-        if (module.type.includes('integration') && !ld.config.commandPrefix) {
-            ld.config.commandPrefix = platform.defaultPrefix;
-        }
         /**
          * Load event. Fired after a module is loaded, but before the module is notified via load().
          * @event ModuleLoader#load
@@ -139,17 +136,16 @@ class ModuleLoader extends EventEmitter {
     }
 
     /**
-     * Loads all modules in the modules directory.
-     * @param {object} platform a reference to the core platform.
+     * Loads all modules in the modules directory and starts the configuration service.
      */
-    loadAllModules(platform) {
+    loadAllModules() {
         const data = files.filesInDirectory(global.__modulesPath);
         for (let i = 0; i < data.length; i++) {
             try {
                 const candidate = path.resolve(path.join(global.__modulesPath, data[i])),
                     output = this.verifyModule(candidate);
                 if (output) {
-                    this.loadModule(output, platform);
+                    this.loadModule(output);
                 }
                 else {
                     console.debug($$`Skipping "${data[i]}". It isn't a module.`);
@@ -247,11 +243,10 @@ class ModuleLoader extends EventEmitter {
     /**
      * Unloads a module. The module must be loaded first.
      * @param {object} mod module instance to unload.
-     * @param {object} config reference to the configuration service.
      * @fires ModuleLoader#preunload
      * @fires ModuleLoader#load
      */
-    unloadModule(mod, config) {
+    unloadModule(mod) {
         let success = true;
         /**
          * PreUnload event. Fired before a module is unloaded.
@@ -267,7 +262,6 @@ class ModuleLoader extends EventEmitter {
             if (mod.unload) {
                 mod.unload();
             }
-            config.saveConfig(mod.__descriptor.name);
             mod.platform = null;
             for (let type of mod.__descriptor.type) {
                 const index = this._loaded[type].indexOf(mod);
@@ -295,16 +289,15 @@ class ModuleLoader extends EventEmitter {
 
     /**
      * Unloads all currently loaded modules.
-     * @param {object} config a reference to the configuration service.
      */
-    unloadAllModules(config) {
+    unloadAllModules() {
         for (let type in this._loaded) {
             if (!this._loaded.hasOwnProperty(type)) {
                 continue;
             }
             const loadedModules = this._loaded[type].slice();
             for (let mod of loadedModules) {
-                this.unloadModule(mod, config);
+                this.unloadModule(mod);
             }
         }
     }
@@ -359,4 +352,4 @@ class ModuleLoader extends EventEmitter {
     }
 }
 
-module.exports = new ModuleLoader();
+module.exports = ModuleLoader;

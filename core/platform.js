@@ -11,21 +11,18 @@
 */
 
 const figlet = require('figlet'),
-    MiddlewareHandler = require.once('./middleware.js'),
-    ConfigService = require.once('./config.js');
+    MiddlewareHandler = require.once('./middleware.js');
 
 class Platform extends MiddlewareHandler {
     constructor() {
         super();
-        this.config = new ConfigService();
         this.defaultPrefix = '/';
         this.packageInfo = require.once('../package.json');
-        this.modulesLoader = require.once('./modules/modules.js');
+        this.modulesLoader = new (require.once('./modules/modules.js'))(this);
         this.statusFlag = global.StatusFlag.NotStarted;
         this.onShutdown = null;
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
-
         global.shim = require.once('./shim.js');
         global.shim.current = this;
     }
@@ -135,13 +132,21 @@ class Platform extends MiddlewareHandler {
         }
 
         console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
-
         console.title(` ${this.packageInfo.version}`);
         console.info('------------------------------------');
         console.warn($$`StartingSystem`);
 
         // Load system config
         console.warn($$`LoadingSystemConfig`);
+        this.modulesLoader.loadModule({
+            name: 'Configuration',
+            version: 1.0,
+            type: ['service'],
+            startup: global.__configService || global.rootPathJoin('core/config.js'),
+            __loaderUID: 0
+        });
+        this.config = this.modulesLoader.getLoadedModules('service')[0].configuration;
+        
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
         const firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
@@ -184,9 +189,7 @@ class Platform extends MiddlewareHandler {
         }
 
         // Unload user modules
-        this.modulesLoader.unloadAllModules(this.config);
-
-        this.config.saveConfig();
+        this.modulesLoader.unloadAllModules();
         this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
 
         console.warn($$`${this.packageInfo.name} Shutdown`);
