@@ -35,13 +35,15 @@ require('./core/status.js');
 require('./core/unsafe/console.js');
 
 const startup = require('./core/startup.js'),
-    argp = require('./core/arguments.js'),
-    args = process.argv;
-
-args.splice(0, 2);
+    argp = require('./core/arguments.js');
 
 // Parse optional arguments
-argp.runArguments(args);
+const args = argp.parseArguments(process.argv.slice(2), argp.conciergeArguments, { enabled: true, string: 'node main.js', colours: true }, true);
+
+// Check if help was run
+if (args.parsed['-h']) {
+    process.exit(0);
+}
 
 // Check modules path is set
 if (!global.__modulesPath) {
@@ -53,13 +55,13 @@ require('coffee-script').register();
 global.coffeescriptLoaded = true;
 
 // Check startup modes
-if (!args || args.length === 0) {
+if (args.unassociated.length === 0) {
     console.info('No integrations specified, defaulting to \'test\'.');
-    args.push('test');
+    args.unassociated.push('test');
 }
 
 // Check startup integrations
-const startArgs = args.map(arg => arg.toLowerCase());
+const startArgs = args.unassociated.map(arg => arg.toLowerCase());
 
 process.on('uncaughtException', function(err) {
     if (console.isDebug()) {
