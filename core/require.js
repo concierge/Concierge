@@ -12,12 +12,12 @@
 
 'use strict';
 
-var babylon = require('babylon'),
-    inst = require('./install.js'),
-    runOnce = false;
+const babylon = require('babylon'),
+    inst = require('./install.js');
+let runOnce = false;
 
 global.__fs = require('fs');
-global.requireHook = function (req, dirName) {
+global.requireHook = (req, dirName) => {
     if (!runOnce) { // prevent re-init
         let newPath = process.env.NODE_PATH || '';
         if (newPath.length > 0) {
@@ -29,19 +29,19 @@ global.requireHook = function (req, dirName) {
         runOnce = true;
     }
 
-    var func = function (mod) {
+    const func = (mod) => {
         return inst.requireOrInstall(req, mod, dirName);
     };
-    for (var key in req) {
+    for (let key in req) {
         func[key] = req[key];
     }
     func.safe = func;
 
-    func.searchCache = function (moduleName, callback) {
-        var mod = func.resolve(moduleName);
+    func.searchCache = (moduleName, callback) => {
+        let mod = func.resolve(moduleName);
         if (mod && (typeof (mod = func.cache[mod]) !== 'undefined')) {
             (function run(mod) {
-                mod.children.forEach(function (child) {
+                mod.children.forEach((child) => {
                     run(child);
                 });
                 callback(mod);
@@ -49,25 +49,25 @@ global.requireHook = function (req, dirName) {
         }
     };
 
-    func.uncache = function (moduleName) {
-        func.searchCache(moduleName, function (mod) {
+    func.uncache = (moduleName) => {
+        func.searchCache(moduleName, (mod) => {
             delete func.cache[mod.id];
         });
 
-        Object.keys(module.constructor._pathCache).forEach(function (cacheKey) {
+        Object.keys(module.constructor._pathCache).forEach((cacheKey) => {
             if (cacheKey.indexOf(moduleName) > 0) {
                 delete module.constructor._pathCache[cacheKey];
             }
         });
     };
 
-    func.reload = function (moduleName) {
+    func.reload = (moduleName) => {
         func.uncache(moduleName);
         return func(moduleName);
     };
 
-    func.once = function (moduleName) {
-        var mod = func(moduleName);
+    func.once = (moduleName) => {
+        const mod = func(moduleName);
         func.uncache(moduleName);
         return mod;
     };
@@ -75,7 +75,7 @@ global.requireHook = function (req, dirName) {
     return func;
 };
 
-module.exports = function () {
+module.exports = () => {
     return {
         visitor: {
             Program(path) {
@@ -85,6 +85,6 @@ module.exports = function () {
     };
 };
 
-module.exports.injectionString = 'require = (global || GLOBAL).requireHook(require,__dirname);';
+module.exports.injectionString = 'require = global.requireHook(require,__dirname);';
 
 exports.default = module.exports;
