@@ -35,7 +35,6 @@ global.requireHook = (req, dirName) => {
     for (let key in req) {
         func[key] = req[key];
     }
-    func.safe = func;
 
     func.searchCache = (moduleName, callback) => {
         let mod = func.resolve(moduleName);

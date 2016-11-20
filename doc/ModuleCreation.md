@@ -36,7 +36,6 @@ Concierge has been created using [Node.JS](https://nodejs.org/). As with any Nod
 For example, if you inserted the statement `require('foo')` into a module and `foo` was an NPM module that had not already been installed, `foo` would be installed before letting your module continue execution.
 
 Additional methods are also available with require:
-* ~~require.safe('module')~~ __Deprecated__ available for backwards compatibility and when require has been overridden by another npm module.
 * ~~require.once('module')~~ __Internal__ used internally to allow seemless code hotswap. You should use this whenever you require another `.js` file that you have created (not from NPM) within your module.
 
 ### Methods
