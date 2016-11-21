@@ -9,7 +9,7 @@ module.exports = function (grunt) {
         }
     }
     catch (e) {
-        const git = require('./core/git.js');
+        const git = require('./core/common/git.js');
         git.clone('https://github.com/concierge/grunt.git', './modules/grunt', (err) => {
             if (err) {
                 throw new Error('Could not install required testing code.');

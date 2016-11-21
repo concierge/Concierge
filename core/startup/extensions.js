@@ -10,18 +10,8 @@
  */
 'use strict';
 
-const path = require('path');
-
 module.exports = (rootPath) => {
-    // babel and coffee-script setup
-    require('babel-register')({
-        plugins: [
-            path.join(__dirname, 'require.js') // DO NOT move to .babelrc
-        ]
-    });
-    require('babel-polyfill');
-    require('coffee-script').register();
-
+    const path = require('path');
     // Arbitary location module loading requirements
     global.__rootPath = rootPath;
     global.rootPathJoin = function() {
@@ -38,6 +28,30 @@ module.exports = (rootPath) => {
         ShutdownShouldRestart: Symbol('ShutdownShouldRestart')
     };
 
+
+    // babel and coffee-script setup
+    require(global.rootPathJoin('core/unsafe/require.js'));
+    const babylon = require('babylon'),
+        requireInjectionStr = 'require=global.requireHook(require,__dirname);';
+    require('babel-register')({
+        plugins: [{
+            visitor: {
+                Program (path)
+                {
+                    path.unshiftContainer('body', babylon.parse(requireInjectionStr).program.body[0]);
+                }
+            }
+        }]});
+    require('babel-polyfill');
+    const cs = require('coffee-script');
+    cs.register();
+    // inject require modifications into all coffeescript code because babel wont
+    const origcs = cs._compileFile;
+    cs._compileFile = function () {
+        const res = origcs.apply(this, arguments);
+        return requireInjectionStr + res;
+    };
+
     // Prototypes
     String.prototype.toProperCase = function () {
         return this.replace(/\w\S*/g, (txt) => {
@@ -50,6 +64,9 @@ module.exports = (rootPath) => {
     String.prototype.capitiliseFirst = function () {
         return this.length >= 2 ? this[0].toUpperCase() + this.substring(1) : this;
     };
+
+    // console modifications
+    require(rootPathJoin('core/unsafe/console.js'));
 
     // Raw stack traces
     if (!Error.prepareStackTrace) {

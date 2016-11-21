@@ -6,12 +6,12 @@
 *
 * License:
 *        MIT License. All code unless otherwise specified is
-*        Copyright (c) Matthew Knox and Contributors 2015.
+*        Copyright (c) Matthew Knox and Contributors 2016.
 */
 
 const EventEmitter = require('events'),
     path = require('path'),
-    files = require.once('./../files.js'),
+    files = require.once(rootPathJoin('core/common/files.js')),
     defaultLocale = 'en',
     globalContext = '*',
     contextMap = {};

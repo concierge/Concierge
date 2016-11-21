@@ -17,13 +17,13 @@ class Platform extends MiddlewareHandler {
     constructor() {
         super();
         this.defaultPrefix = '/';
-        this.packageInfo = require.once('../package.json');
-        this.modulesLoader = new (require.once('./modules/modules.js'))(this);
+        this.packageInfo = require.once(rootPathJoin('package.json'));
+        this.modulesLoader = new (require.once(rootPathJoin('core/modules/modules.js')))(this);
         this.statusFlag = global.StatusFlag.NotStarted;
         this.onShutdown = null;
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
-        global.shim = require.once('./shim.js');
+        global.shim = require.once(rootPathJoin('core/modules/shim.js'));
         global.shim.current = this;
         this._boundErrorHandler = this._errorHandler.bind(this);
         process.on('uncaughtException', this._boundErrorHandler);
@@ -111,7 +111,7 @@ class Platform extends MiddlewareHandler {
     }
 
     _firstRun () {
-        const git = require.once('./git.js'),
+        const git = require.once(rootPathJoin('core/common/git.js')),
             path = require('path');
         let defaultModules;
         try {
@@ -160,7 +160,7 @@ class Platform extends MiddlewareHandler {
             name: 'Configuration',
             version: 1.0,
             type: ['service'],
-            startup: global.__configService || global.rootPathJoin('core/config.js'),
+            startup: global.__configService || global.rootPathJoin('core/modules/config.js'),
             __loaderUID: 0
         });
         this.config = this.modulesLoader.getLoadedModules('service')[0].configuration;

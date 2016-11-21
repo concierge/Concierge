@@ -12,7 +12,7 @@
  *
  * License:
  *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2015.
+ *        Copyright (c) Matthew Knox and Contributors 2016.
  */
 let platform = null,
     startArgs = null;
@@ -32,11 +32,11 @@ exports.run = (startArgsP) => {
         if (!startArgs && startArgsP) {
             startArgs = startArgsP;
         }
-        global.$$ = require.once('./translations/translations.js');
+        global.$$ = require.once(rootPathJoin('core/translations/translations.js'));
 
         // quickest way to clone in JS, prevents reuse of same object between startups
         const startClone = JSON.parse(JSON.stringify(startArgs)),
-            Platform = require.once('./platform.js');
+            Platform = require.once(rootPathJoin('core/platform.js'));
         platform = new Platform();
         platform.on('shutdown', checkShutdownCode);
         platform.start(startClone);

@@ -10,7 +10,7 @@
  */
 
 const EventEmitter = require('events'),
-    files = require.once(rootPathJoin('core/files.js')),
+    files = require.once(rootPathJoin('core/common/files.js')),
     path = require('path');
 
 class ModuleLoader extends EventEmitter {

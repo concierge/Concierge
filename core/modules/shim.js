@@ -33,7 +33,7 @@ const IntegrationApi = module.exports = class {
      * api.sendMessage('Hello World', event.thread_id);
      */
     sendMessage() {
-        throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
+        throw new Error($$`What kind of platform is this that doesn\'t even support sending messages?`);
     }
 
     /**

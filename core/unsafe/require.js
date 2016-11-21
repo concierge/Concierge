@@ -12,11 +12,18 @@
 
 'use strict';
 
-const babylon = require('babylon'),
-    inst = require('./install.js');
+const inst = require('./install.js');
 let runOnce = false;
 
-global.__fs = require('fs');
+const fs = require('fs'),
+    path = require('path'),
+    common = {};
+
+// populate common
+fs.readdirSync(rootPathJoin('core/common')).forEach(f => common['concierge/' + path.parse(f).name] = rootPathJoin('core/common', f));
+
+const getActualName = (mod) => common[mod] || mod;
+
 global.requireHook = (req, dirName) => {
     if (!runOnce) { // prevent re-init
         let newPath = process.env.NODE_PATH || '';
@@ -30,6 +37,7 @@ global.requireHook = (req, dirName) => {
     }
 
     const func = (mod) => {
+        mod = getActualName(mod);
         return inst.requireOrInstall(req, mod, dirName);
     };
     for (let key in req) {
@@ -37,6 +45,7 @@ global.requireHook = (req, dirName) => {
     }
 
     func.searchCache = (moduleName, callback) => {
+        moduleName = getActualName(moduleName);
         let mod = func.resolve(moduleName);
         if (mod && (typeof (mod = func.cache[mod]) !== 'undefined')) {
             (function run(mod) {
@@ -49,6 +58,7 @@ global.requireHook = (req, dirName) => {
     };
 
     func.uncache = (moduleName) => {
+        moduleName = getActualName(moduleName);
         func.searchCache(moduleName, (mod) => {
             delete func.cache[mod.id];
         });
@@ -61,11 +71,13 @@ global.requireHook = (req, dirName) => {
     };
 
     func.reload = (moduleName) => {
+        moduleName = getActualName(moduleName);
         func.uncache(moduleName);
         return func(moduleName);
     };
 
     func.once = (moduleName) => {
+        moduleName = getActualName(moduleName);
         const mod = func(moduleName);
         func.uncache(moduleName);
         return mod;
@@ -73,17 +85,3 @@ global.requireHook = (req, dirName) => {
 
     return func;
 };
-
-module.exports = () => {
-    return {
-        visitor: {
-            Program(path) {
-                path.unshiftContainer('body', babylon.parse(module.exports.injectionString).program.body[0]);
-            }
-        }
-    };
-};
-
-module.exports.injectionString = 'require = global.requireHook(require,__dirname);';
-
-exports.default = module.exports;

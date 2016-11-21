@@ -22,11 +22,10 @@
 'use strict';
 
 // Load NodeJS Modifications/Variables
-require('./core/extensions.js')(__dirname);
-require('./core/unsafe/console.js');
+require('./core/startup/extensions.js')(__dirname);
 
-const startup = require('./core/startup.js'),
-    argp = require('./core/arguments.js');
+const startup = require('./core/startup/startup.js'),
+    argp = require('./core/common/arguments.js');
 
 // Parse optional arguments
 const args = argp.parseArguments(process.argv.slice(2), argp.conciergeArguments, { enabled: true, string: 'node main.js', colours: true }, true);
