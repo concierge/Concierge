@@ -25,6 +25,25 @@ class Platform extends MiddlewareHandler {
         this.packageInfo.name = this.packageInfo.name.toProperCase();
         global.shim = require.once('./shim.js');
         global.shim.current = this;
+        this._boundErrorHandler = this._errorHandler.bind(this);
+        process.on('uncaughtException', this._boundErrorHandler);
+    }
+
+    _errorHandler (err, api, event) {
+        const blame = global.getBlame(null, null, err) || '!CORE!';
+        let message;
+        if (api && event) {
+            const part = `"${event.body}" (${blame})`;
+            message = $$`${part} failed ${event.sender_name} caused it`;
+            this.runMiddleware('error', api.sendMessage, message, event.thread_id);
+        }
+        else {
+            const part = `"${blame}"`;
+            message = $$`${part} failed ${'<unknown>'} caused it`;
+        }
+        console.error(message);
+        console.critical(err);
+        this.emitAsync('uncaughtError', err, blame, api, event);
     }
 
     _handleTransaction (module, args) {
@@ -39,8 +58,7 @@ class Platform extends MiddlewareHandler {
             returnVal = module.run.apply(this, args);
         }
         catch (e) {
-            args[0].sendMessage($$`${args[1].body} failed ${args[1].sender_name} caused it`, args[1].thread_id);
-            console.critical(e);
+            this._errorHandler(e, args[0], args[1]);
         }
         finally {
             clearTimeout(timeout);
@@ -110,7 +128,7 @@ class Platform extends MiddlewareHandler {
                 ['https://github.com/concierge/update.git', 'update'],
                 ['https://github.com/concierge/test.git', 'test']
             ];
-        } 
+        }
 
         for (let i = 0; i < defaultModules.length; i++) {
             console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
@@ -146,7 +164,7 @@ class Platform extends MiddlewareHandler {
             __loaderUID: 0
         });
         this.config = this.modulesLoader.getLoadedModules('service')[0].configuration;
-        
+
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
         const firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
@@ -192,6 +210,7 @@ class Platform extends MiddlewareHandler {
         this.modulesLoader.unloadAllModules();
         this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
 
+        process.removeListener('uncaughtException', this._boundErrorHandler);
         console.warn($$`${this.packageInfo.name} Shutdown`);
         this.emit('shutdown', this.statusFlag);
     }

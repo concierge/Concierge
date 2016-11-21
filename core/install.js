@@ -27,7 +27,7 @@ let exec = require('child_process').execSync,
 
     // inject require modifications into all coffeescript code because babel wont
     coffeescriptRequireInjector = function () {
-        if (!csHasLoaded && global.coffeescriptLoaded) {
+        if (!csHasLoaded) {
             let cs = require('coffee-script'),
                 orig = cs._compileFile,
                 requirejs = require('./require.js');

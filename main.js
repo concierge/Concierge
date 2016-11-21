@@ -16,22 +16,13 @@
  *
  * License:
  *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2015.
+ *        Copyright (c) Matthew Knox and Contributors 2016.
  */
 
 'use strict';
 
-// Arbitary location module loading requirements
-global.__rootPath = __dirname;
-global.rootPathJoin = function() {
-    const a = [global.__rootPath].concat(Array.from(arguments)),
-        path = require('path');
-    return path.join.apply(this, a);
-};
-
 // Load NodeJS Modifications/Variables
-require('./core/prototypes.js');
-require('./core/status.js');
+require('./core/extensions.js')(__dirname);
 require('./core/unsafe/console.js');
 
 const startup = require('./core/startup.js'),
@@ -45,41 +36,11 @@ if (args.parsed['-h']) {
     process.exit(0);
 }
 
-// Check modules path is set
-if (!global.__modulesPath) {
-    const path = require('path');
-    global.__modulesPath = path.resolve('./modules/');
-}
-
-require('coffee-script').register();
-global.coffeescriptLoaded = true;
-
 // Check startup modes
 if (args.unassociated.length === 0) {
     console.info('No integrations specified, defaulting to \'test\'.');
     args.unassociated.push('test');
 }
 
-// Check startup integrations
 const startArgs = args.unassociated.map(arg => arg.toLowerCase());
-
-process.on('uncaughtException', function(err) {
-    if (console.isDebug()) {
-        console.error('CRITICAL ERROR WAS UNHANDLED:');
-    }
-    else {
-        console.error('An unhandled error occurred. Start as debug for details.');
-    }
-    console.critical(err);
-});
-
-process.on('SIGHUP', function () {
-    console.warn('SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...');
-    startup.stop();
-});
-
-process.on('SIGINT', function () {
-    startup.stop();
-});
-
 startup.run(startArgs);

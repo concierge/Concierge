@@ -32,11 +32,7 @@ class Robot extends EventEmitter {
     _inferCalleeData() {
         // Welcome to hack land, where hacks are common place.
         // We access event_source and thread_id from the stack trace so that this is thread safe.
-        const origPrepareStackTrace = Error.prepareStackTrace;
-        Error.prepareStackTrace = (_, stack) => stack;
-        const err = new Error();
-        const stack = err.stack;
-        Error.prepareStackTrace = origPrepareStackTrace;
+        const stack = global.getStackTrace();
         for (let i = 1; i < stack.length; i++) {
             const funcName = stack[i].getFunctionName() || '';
             if (funcName.startsWith('dataWrapperFunction')) {

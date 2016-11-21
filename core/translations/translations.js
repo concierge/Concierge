@@ -14,16 +14,7 @@ const EventEmitter = require('events'),
     files = require.once('./../files.js'),
     defaultLocale = 'en',
     globalContext = '*',
-    contextMap = {},
-
-    _getCallerFileName = (levels = 1) => {
-        const origPrepareStackTrace = Error.prepareStackTrace;
-        Error.prepareStackTrace = (_, stack) => stack;
-        const err = new Error();
-        const stack = err.stack;
-        Error.prepareStackTrace = origPrepareStackTrace;
-        return stack[levels].getFileName();
-    };
+    contextMap = {};
 
 let currentLocale = global.__i18nLocale || defaultLocale;
 
@@ -67,7 +58,7 @@ class TranslatorService extends EventEmitter {
                 return res;
             }
         }
-    
+
         let key = strings[0],
             i = 1,
             result;
@@ -77,7 +68,7 @@ class TranslatorService extends EventEmitter {
         if (strings % values === 0) {
             key += '${' + i + '}';
         }
-    
+
         if (this.translations.hasOwnProperty(currentLocale) && this.translations[currentLocale].hasOwnProperty(key)) {
             result = this._translate(values, this.translations[currentLocale][key]);
         }
@@ -108,15 +99,8 @@ contextMap[globalContext] = new TranslatorService('./core/translations/i18n/');
  * @returns {string} the translated string.
  */
 module.exports = (strings, ...values) => {
-    const contextFileName = _getCallerFileName(2);
-    const contextMatches = contextFileName.match(/modules(\\|\/).*(?=\\|\/)/g);
-    const context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
-
-    if (!contextMap.hasOwnProperty(context)) {
-        const translationsDirectory = path.join(contextFileName.substr(0, contextFileName.indexOf(path.sep, global.__modulesPath.length + 1)), 'i18n/');
-        contextMap[context] = new TranslatorService(translationsDirectory);
-    }
-    return contextMap[context].translate(strings, values);
+    const context = global.getBlame(1, 3) || globalContext;
+    return module.exports.translate(strings, values, context);
 };
 
 /**
@@ -146,9 +130,7 @@ module.exports.translate = (strings, values, context) => {
  */
 module.exports.hook = (func, context = null) => {
     if (!context) {
-        const contextFileName = _getCallerFileName(2);
-        const contextMatches = contextFileName.match(/modules(\\|\/).*(?=\\|\/)/g);
-        context = !!contextMatches ? contextMatches[0].split(/\\|\//)[1] : globalContext;
+        context = global.getBlame(1, 3) || globalContext;
     }
 
     if (!contextMap.hasOwnProperty(context)) {

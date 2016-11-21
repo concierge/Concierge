@@ -48,9 +48,18 @@ exports.run = (startArgsP) => {
     }
 };
 
-exports.stop = () => {
+const stop = () => {
     if (platform) {
         platform.shutdown();
     }
     process.exit(0);
 };
+
+process.on('SIGHUP', () => {
+    console.warn('SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...');
+    stop();
+});
+
+process.on('SIGINT', () => {
+    stop();
+});
