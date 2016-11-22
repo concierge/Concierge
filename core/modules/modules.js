@@ -266,7 +266,7 @@ class ModuleLoader extends EventEmitter {
          */
         this.emit('preunload', mod);
         try {
-            console.debug($$`Unloading module "${mod.__descriptor.name}".`);
+            console.info($$`Unloading module "${mod.__descriptor.name}".`);
             if (mod.__running) {
                 this.stopIntegration(mod);
             }

@@ -88,7 +88,7 @@ const IntegrationApi = module.exports = class {
      */
     sendFile(type, file, description, thread) {
         this.sendMessage(description, thread);
-        switch(type) {
+        switch (type) {
         case 'url': // fallback to sending a url
             this.sendUrl(file, thread);
             break;

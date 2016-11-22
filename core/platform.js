@@ -180,6 +180,7 @@ class Platform extends MiddlewareHandler {
         console.warn($$`StartingIntegrations`);
         for (let integration of integrations) {
             try {
+                console.info($$`Loading integration '${integration}'...\t`);
                 this.modulesLoader.startIntegration(this.onMessage.bind(this), integration);
             }
             catch (e) {
@@ -187,6 +188,7 @@ class Platform extends MiddlewareHandler {
                     console.error(`Unknown integration '${integration}'`);
                 }
                 else {
+                    console.error($$`Failed to start output integration '${integration}'.`);
                     console.critical(e);
                 }
             }

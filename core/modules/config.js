@@ -163,8 +163,8 @@ class ConfigurationService {
 
     loadHook(obj) {
         if (!obj.success) {
-			return;
-		}
+            return;
+        }
         const mod = obj.module;
         mod.config = module.exports.configuration.loadConfig(mod.__descriptor.folderPath, mod.__descriptor.name);
         if (mod.__descriptor.type.includes('integration')) {
@@ -174,7 +174,7 @@ class ConfigurationService {
             const sysConfig = module.exports.configuration.getSystemConfig('output');
             if (sysConfig.hasOwnProperty(mod.__descriptor.name)) {
                 process.emitWarning(`Integration '${mod.__descriptor.name}' has configuration in the global configuration file; this should be moved as the behaviour is deprecated.` +
-                    'Any global configuration will overwrite local configuration, but only local configuration is saved).');
+                    ' Any global configuration will overwrite local configuration, but only local configuration is saved.');
                 for (let key in sysConfig[mod.__descriptor.name]) {
                     if (sysConfig[mod.__descriptor.name].hasOwnProperty(key)) {
                         mod.config[key] = sysConfig[mod.__descriptor.name][key];
@@ -185,7 +185,9 @@ class ConfigurationService {
     }
 
     unloadHook(obj) {
-        if (!obj.success) return;
+        if (!obj.success) {
+            return;
+        }
         module.exports.configuration.saveConfig(obj.module.__descriptor.name);
         obj.module.config = null;
     }
