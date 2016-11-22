@@ -18,6 +18,17 @@ module.exports = (rootPath) => {
         return path.join.apply(this, [global.__rootPath].concat(Array.from(arguments)));
     };
     global.__modulesPath = global.rootPathJoin('modules/');
+    global.moduleNameFromPath = (p) => {
+        if (!p.startsWith(global.__modulesPath)) {
+            return null;
+        }
+        const trimmed = p.substr(global.__modulesPath.length);
+        let index = trimmed.indexOf(path.sep);
+        if (index < 0) {
+            index = trimmed.length;
+        }
+        return trimmed.substr(0, index);
+    };
 
     // Platform status flags
     global.StatusFlag = {
@@ -88,23 +99,23 @@ module.exports = (rootPath) => {
     };
 
     // Blame
-    global.getBlame = (min = null, max = null, error = null) => {
+    global.getBlame = (min, max, error) => {
         let stack;
         if (error) {
-            error.stack; // calls prepareStackTrace
+            error.stack; // indirectly calls prepareStackTrace
             stack = error.rawStackTrace;
         }
         else {
             stack = global.getStackTrace();
-            min = min === null ? 1 : min;
+            min = min === null || min === void (0) ? 1 : min;
         }
         const m = max || stack.length,
             s = min || 0;
         for (let i = s; i < m; i++) {
-            const file = stack[i].getFileName();
-            if (file.startsWith(global.__modulesPath)) {
-                const trimmed = file.substr(global.__modulesPath.length);
-                return trimmed.substr(0, trimmed.indexOf(path.sep));
+            const file = stack[i].getFileName(),
+                res = global.moduleNameFromPath(file);
+            if (res !== null) {
+                return res;
             }
         }
         return null;
