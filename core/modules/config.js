@@ -128,7 +128,7 @@ class Configuration {
         if (this.interceptor) {
             this.interceptor.saveConfig(scope);
             return;
-        }    
+        }
 
         if (!this.configCache.hasOwnProperty(scope)) {
             throw new Error('No such config to save.');
@@ -149,7 +149,7 @@ class Configuration {
     /**
      * getActiveScopes - Gets an array of all the active scope names.
      *
-     * @returns {Array<string>} 
+     * @returns {Array<string>} all the active scope names
      */
     getActiveScopes() {
         return Object.keys(this.configCache);
@@ -162,7 +162,9 @@ class ConfigurationService {
     }
 
     loadHook(obj) {
-        if (!obj.success) return;
+        if (!obj.success) {
+			return;
+		}
         const mod = obj.module;
         mod.config = module.exports.configuration.loadConfig(mod.__descriptor.folderPath, mod.__descriptor.name);
         if (mod.__descriptor.type.includes('integration')) {

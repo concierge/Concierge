@@ -22,16 +22,16 @@ let platform = null,
     startArgs = null;
 
 const checkShutdownCode = (code) => {
-        if (code === StatusFlag.ShutdownShouldRestart) {
-            platform.removeListener('shutdown', checkShutdownCode);
-            require.unrequire(platformReq, __filename);
-            require.unrequire(translationsReq, __filename);
-            exports.run();
-        }
-        else {
-            process.exit(0);
-        }
-    };
+    if (code === StatusFlag.ShutdownShouldRestart) {
+        platform.removeListener('shutdown', checkShutdownCode);
+        require.unrequire(platformReq, __filename);
+        require.unrequire(translationsReq, __filename);
+        exports.run();
+    }
+    else {
+        process.exit(0);
+    }
+};
 
 exports.run = (startArgsP) => {
     try {

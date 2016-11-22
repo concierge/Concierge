@@ -13,9 +13,9 @@
  *        Copyright (c) Matthew Knox and Contributors 2015.
  */
 let debug = false,
-     timestamp = false,
-     lastNewline = false,
-     startupTime = (new Date().getTime() / 1000);
+    timestamp = false,
+    lastNewline = false,
+    startupTime = (new Date().getTime() / 1000);
 
 const colours = require('colors'),
     fs = require('fs'),
@@ -72,9 +72,9 @@ const getTimestampString = () => {
         diff = (dt.getTime() / 1000) - startupTime,
         time = '[' + ('          ' + diff.toFixed(2)).slice(-10) + '] ';
     return time;
-},
+};
 
-getOutputString = (data) => {
+const getOutputString = (data) => {
     if (timestamp) {
         const spl = String(data).split('\n');
         let time = getTimestampString();

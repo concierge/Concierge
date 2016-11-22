@@ -1,5 +1,4 @@
 const exec = require('child_process').execSync,
-    path = require('path'),
 
     commandWithPath = (path, args, callback) => {
         args.unshift('git');
@@ -9,7 +8,7 @@ const exec = require('child_process').execSync,
             return callback(null, stdOut.toString());
         }
         catch (error) {
-            try{
+            try {
                 return callback(error.stderr.toString(), null);
             }
             catch (error2) {

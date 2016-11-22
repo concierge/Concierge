@@ -77,7 +77,7 @@ class OutputBuffer {
     clear() {
         this.output = '';
         if (this.consoleOutput) {
-            process.stdout.write('\u001b[2J\u001b[0;0H')
+            process.stdout.write('\u001b[2J\u001b[0;0H');
         }
     }
     toString() {
@@ -153,7 +153,7 @@ const generateHelp = (options, config) => {
  * }
  * ```
  */
-exports.parseArguments = (args, options, help = {enabled:false,string:null,colours:true}, consoleOutput = false, ignoreError = false) => {
+exports.parseArguments = (args, options, help = {enabled:false, string:null, colours:true}, consoleOutput = false, ignoreError = false) => {
     if (help && help.enabled) {
         generateHelp(options, help);
     }
@@ -182,7 +182,7 @@ exports.parseArguments = (args, options, help = {enabled:false,string:null,colou
                 vals.push(args[i + j]);
             }
             else if (!ignoreError) {
-                throw new Error(`Too few arguments given to "${arg}"`);;
+                throw new Error(`Too few arguments given to "${arg}"`);
             }
         }
         const diff = 1 + count;

@@ -25,7 +25,9 @@ const exec = require('child_process').execSync,
     referenceCounts = {};
 
 // populate common, allows for require('concierge/*') to be redirected to the common directory
-fs.readdirSync(global.rootPathJoin('core/common')).forEach(f => common['concierge/' + path.parse(f).name] = global.rootPathJoin('core/common', f));
+fs.readdirSync(global.rootPathJoin('core/common')).forEach(f => {
+    common['concierge/' + path.parse(f).name] = global.rootPathJoin('core/common', f);
+});
 
 // force add node_modules to the path, so that installed NPM modules will be found regardless of module install location
 let newPath = process.env.NODE_PATH || '';
@@ -91,7 +93,7 @@ const installAndRequire = (req, name, dirName) => {
     if (!v) {
         const t = global.$$, // translations might not have loaded
             startStr = t ? t`Installing "${name}" from npm.` : `Installing "${name}" from npm.`,
-            endStr = t ? t`Installation complete.` : `Installation complete.`;
+            endStr = t ? t`Installation complete.` : 'Installation complete.';
 
         console.info(startStr);
         command(['install', name]);

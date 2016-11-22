@@ -41,7 +41,7 @@ module.exports = (rootPath) => {
 
 
     // babel and coffee-script setup
-   global.requireHook = require(global.rootPathJoin('core/unsafe/require.js'));
+    global.requireHook = require(global.rootPathJoin('core/unsafe/require.js'));
     const babylon = require('babylon'),
         requireInjectionStr = 'require=global.requireHook(require,__dirname,__filename);';
     require('babel-register')({
@@ -94,7 +94,7 @@ module.exports = (rootPath) => {
     global.getStackTrace = () => {
         const result = {};
         Error.captureStackTrace(result, global.getStackTrace);
-        result.stack; // call prepareStackTrace
+        result.foo = result.stack; // indirectly call prepareStackTrace
         return result.rawStackTrace;
     };
 
@@ -102,7 +102,7 @@ module.exports = (rootPath) => {
     global.getBlame = (min, max, error) => {
         let stack;
         if (error) {
-            error.stack; // indirectly calls prepareStackTrace
+            stack = error.stack; // indirectly calls prepareStackTrace
             stack = error.rawStackTrace;
         }
         else {

@@ -62,7 +62,7 @@ const IntegrationApi = module.exports = class {
      * api.sendImage('url', 'http://i.imgur.com/unrseYB.png', 'Hello World', event.thread_id);
      */
     sendImage(type, image, description, thread) {
-        switch(type) {
+        switch (type) {
         case 'url': // fallback to sending a url
             this.sendMessage(description, thread);
             this.sendUrl(image, thread);

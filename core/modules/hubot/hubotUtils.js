@@ -52,18 +52,18 @@ class Responder {
     _internalSend(threadId, data) {
         for (let i = 0; i < data.length; i++) {
             switch (Responder._getType(data[i])) {
-                case 'message':
-                    this.api.sendMessage(data[i], threadId);
-                    break;
-                case 'url':
-                    this.api.sendUrl(data[i], threadId);
-                    break;
-                case 'image':
-                    this.api.sendImage('url', data[i], '', threadId);
-                    break;
-                case 'file':
-                    this.api.sendFile('file', data[i], '', threadId);
-                    break;
+            case 'message':
+                this.api.sendMessage(data[i], threadId);
+                break;
+            case 'url':
+                this.api.sendUrl(data[i], threadId);
+                break;
+            case 'image':
+                this.api.sendImage('url', data[i], '', threadId);
+                break;
+            case 'file':
+                this.api.sendFile('file', data[i], '', threadId);
+                break;
             }
         }
     }
@@ -87,7 +87,7 @@ class Responder {
     http() {
         return this.api.http.apply(this, arguments);
     }
-};
+}
 
 exports.Responder = Responder;
 exports.Message = Message;
