@@ -13,7 +13,7 @@ const fs = require('fs'),
     path = require('path'),
     descriptor = 'hubot.json',
     pkg = 'package.json',
-    Robot = require.once('./robot.js');
+    Robot = require('./robot.js');
 
 exports.verifyModule = (location) => {
     const stat = fs.statSync(location);
@@ -28,7 +28,7 @@ exports.verifyModule = (location) => {
 
     try {
         fs.statSync(desc);
-        hj = require.once(desc);
+        hj = require(desc);
     }
     catch (e) {
         try {
@@ -65,7 +65,7 @@ exports.loadModule = (module) => {
     try {
         const modulePath = module.folderPath,
             startPath = path.join(modulePath, module.startup),
-            m = require.once(startPath);
+            m = require(startPath);
         return new Robot(m, module);
     }
     catch (e) {

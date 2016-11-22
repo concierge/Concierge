@@ -11,7 +11,7 @@
 
 const EventEmitter = require('events'),
     path = require('path'),
-    files = require.once(rootPathJoin('core/common/files.js')),
+    files = require('concierge/files'),
     defaultLocale = 'en',
     globalContext = '*',
     contextMap = {};
@@ -26,7 +26,7 @@ class TranslatorService extends EventEmitter {
         const translationFiles = files.filesInDirectory(translationsDir);
         for (let i = 0; i < translationFiles.length; i++) {
             const translationFile = path.join(translationsDir, translationFiles[i]);
-            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = require.once(translationFile);
+            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = require(translationFile);
         }
         this.hook = null;
     }
@@ -168,5 +168,6 @@ module.exports.getLocale = () => {
 module.exports.removeContextIfExists = (context) => {
     if (contextMap.hasOwnProperty(context)) {
         delete contextMap[context];
+        require.unrequire(context, __filename);
     }
 };

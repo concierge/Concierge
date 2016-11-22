@@ -14,12 +14,18 @@
  *        MIT License. All code unless otherwise specified is
  *        Copyright (c) Matthew Knox and Contributors 2016.
  */
+
+const translationsReq = rootPathJoin('core/translations/translations.js'),
+    platformReq = rootPathJoin('core/platform.js');
+
 let platform = null,
     startArgs = null;
 
 const checkShutdownCode = (code) => {
         if (code === StatusFlag.ShutdownShouldRestart) {
             platform.removeListener('shutdown', checkShutdownCode);
+            require.unrequire(platformReq, __filename);
+            require.unrequire(translationsReq, __filename);
             exports.run();
         }
         else {
@@ -32,11 +38,11 @@ exports.run = (startArgsP) => {
         if (!startArgs && startArgsP) {
             startArgs = startArgsP;
         }
-        global.$$ = require.once(rootPathJoin('core/translations/translations.js'));
+        global.$$ = require(translationsReq);
 
         // quickest way to clone in JS, prevents reuse of same object between startups
         const startClone = JSON.parse(JSON.stringify(startArgs)),
-            Platform = require.once(rootPathJoin('core/platform.js'));
+            Platform = require(platformReq);
         platform = new Platform();
         platform.on('shutdown', checkShutdownCode);
         platform.start(startClone);

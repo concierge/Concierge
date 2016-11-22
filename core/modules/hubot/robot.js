@@ -1,4 +1,4 @@
-﻿const Utils = require.once('./hubotUtils.js'),
+﻿const Utils = require('./hubotUtils.js'),
     Message = Utils.Message,
     Responder = Utils.Responder,
     EventEmitter = require('events'),
@@ -361,7 +361,7 @@ class Robot extends EventEmitter {
         }
 
         const p = path.join(scriptsPath, script),
-            Instance = require.once(p);
+            Instance = require(p);
         if (this.instances.length === 1) {
             const hj = Robot.generateHubotJson(scriptsPath, script);
             this._descriptor.help = hj.help;

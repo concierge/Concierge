@@ -10,13 +10,17 @@
  */
 
 const EventEmitter = require('events'),
-    files = require.once(rootPathJoin('core/common/files.js')),
+    files = require('concierge/files'),
     path = require('path');
 
 class ModuleLoader extends EventEmitter {
     constructor(platform) {
         super();
-        this._loaders = [require.once('./kassy/kassyModule.js'), require.once('./hubot/hubotModule.js')];
+        this._loaderPaths = ['./kassy/kassyModule.js', './hubot/hubotModule.js'];
+        this._loaders = [];
+        for (let loader of this._loaderPaths) { // paths needed later
+            this._loaders.push(require(loader));
+        }
         this._loaded = {};
         this.platform = platform;
     }
@@ -102,6 +106,7 @@ class ModuleLoader extends EventEmitter {
      * @param {Object<>} module the module descriptor.
      * @fires ModuleLoader#preload
      * @fires ModuleLoader#load
+     * @return {Object} status of the load request.
      */
     loadModule(module) {
         /**
@@ -112,13 +117,18 @@ class ModuleLoader extends EventEmitter {
         this.emit('preload', module);
         const ld = this._loadModuleInternal(module);
         if (!ld) {
-            this.emit('load', {
+            const loadObj = {
                 success: false,
                 module: module
-            });
-            return;
+            };
+            this.emit('load', loadObj);
+            return loadObj;
         }
         this._insertSorted(ld);
+        const loadObj = {
+            success: true,
+            module: ld
+        };
         /**
          * Load event. Fired after a module is loaded, but before the module is notified via load().
          * @event ModuleLoader#load
@@ -126,13 +136,11 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather loading was successful.
          * @property {object} module - Module instance or descriptor.
          */
-        this.emit('load', {
-            success: true,
-            module: ld
-        });
+        this.emit('load', loadObj);
         if (ld.load) {
             ld.load(ld.platform);
         }
+        return loadObj;
     }
 
     /**
@@ -165,6 +173,7 @@ class ModuleLoader extends EventEmitter {
      * @param {object|string} integration integration instance or name.
      * @fires ModuleLoader#prestart
      * @fires ModuleLoader#start
+     * @returns {Object} the status of the load request.
      */
     startIntegration(callback, integration) {
         if (typeof (integration) === 'string') {
@@ -198,7 +207,10 @@ class ModuleLoader extends EventEmitter {
             console.critical(e);
             success = false;
         }
-
+        const startObj = {
+            success: success,
+            integration: integration
+        };
         /**
          * Start event. Fired after an integration has been started.
          * @event ModuleLoader#start
@@ -206,10 +218,8 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather starting was successful.
          * @property {object} integration - Integration instance.
          */
-        this.emit('start', {
-            success: success,
-            integration: integration
-        });
+        this.emit('start', startObj);
+        return startObj;
     }
 
     /**
@@ -245,6 +255,7 @@ class ModuleLoader extends EventEmitter {
      * @param {object} mod module instance to unload.
      * @fires ModuleLoader#preunload
      * @fires ModuleLoader#load
+     * @returns {Object} an object representing the status of the unload request.
      */
     unloadModule(mod) {
         let success = true;
@@ -268,12 +279,17 @@ class ModuleLoader extends EventEmitter {
                 this._loaded[type].splice(index, 1);
             }
             $$.removeContextIfExists(mod.__descriptor.name);
+            require.unrequire(mod.__descriptor.folderPath || mod.__descriptor.startup, this._loaderPaths[mod.__descriptor.__loaderUID]);
         }
         catch (e) {
             console.error($$`Unloading module "${mod.__descriptor.name}" failed.`);
             console.critical(e);
             success = false;
         }
+        const unloadObj = {
+            success: success,
+            module: mod
+        };
         /**
          * Unload event. Fired after a module is unloaded.
          * @event ModuleLoader#unload
@@ -281,10 +297,8 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather unloading was successful.
          * @property {object} module - Module instance.
          */
-        this.emit('unload', {
-            success: success,
-            module: mod
-        });
+        this.emit('unload', unloadObj);
+        return unloadObj;
     }
 
     /**
@@ -307,6 +321,7 @@ class ModuleLoader extends EventEmitter {
      * @param {object|string} integration integration instance or name.
      * @fires ModuleLoader#prestop
      * @fires ModuleLoader#stop
+     * @returns {Object} the status of the stop request.
      */
     stopIntegration(integration) {
         if (typeof(integration) === 'string') {
@@ -337,7 +352,10 @@ class ModuleLoader extends EventEmitter {
             console.critical(e);
             success = false;
         }
-
+        const stopObj = {
+            success: success,
+            integration: integration
+        };
         /**
          * Stop event. Fired after an integration has been stopped.
          * @event ModuleLoader#stop
@@ -345,10 +363,8 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather stopping was successful.
          * @property {object} integration - Integration instance.
          */
-        this.emit('stop', {
-            success: success,
-            integration: integration
-        });
+        this.emit('stop', stopObj);
+        return stopObj;
     }
 }
 

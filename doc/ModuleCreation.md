@@ -35,9 +35,6 @@ It will contain the following files:
 Concierge has been created using [Node.JS](https://nodejs.org/). As with any Node.JS application, it is possible to depend on other Node.JS modules using `require`. Within Concierge, `require` has been extended to automatically install modules from [NPM](https://www.npmjs.com/) if they are not found locally.
 For example, if you inserted the statement `require('foo')` into a module and `foo` was an NPM module that had not already been installed, `foo` would be installed before letting your module continue execution.
 
-Additional methods are also available with require:
-* ~~require.once('module')~~ __Internal__ used internally to allow seemless code hotswap. You should use this whenever you require another `.js` file that you have created (not from NPM) within your module.
-
 ### Methods
 Every module must provide the some basic methods depending on their type. These are used to perform whatever tasks are required. The basic types are:
 - [Module](./api/Module.md). A module listens for and responds to messages from users.

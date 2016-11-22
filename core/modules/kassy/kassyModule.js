@@ -37,7 +37,7 @@ exports.verifyModule = (location) => {
         return null;
     }
 
-    const kj = require.once(p);
+    const kj = require(p);
     if (!(kj.name && kj.startup && kj.version)) {
         return null;
     }
@@ -63,7 +63,7 @@ exports.loadModule = (module) => {
             startPath = path.join(modulePath, startPath);
         }
 
-        m = require.once(startPath);
+        m = require(startPath);
 
         if (!m.match && module.command) {
             m.match = (event, commandPrefix) => {

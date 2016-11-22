@@ -41,9 +41,9 @@ module.exports = (rootPath) => {
 
 
     // babel and coffee-script setup
-    require(global.rootPathJoin('core/unsafe/require.js'));
+   global.requireHook = require(global.rootPathJoin('core/unsafe/require.js'));
     const babylon = require('babylon'),
-        requireInjectionStr = 'require=global.requireHook(require,__dirname);';
+        requireInjectionStr = 'require=global.requireHook(require,__dirname,__filename);';
     require('babel-register')({
         plugins: [{
             visitor: {

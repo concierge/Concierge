@@ -11,19 +11,19 @@
 */
 
 const figlet = require('figlet'),
-    MiddlewareHandler = require.once('./middleware.js');
+    MiddlewareHandler = require('./middleware.js');
 
 class Platform extends MiddlewareHandler {
     constructor() {
         super();
         this.defaultPrefix = '/';
-        this.packageInfo = require.once(rootPathJoin('package.json'));
-        this.modulesLoader = new (require.once(rootPathJoin('core/modules/modules.js')))(this);
+        this.packageInfo = require(global.rootPathJoin('package.json'));
+        this.modulesLoader = new (require(global.rootPathJoin('core/modules/modules.js')))(this);
         this.statusFlag = global.StatusFlag.NotStarted;
         this.onShutdown = null;
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
-        global.shim = require.once(rootPathJoin('core/modules/shim.js'));
+        global.shim = require(global.rootPathJoin('core/modules/shim.js'));
         global.shim.current = this;
         this._boundErrorHandler = this._errorHandler.bind(this);
         process.on('uncaughtException', this._boundErrorHandler);
@@ -111,7 +111,7 @@ class Platform extends MiddlewareHandler {
     }
 
     _firstRun () {
-        const git = require.once(rootPathJoin('core/common/git.js')),
+        const git = require('concierge/git'),
             path = require('path');
         let defaultModules;
         try {
