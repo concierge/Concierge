@@ -24,8 +24,8 @@ let platform = null,
 const checkShutdownCode = (code) => {
     if (code === StatusFlag.ShutdownShouldRestart) {
         platform.removeListener('shutdown', checkShutdownCode);
-        require.unrequire(platformReq, __filename);
         require.unrequire(translationsReq, __filename);
+        require.unrequire(platformReq, __filename);
         exports.run();
     }
     else {

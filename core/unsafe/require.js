@@ -133,23 +133,26 @@ module.exports = (req, dirName, fileName) => {
         const res = installAndRequire(req, mod, dirName),
             p = req.resolve(mod),
             refName = global.moduleNameFromPath(p) || p;
-        if (refName === moduleDirName) {
-            referenceCounts[refName].self.push(p);
-        }
-        else if (!referenceCounts[moduleDirName].refs.includes(refName) && !p.startsWith(npmDirectory) && !nativeModules.includes(mod)) {
+        if (!p.startsWith(npmDirectory) && !nativeModules.includes(mod)) {
             if (!referenceCounts.hasOwnProperty(refName)) {
                 referenceCounts[refName] = {
-                    self: [p],
+                    self: [],
                     count: 0,
                     refs: []
                 };
             }
 
-            if (typeof (referenceCounts[refName].count) === 'string') {
-                referenceCounts[refName].count = 0;
+            if (!referenceCounts[refName].self.includes(p)) {
+                referenceCounts[refName].self.push(p);
             }
-            referenceCounts[refName].count++;
-            referenceCounts[moduleDirName].refs.push(refName);
+
+            if (refName !== moduleDirName && !referenceCounts[moduleDirName].refs.includes(refName)) {
+                if (typeof (referenceCounts[refName].count) === 'string') {
+                    referenceCounts[refName].count = 0;
+                }
+                referenceCounts[refName].count++;
+                referenceCounts[moduleDirName].refs.push(refName);
+            }
         }
         return res;
     };

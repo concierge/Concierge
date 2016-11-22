@@ -367,6 +367,8 @@ class Robot extends EventEmitter {
             this._descriptor.help = hj.help;
         }
         this.instances.push(new Instance(this));
+        // prevent reloading being prevented by multiple references (will not actually unrequire p)
+        require.unrequire(p, __filename);
     }
 
     load (scriptsPath) {
