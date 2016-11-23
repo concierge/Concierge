@@ -14,7 +14,7 @@
 
 'use strict';
 
-const exec = require('child_process').execSync,
+const npm = require(global.rootPathJoin('core/common/npm.js')),
     path = require('path'),
     fs = require('fs'),
     nativeReloadHacksCache = {},
@@ -44,15 +44,6 @@ require('module').Module._initPaths();
  * @returns {string} actual name/path
  */
 const getActualName = (mod) => common[mod] || mod;
-
-/**
- * Executes the provided NPM command(s).
- * @param {Array<string>} args arguments to pass to NPM
- */
-const command = (args) => {
-    args.unshift('npm', '--silent');
-    exec(args.join(' '), { cwd: global.__rootPath });
-};
 
 /**
  * Detect if a code module needs to be installed through NPM without using any internal node
@@ -96,7 +87,7 @@ const installAndRequire = (req, name, dirName) => {
             endStr = t ? t`Installation complete.` : 'Installation complete.';
 
         console.info(startStr);
-        command(['install', name]);
+        npm.install([name]);
         console.info(endStr);
     }
     else if (nativeReloadHacksCache.hasOwnProperty(name)) {
@@ -228,11 +219,4 @@ module.exports = (req, dirName, fileName) => {
     };
 
     return func;
-};
-
-/**
- * Perform an NPM update in the root directory of the program.
- */
-module.exports.update = () => {
-    command(['update']);
 };
