@@ -1,16 +1,14 @@
-var exec = require('child_process').execSync,
-    path = require('path'),
-    gitRootDir = '../',
+const exec = require('child_process').execSync,
 
-    commandWithPath = function(path, args, callback) {
+    commandWithPath = (path, args, callback) => {
         args.unshift('git');
-        var cmd = args.join(' ');
+        const cmd = args.join(' ');
         try {
-            var stdOut = exec(cmd, {cwd:path});
+            const stdOut = exec(cmd, {cwd:path});
             return callback(null, stdOut.toString());
         }
         catch (error) {
-            try{
+            try {
                 return callback(error.stderr.toString(), null);
             }
             catch (error2) {
@@ -19,34 +17,34 @@ var exec = require('child_process').execSync,
         }
     },
 
-    command = function(args, callback) {
-        commandWithPath(path.resolve(__dirname, gitRootDir), args, callback);
+    command = (args, callback) => {
+        commandWithPath(global.__rootPath, args, callback);
     };
 
-exports.pull = function(callback) {
+exports.pull = (callback) => {
     command(['pull'], callback);
 };
 
-exports.pullWithPath = function(path, callback) {
+exports.pullWithPath = (path, callback) => {
     commandWithPath(path, ['pull'], callback);
 };
 
-exports.getSHAOfHead = function(callback) {
+exports.getSHAOfHead = (callback) => {
     command(['rev-parse', '--verify', 'HEAD'], callback);
 };
 
-exports.getSHAOfRemoteMaster = function(callback) {
+exports.getSHAOfRemoteMaster = (callback) => {
     command(['rev-parse', '--verify', 'origin/master'], callback);
 };
 
-exports.getCurrentBranchName = function(callback) {
+exports.getCurrentBranchName = (callback) => {
     command(['symbolic-ref', '--short', 'HEAD'], callback);
 };
 
-exports.clone = function(url, dir, callback) {
+exports.clone = (url, dir, callback) => {
     command(['clone', url, dir], callback);
 };
 
-exports.submoduleUpdate = function(callback) {
+exports.submoduleUpdate = (callback) => {
     command(['submodule', 'update', '--init', '--recursive'], callback);
 };

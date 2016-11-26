@@ -1,56 +1,36 @@
 /**
- * Provides helper functions for handling user and system modules.
+ * Manages the loading and unloading of modules (regardless of module type).
  *
  * Written By:
  * 		Matthew Knox
  *
  * License:
  *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2015.
+ *		Copyright (c) Matthew Knox and Contributors 2016.
  */
 
-var loaders         = [require.once('./kassyModule.js'), require.once('./hubotModule.js')],
-    conflict        = 1,
-    loadedModules   = [],
+const EventEmitter = require('events'),
+    files = require('concierge/files'),
+    path = require('path');
 
-    listModules = function () {
-        var modules = {};
-        for (var i = 0; i < loaders.length; i++) {
-            var m = loaders[i].listModules();
-            for (var key in m) {
-                var t = key;
-                while (modules[t]) {
-                    t = key + conflict++;
-                }
-                modules[t] = m[key];
-                modules[t].__loaderUID = i;
-                if (!modules[t].priority || modules[t].priority === 'normal') {
-                    modules[t].priority = 0;
-                }
-                else if (modules[t].priority === 'first') {
-                    modules[t].priority = Number.MIN_SAFE_INTEGER;
-                }
-                else if (modules[t].priority === 'last') {
-                    modules[t].priority = Number.MAX_SAFE_INTEGER;
-                }
-                else {
-                    modules[t].priority = 0;
-                }
-            }
+class ModuleLoader extends EventEmitter {
+    constructor(platform) {
+        super();
+        this._loaderPaths = ['./kassy/kassyModule.js', './hubot/hubotModule.js'];
+        this._loaders = [];
+        for (let loader of this._loaderPaths) { // paths needed later
+            this._loaders.push(require(loader));
         }
-        return modules;
-    },
+        this._loaded = {};
+        this.platform = platform;
+    }
 
-    loadModuleInternal = function (module, platform) {
+    _loadModuleInternal(module) {
         try {
             console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
-            var m = loaders[module.__loaderUID].loadModule(module, platform.config);
-            m.__loaderPriority = module.priority;
-            m.__version = module.version;
-            if (module.folderPath) {
-                m.__folderPath = module.folderPath;
-            }
-            m.platform = platform;
+            const m = this._loaders[module.__loaderUID].loadModule(module);
+            m.__descriptor = module;
+            m.platform = this.platform;
             console.info(console.isDebug() ? $$`Loading Succeeded` : $$`[DONE]`);
             return m;
         }
@@ -60,118 +40,332 @@ var loaders         = [require.once('./kassyModule.js'), require.once('./hubotMo
             console.debug($$`Module "${module.name}" could not be loaded.`);
             return null;
         }
-    },
+    }
 
-    insertSorted = function (module) {
-        if (loadedModules.length === 0) {
-            loadedModules.push(module);
-            return;
-        }
-
-        var upper = 0,
-            middle = Math.floor(loadedModules.length / 2),
-            lower = loadedModules.length - 1;
-
-        while (lower !== middle && upper !== middle) {
-            if (module.__loaderPriority === loadedModules[middle].__loaderPriority) {
-                break;
+    _insertSorted(module) {
+        for (let type of module.__descriptor.type) {
+            if (!this._loaded[type]) {
+                this._loaded[type] = [];
             }
-            if (module.__loaderPriority < loadedModules[middle].__loaderPriority) {
-                lower = middle;
-                middle = Math.floor(upper + (lower - upper) / 2);
-                if (middle === 0 || lower === middle) {
+            const loadedModules = this._loaded[type];
+            if (loadedModules.length === 0) {
+                loadedModules.push(module);
+                return;
+            }
+
+            let upper = 0,
+                middle = Math.floor(loadedModules.length / 2),
+                lower = loadedModules.length - 1;
+
+            while (lower !== middle && upper !== middle) {
+                if (module.__descriptor.priority === loadedModules[middle].__descriptor.priority) {
                     break;
                 }
-            }
-            else {
-                upper = middle;
-                middle = Math.floor(upper + (lower - upper) / 2);
-                if (middle === loadedModules.length - 1 || upper === middle) {
-                    middle++;
-                    break;
+                if (module.__descriptor.priority < loadedModules[middle].__descriptor.priority) {
+                    lower = middle;
+                    middle = Math.floor(upper + (lower - upper) / 2);
+                    if (middle === 0 || lower === middle) {
+                        break;
+                    }
+                }
+                else {
+                    upper = middle;
+                    middle = Math.floor(upper + (lower - upper) / 2);
+                    if (middle === loadedModules.length - 1 || upper === middle) {
+                        middle++;
+                        break;
+                    }
                 }
             }
+            loadedModules.splice(middle, 0, module);
         }
-        loadedModules.splice(middle, 0, module);
-    };
+    }
 
-exports.getLoadedModules = function () {
-    return loadedModules;
-};
+    /**
+     * Gets all the loaded modules of a particular type.
+     * If no type is provided, all modules are retreived.
+     * @param {string} type the type of modules to retreive (optional).
+     * @returns {Array<object>} either an array of modules or an associative
+     * object containing modules and their types
+     */
+    getLoadedModules(type) {
+        if (type) {
+            return this._loaded[type];
+        }
+        let loaded = [];
+        for (let t in this._loaded) {
+            if (this._loaded.hasOwnProperty(t)) {
+                loaded = loaded.concat(this._loaded[t]);
+            }
+        }
+        return Array.from(new Set(loaded)); // remove duplicates
+    }
 
-exports.loadModule = function(module, platform) {
-    var ld = loadModuleInternal(module, platform);
-    if (ld) {
-        insertSorted(ld);
+    /**
+     * Loads a module based on a provided module descriptor.
+     * @param {Object<>} module the module descriptor.
+     * @fires ModuleLoader#preload
+     * @fires ModuleLoader#load
+     * @return {Object} status of the load request.
+     */
+    loadModule(module) {
+        /**
+         * Preload event. Fired before a module is loaded.
+         * @event ModuleLoader#preload
+         * @type {object} module descriptor.
+         */
+        this.emit('preload', module);
+        const ld = this._loadModuleInternal(module);
+        if (!ld) {
+            const loadObj = {
+                success: false,
+                module: module
+            };
+            this.emit('load', loadObj);
+            return loadObj;
+        }
+        this._insertSorted(ld);
+        const loadObj = {
+            success: true,
+            module: ld
+        };
+        /**
+         * Load event. Fired after a module is loaded, but before the module is notified via load().
+         * @event ModuleLoader#load
+         * @type {object}
+         * @property {boolean} success - Indicates wheather loading was successful.
+         * @property {object} module - Module instance or descriptor.
+         */
+        this.emit('load', loadObj);
         if (ld.load) {
-            ld.load.call(ld.platform);
+            ld.load(ld.platform);
         }
-    }
-};
-
-exports.loadAllModules = function(platform) {
-    var m = listModules();
-    for (var mod in m) {
-        var ld = loadModuleInternal(m[mod], platform);
-        if (ld) {
-            insertSorted(ld);
-        }
+        return loadObj;
     }
 
-    for (var i = 0; i < loadedModules.length; i++) {
-        if (loadedModules[i].load) {
-            loadedModules[i].load.call(loadedModules[i].platform);
-        }
-    }
-};
-
-exports.verifyModule = function (path) {
-    var mod = null;
-    for (var i = 0; i < loaders.length; i++) {
-        mod = loaders[i].verifyModule(path);
-        if (mod) {
-            if (!mod.priority || mod.priority === 'normal') {
-                mod.priority = 0;
+    /**
+     * Loads all modules in the modules directory and starts the configuration service.
+     */
+    loadAllModules() {
+        const data = files.filesInDirectory(global.__modulesPath);
+        for (let i = 0; i < data.length; i++) {
+            try {
+                const candidate = path.resolve(path.join(global.__modulesPath, data[i])),
+                    output = this.verifyModule(candidate);
+                if (output) {
+                    this.loadModule(output);
+                }
+                else {
+                    console.debug($$`Skipping "${data[i]}". It isn't a module.`);
+                }
             }
-            else if (mod.priority === 'first') {
-                mod.priority = Number.MIN_SAFE_INTEGER;
-            }
-            else if (mod.priority === 'last') {
-                mod.priority = Number.MAX_SAFE_INTEGER;
-            }
-            else if (typeof mod.priority !== 'number') {
+            catch (e) {
+                console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
+                console.critical(e);
                 continue;
             }
-            mod.__loaderUID = i;
-            break;
         }
     }
-    return mod;
-};
 
-exports.unloadModule = function(mod, config) {
-    try {
-        console.debug($$`Unloading module "${mod.name}".`);
-        if (mod.unload) {
-            mod.unload();
+    /**
+     * Starts the specified integration. Integration must be loaded first.
+     * @param {function()} callback the message callback to be called by integrations.
+     * @param {object|string} integration integration instance or name.
+     * @fires ModuleLoader#prestart
+     * @fires ModuleLoader#start
+     * @returns {Object} the status of the load request.
+     */
+    startIntegration(callback, integration) {
+        if (typeof (integration) === 'string') {
+            const filtered = this._loaded.integration.filter(val => val.__descriptor.name === integration);
+            if (filtered.length !== 1) {
+                throw new Error('Cannot find integration to start');
+            }
+            integration = filtered[0];
         }
-        config.saveConfig(mod.name);
-        mod.platform = null;
-        var index = loadedModules.indexOf(mod);
-        loadedModules.splice(index, 1);
-        if (!mod.__coreOnly) {
-            $$.removeContextIfExists(mod.name);
-        }
-    }
-    catch (e) {
-        console.error($$`Unloading module "${mod.name}" failed.`);
-        console.critical(e);
-    }
-    return null;
-};
 
-exports.unloadAllModules = function(config) {
-    while (loadedModules.length > 0) {
-        exports.unloadModule(loadedModules[0], config);
+        if (integration.__running) {
+            throw new Error('The specified integration is already running.');
+        }
+
+        /**
+         * Prestart event. Fired before an integration is started.
+         * @event ModuleLoader#prestart
+         * @type {object} - Integration instance.
+         */
+        this.emit('prestart', integration);
+        let success = true;
+        try {
+            integration.start((api, event) => {
+                event.event_source = integration.__descriptor.name;
+                callback(api, event);
+            });
+            integration.__running = true;
+        }
+        catch (e) {
+            console.debug(`Integration "${integration.__descriptor.name}" failed to start.`);
+            console.critical(e);
+            success = false;
+        }
+        const startObj = {
+            success: success,
+            integration: integration
+        };
+        /**
+         * Start event. Fired after an integration has been started.
+         * @event ModuleLoader#start
+         * @type {object}
+         * @property {boolean} success - Indicates wheather starting was successful.
+         * @property {object} integration - Integration instance.
+         */
+        this.emit('start', startObj);
+        return startObj;
     }
-};
+
+    /**
+     * Verifies is a directory is a module.
+     * @param {string} directory path to the directory.
+     * @returns {object} descriptor required to load directory as a module, or null if not a module.
+     */
+    verifyModule(directory) {
+        for (let i = 0; i < this._loaders.length; i++) {
+            const mod = this._loaders[i].verifyModule(directory);
+            if (mod) {
+                if (!mod.priority || mod.priority === 'normal') {
+                    mod.priority = 0;
+                }
+                else if (mod.priority === 'first') {
+                    mod.priority = Number.MIN_SAFE_INTEGER;
+                }
+                else if (mod.priority === 'last') {
+                    mod.priority = Number.MAX_SAFE_INTEGER;
+                }
+                else if (typeof mod.priority !== 'number') {
+                    continue;
+                }
+                mod.__loaderUID = i;
+                return mod;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Unloads a module. The module must be loaded first.
+     * @param {object} mod module instance to unload.
+     * @fires ModuleLoader#preunload
+     * @fires ModuleLoader#load
+     * @returns {Object} an object representing the status of the unload request.
+     */
+    unloadModule(mod) {
+        let success = true;
+        /**
+         * PreUnload event. Fired before a module is unloaded.
+         * @event ModuleLoader#preunload
+         * @type {object} - Module instance.
+         */
+        this.emit('preunload', mod);
+        try {
+            console.info($$`Unloading module "${mod.__descriptor.name}".`);
+            if (mod.__running) {
+                this.stopIntegration(mod);
+            }
+            if (mod.unload) {
+                mod.unload();
+            }
+            mod.platform = null;
+            for (let type of mod.__descriptor.type) {
+                const index = this._loaded[type].indexOf(mod);
+                this._loaded[type].splice(index, 1);
+            }
+            $$.removeContextIfExists(mod.__descriptor.name);
+            require.unrequire(mod.__descriptor.folderPath || mod.__descriptor.startup, this._loaderPaths[mod.__descriptor.__loaderUID]);
+        }
+        catch (e) {
+            console.error($$`Unloading module "${mod.__descriptor.name}" failed.`);
+            console.critical(e);
+            success = false;
+        }
+        const unloadObj = {
+            success: success,
+            module: mod
+        };
+        /**
+         * Unload event. Fired after a module is unloaded.
+         * @event ModuleLoader#unload
+         * @type {object}
+         * @property {boolean} success - Indicates wheather unloading was successful.
+         * @property {object} module - Module instance.
+         */
+        this.emit('unload', unloadObj);
+        return unloadObj;
+    }
+
+    /**
+     * Unloads all currently loaded modules.
+     */
+    unloadAllModules() {
+        for (let type in this._loaded) {
+            if (!this._loaded.hasOwnProperty(type)) {
+                continue;
+            }
+            const loadedModules = this._loaded[type].slice();
+            for (let mod of loadedModules) {
+                this.unloadModule(mod);
+            }
+        }
+    }
+
+    /**
+     * Stops a currently running integration.
+     * @param {object|string} integration integration instance or name.
+     * @fires ModuleLoader#prestop
+     * @fires ModuleLoader#stop
+     * @returns {Object} the status of the stop request.
+     */
+    stopIntegration(integration) {
+        if (typeof(integration) === 'string') {
+            const filtered = this._loaded.integration.filter(val => val.__descriptor.name === integration);
+            if (filtered.length !== 1) {
+                throw new Error('Cannot find integration to stop.');
+            }
+            integration = filtered[0];
+        }
+
+        if (!integration.__running) {
+            throw new Error('The specified integration is not running.');
+        }
+
+        /**
+         * Prestop event. Fired before an integration is stopped.
+         * @event ModuleLoader#prestop
+         * @type {object} - Integration instance.
+         */
+        this.emit('prestop', integration);
+        let success = true;
+        try {
+            integration.stop();
+            integration.__running = false;
+        }
+        catch (e) {
+            console.debug(`Integration "${integration.__descriptor.name}" failed to stop.`);
+            console.critical(e);
+            success = false;
+        }
+        const stopObj = {
+            success: success,
+            integration: integration
+        };
+        /**
+         * Stop event. Fired after an integration has been stopped.
+         * @event ModuleLoader#stop
+         * @type {object}
+         * @property {boolean} success - Indicates wheather stopping was successful.
+         * @property {object} integration - Integration instance.
+         */
+        this.emit('stop', stopObj);
+        return stopObj;
+    }
+}
+
+module.exports = ModuleLoader;

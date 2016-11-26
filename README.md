@@ -1,5 +1,5 @@
 # Concierge
-[![Build Status](https://travis-ci.org/concierge/Concierge.png)](https://travis-ci.org/concierge/Concierge) [![Build status](https://ci.appveyor.com/api/projects/status/eis48if0bf8ynq69?svg=true)](https://ci.appveyor.com/project/mrkno/concierge) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0d267567f8874ad2ae3d72ac44c9c492)](https://www.codacy.com/app/Concierge/Concierge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=concierge/Concierge&amp;utm_campaign=Badge_Grade)
+[![Build Status](https://api.travis-ci.org/concierge/Concierge.svg?branch=master)](https://travis-ci.org/concierge/Concierge) [![Build status](https://ci.appveyor.com/api/projects/status/eis48if0bf8ynq69?svg=true)](https://ci.appveyor.com/project/mrkno/concierge) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0d267567f8874ad2ae3d72ac44c9c492)](https://www.codacy.com/app/Concierge/Concierge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=concierge/Concierge&amp;utm_campaign=Badge_Grade)
 
 (Karma + Sassy) * (Discord + Facebook + Messenger + Slack + Skype + Telegram) = Concierge
 
@@ -86,6 +86,7 @@ Now you can customize your Concierge by installing or creating your own modules.
 ## Documentation
 - [Creating Modules](doc/ModuleCreation.md)
 	- [Module Methods](doc/api/Module.md)
+	- [Service Methods](doc/api/Service.md)
 	- [API Object](doc/api/Api.md)
 	- [Event Object](doc/api/Event.md)
 	- [kassy.json](doc/api/Kassy.json.md)
@@ -95,17 +96,17 @@ Now you can customize your Concierge by installing or creating your own modules.
 - [Usage Example/Overview](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118)
 - Integrations (Integrations are chat platforms that Concierge integrates into)
 	- Existing Integrations. *Look here for documentation on how to set them up.*
-		- [Facebook Integration](doc/integrations/Facebook.md)
-		- [Slack Integration](doc/integrations/Slack.md)
-		- [Discord Integration](doc/integrations/Discord.md)
-		- [Skype Integration](doc/integrations/Skype.md)
-		- [Telegram Integration](doc/integrations/Telegram.md)
-		- [Messenger Bots](doc/integrations/Messenger.md)
- 		- [MSBot](doc/integrations/MSBot.md)
- 		- [Testing Mode](doc/integrations/Testing.md)
+		- [Facebook Integration](https://github.com/concierge/facebook)
+		- [Slack Integration](https://github.com/concierge/slack)
+		- [Discord Integration](https://github.com/concierge/discord)
+		- [Skype Integration](https://github.com/concierge/skype)
+		- [Telegram Integration](https://github.com/concierge/telegram)
+		- [Messenger Bots](https://github.com/concierge/messenger)
+ 		- [MSBot](https://github.com/concierge/msbot)
+ 		- [Testing Mode](https://github.com/concierge/testing)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 		- [Integration Methods](doc/api/Integration.md)
-- [**CLI Arguments**, Debugging and Logging](doc/DebuggingAndLogging.md)
+- [**CLI Arguments**, Debugging and Logging](doc/Options.md)
 - [Docker](doc/Docker.md)
 - [Contributing](doc/Contributing.md)
 

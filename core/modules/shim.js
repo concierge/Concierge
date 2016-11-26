@@ -1,18 +1,18 @@
-let scopedHttpClient = require('scoped-http-client'),
+const scopedHttpClient = require('scoped-http-client'),
     sendMessageToMultiple = (message, threads) => {
-        let apis = exports.current.getIntegrationApis();
+        const apis = exports.current.getIntegrationApis();
         for (let integ in threads) {
             if (!threads.hasOwnProperty(integ)) {
                 continue;
             }
-            let intThreads = threads[integ];
+            const intThreads = threads[integ];
             for (let i = 0; i < intThreads.length; i++) {
                 apis[integ].sendMessage(message, intThreads[i]);
             }
         }
     };
 
-let IntegrationApi = module.exports = class {
+const IntegrationApi = module.exports = class {
     /**
      * constructor - Creates a new integration API.
      *
@@ -20,8 +20,7 @@ let IntegrationApi = module.exports = class {
      */
     constructor(prefix) {
         this.commandPrefix = prefix || '/';
-        this.sendMessage = IntegrationApi._loopbackWrapper(this.sendMessage, this);
-        this.sendUrl = IntegrationApi._loopbackWrapper(this.sendUrl, this);
+        this._wrapMethods();
     }
 
     /**
@@ -34,7 +33,7 @@ let IntegrationApi = module.exports = class {
      * api.sendMessage('Hello World', event.thread_id);
      */
     sendMessage() {
-        throw new Error($$`What kind of shit platform is this that doesn\'t even support sending messages?`);
+        throw new Error($$`What kind of platform is this that doesn\'t even support sending messages?`);
     }
 
     /**
@@ -63,7 +62,7 @@ let IntegrationApi = module.exports = class {
      * api.sendImage('url', 'http://i.imgur.com/unrseYB.png', 'Hello World', event.thread_id);
      */
     sendImage(type, image, description, thread) {
-        switch(type) {
+        switch (type) {
         case 'url': // fallback to sending a url
             this.sendMessage(description, thread);
             this.sendUrl(image, thread);
@@ -89,7 +88,7 @@ let IntegrationApi = module.exports = class {
      */
     sendFile(type, file, description, thread) {
         this.sendMessage(description, thread);
-        switch(type) {
+        switch (type) {
         case 'url': // fallback to sending a url
             this.sendUrl(file, thread);
             break;
@@ -210,7 +209,7 @@ let IntegrationApi = module.exports = class {
     * let messages = _chunkMessage(text, 5); // ['A ', 'really', ' long', ' stri', 'ng']
     */
     static _chunkMessage(message, limit, callback) {
-        let messages = [];
+        const messages = [];
         if (!limit || isNaN(limit)) {
             messages.push(message);
         }
@@ -239,7 +238,7 @@ let IntegrationApi = module.exports = class {
     }
 
     _getBaseClassProperties() {
-        let items = Object.getOwnPropertyNames(IntegrationApi.prototype);
+        const items = Object.getOwnPropertyNames(IntegrationApi.prototype);
         items.splice(items.indexOf('constructor'), 1);
         return items.concat(Object.keys(this));
     }
@@ -251,7 +250,7 @@ let IntegrationApi = module.exports = class {
      * @return {IntegrationApi} an implementation of the API.
      */
     static createIntegration(implementation) {
-        let integ = new IntegrationApi(implementation.commadPrefix),
+        const integ = new IntegrationApi(implementation.commadPrefix),
             properties = integ._getBaseClassProperties();
         for (let property of properties) {
             if (implementation.hasOwnProperty(property)) {
@@ -261,6 +260,7 @@ let IntegrationApi = module.exports = class {
         if (implementation.config && implementation.config.commandPrefix) {
             integ.commandPrefix = implementation.config.commandPrefix;
         }
+        integ._wrapMethods();
         return integ;
     }
 
@@ -275,7 +275,7 @@ let IntegrationApi = module.exports = class {
      * @return {Object}            an object representing an event.
      */
     static createEvent(thread, senderId, senderName, message) {
-        let event = {
+        const event = {
             thread_id: thread,
             sender_id: senderId,
             sender_name: senderName + '', // Accept sender_name  = null as a literal
@@ -293,11 +293,19 @@ let IntegrationApi = module.exports = class {
         return event;
     }
 
-    static _loopbackWrapper(origionalSend, api) {
+    _wrapMethods() {
+        this.sendMessage = IntegrationApi._methodWrapper(this.sendMessage, this);
+        this.sendUrl = IntegrationApi._methodWrapper(this.sendUrl, this);
+    }
+
+    static _methodWrapper(origionalSend, api) {
         return (data, thread) => {
-            origionalSend.call(api, data, thread);
+            if (!thread) {
+                throw new Error('A thread must be specified.');
+            }
+            global.shim.current.runMiddleware('after', origionalSend.bind(api), data, thread);
             if (exports.current && exports.current.allowLoopback) {
-                let newEvent = exports.createEvent(thread, -1, 'Bot', data);
+                const newEvent = exports.createEvent(thread, -1, 'Bot', data);
                 newEvent.event_source = 'loopback';
                 exports.current.onMessage(api, newEvent);
             }

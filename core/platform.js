@@ -11,27 +11,44 @@
 */
 
 const figlet = require('figlet'),
-    EventEmitter = require('events').EventEmitter;
+    MiddlewareHandler = require('./middleware.js');
 
-class Platform extends EventEmitter {
-    constructor(integrations) {
+class Platform extends MiddlewareHandler {
+    constructor() {
         super();
-        let ConfigService = require.once('./config.js');
-        this.config = new ConfigService();
-        this.integrationManager = require.once('./integrations/integrations.js');
-        this.integrationManager.setIntegrations(integrations);
         this.defaultPrefix = '/';
-        this.packageInfo = require.once('../package.json');
-        this.modulesLoader = require.once('./modules/modules.js');
+        this.packageInfo = require(global.rootPathJoin('package.json'));
+        this.modulesLoader = new (require(global.rootPathJoin('core/modules/modules.js')))(this);
         this.statusFlag = global.StatusFlag.NotStarted;
         this.onShutdown = null;
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
+        global.shim = require(global.rootPathJoin('core/modules/shim.js'));
+        global.shim.current = this;
+        this._boundErrorHandler = this._errorHandler.bind(this);
+        process.on('uncaughtException', this._boundErrorHandler);
+    }
+
+    _errorHandler (err, api, event) {
+        const blame = global.getBlame(null, null, err) || '!CORE!';
+        let message;
+        if (api && event) {
+            const part = `"${event.body}" (${blame})`;
+            message = $$`${part} failed ${event.sender_name} caused it`;
+            this.runMiddleware('error', api.sendMessage, message, event.thread_id);
+        }
+        else {
+            const part = `"${blame}"`;
+            message = $$`${part} failed ${'<unknown>'} caused it`;
+        }
+        console.error(message);
+        console.critical(err);
+        this.emitAsync('uncaughtError', err, blame, api, event);
     }
 
     _handleTransaction (module, args) {
         let returnVal = null;
-        const timeout = setTimeout(function () {
+        const timeout = setTimeout(() => {
             if (returnVal !== null) {
                 return;
             }
@@ -41,8 +58,7 @@ class Platform extends EventEmitter {
             returnVal = module.run.apply(this, args);
         }
         catch (e) {
-            args[0].sendMessage($$`${args[1].body} failed ${args[1].sender_name} caused it`, args[1].thread_id);
-            console.critical(e);
+            this._errorHandler(e, args[0], args[1]);
         }
         finally {
             clearTimeout(timeout);
@@ -51,10 +67,10 @@ class Platform extends EventEmitter {
         return returnVal;
     }
 
-    onMessage (api, event) {
-        let matchArgs = [event, api.commandPrefix],
+    _handleMessage(api, event) {
+        const matchArgs = [event, api.commandPrefix],
             runArgs = [api, event],
-            loadedModules = this.modulesLoader.getLoadedModules();
+            loadedModules = this.modulesLoader.getLoadedModules('module');
 
         event.module_match_count = 0;
         for (let i = 0; i < loadedModules.length; i++) {
@@ -70,29 +86,38 @@ class Platform extends EventEmitter {
 
             if (matchResult) {
                 event.module_match_count++;
-                let transactionRes = this._handleTransaction(loadedModules[i], runArgs);
+                const transactionRes = this._handleTransaction(loadedModules[i], runArgs);
                 if (event.shouldAbort || transactionRes) {
                     return;
                 }
             }
         }
+        this.emitAsync('message', api, event);
+    }
+
+    onMessage(api, event) {
+        this.runMiddleware('before', this._handleMessage, api, event);
     }
 
     getIntegrationApis () {
-        let integs = this.integrationManager.getSetIntegrations(),
+        const integs = this.modulesLoader.getLoadedModules('integration'),
             apis = {};
-        for (let key in integs) {
-            if (!integs.hasOwnProperty(key)) {
-                continue;
+        for (let i of integs) {
+            if (i.__running) {
+                apis[i.__descriptor.name] = i.getApi();
             }
-            apis[key] = integs[key].getApi();
         }
         return apis;
     }
 
     _firstRun () {
-        const git = require.once('./git.js'),
-            path = require('path'),
+        const git = require('concierge/git'),
+            path = require('path');
+        let defaultModules;
+        try {
+            defaultModules = require('../defaults.json');
+        }
+        catch (e) {
             defaultModules = [
                 ['https://github.com/concierge/creator.git', 'creator'],
                 ['https://github.com/concierge/help.git', 'help'],
@@ -100,8 +125,10 @@ class Platform extends EventEmitter {
                 ['https://github.com/concierge/ping.git', 'ping'],
                 ['https://github.com/concierge/restart.git', 'restart'],
                 ['https://github.com/concierge/shutdown.git', 'shutdown'],
-                ['https://github.com/concierge/update.git', 'update']
+                ['https://github.com/concierge/update.git', 'update'],
+                ['https://github.com/concierge/test.git', 'test']
             ];
+        }
 
         for (let i = 0; i < defaultModules.length; i++) {
             console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
@@ -117,22 +144,29 @@ class Platform extends EventEmitter {
         }
     }
 
-    start () {
+    start(integrations) {
         if (this.statusFlag !== global.StatusFlag.NotStarted) {
             throw new Error($$`StartError`);
         }
 
         console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
-
-        console.title(' ' + this.packageInfo.version);
+        console.title(` ${this.packageInfo.version}`);
         console.info('------------------------------------');
         console.warn($$`StartingSystem`);
 
         // Load system config
         console.warn($$`LoadingSystemConfig`);
+        this.modulesLoader.loadModule({
+            name: 'Configuration',
+            version: 1.0,
+            type: ['service'],
+            startup: global.__configService || global.rootPathJoin('core/modules/config.js'),
+            __loaderUID: 0
+        });
+        this.config = this.modulesLoader.getLoadedModules('service')[0].configuration;
+
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
-        this.integrationManager.setIntegrationConfigs(this);
-        let firstRun = this.config.getSystemConfig('firstRun');
+        const firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
             firstRun.hasRun = true;
             this._firstRun();
@@ -143,31 +177,42 @@ class Platform extends EventEmitter {
         console.warn($$`LoadingModules`);
         this.modulesLoader.loadAllModules(this);
 
-        // Starting output
         console.warn($$`StartingIntegrations`);
-        this.integrationManager.startIntegrations(this.onMessage.bind(this));
+        for (let integration of integrations) {
+            try {
+                console.info($$`Loading integration '${integration}'...\t`);
+                this.modulesLoader.startIntegration(this.onMessage.bind(this), integration);
+            }
+            catch (e) {
+                if (e.message === 'Cannot find integration to start') {
+                    console.error(`Unknown integration '${integration}'`);
+                }
+                else {
+                    console.error($$`Failed to start output integration '${integration}'.`);
+                    console.critical(e);
+                }
+            }
+        }
 
         this.statusFlag = global.StatusFlag.Started;
         console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
     }
 
-    shutdown (flag) {
+    shutdown(flag) {
         if (this.statusFlag !== global.StatusFlag.Started) {
             throw new Error($$`ShutdownError`);
         }
+
+        this.emit('preshutdown');
         if (!flag) {
             flag = global.StatusFlag.Unknown;
         }
 
-        // Stop output integrations
-        this.integrationManager.stopIntegrations();
-
         // Unload user modules
-        this.modulesLoader.unloadAllModules(this.config);
-
-        this.config.saveConfig();
+        this.modulesLoader.unloadAllModules();
         this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
 
+        process.removeListener('uncaughtException', this._boundErrorHandler);
         console.warn($$`${this.packageInfo.name} Shutdown`);
         this.emit('shutdown', this.statusFlag);
     }
