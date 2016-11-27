@@ -11,7 +11,7 @@
 ### What is a Module?
 A module is a piece of code that tells Concierge what to respond with after receiving messages from any chat platform. It is meant to only handle messages specified with the associated command.
 
-For example, a module meant to respond with current time will only handle messages beginning with `/time` where `/` is the `commandPrefix` specifying messages for Concierge and `time` is the command, specifying messages for the our module.
+For example, a module meant to respond with current time will only handle messages beginning with `/time` where `/` is the `commandPrefix` specifying messages for Concierge and `time` is the command, specifying messages for the module.
 
 A module needs to tell Concierge three things:
 - Associated command for the module
@@ -26,7 +26,7 @@ Concierge supports two primary module formats:
 ### Kassy Module Format
 For a "Hello World" example see [here](https://github.com/concierge/HelloConcierge).
 
-The basic module for a Concierge module will created as a new directory within the `modules` directory of Concierge (*not to be confused with `node_modules`*).
+The basic module for a Concierge module will be created as a new directory within the `modules` directory of Concierge (*not to be confused with `node_modules`*).
 It will contain the following files:
 - `someModule.js` - an ES6, strict mode JavaScript file that will be the basis of the module. [See here](./api/Module.md) for the methods that this should implement.
 - `kassy.json` - a file describing your module, that can be used by Concierge to start it. [See here](./api/Kassy.json.md) for the properties that should be in this file.
@@ -48,7 +48,7 @@ Every module must have a `kassy.json` file containing some basic information abo
 Any data stored in `exports.config` within the scope of a module will automatically be persistent between restarts of the program, provided a safe shutdown and an error free startup. Note that data in this variable is not guaranteed to be set before `load()` is called on your module. See [Module.md#config](./api/Module.md#config) for more information.
 
 ### Logging and Errors
-Any logging and errors should <b>NOT</b> be logged to the console using any methods other than:
+Any logging and errors should **NOT** be logged to the console using any methods other than:
 - `console.debug(str)` - logs `str` to the console if and only if debugging is enabled.
 - `console.critical(exception)`- logs the message and trace of an Exception (`exception`) to the console if and only if debugging is enabled.
 
