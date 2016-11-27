@@ -4,6 +4,8 @@
 - [Event Object](./api/Event.md)
 - [`kassy.json`](./api/Kassy.json.md)
 - [Module Methods](./api/Module.md)
+- [Integration Methods](./api/Integration.md)
+- [Service Methods](./api/Service.md)
 - [Translations](./api/Translation.md)
 
 ### What is a Module?
@@ -30,15 +32,14 @@ It will contain the following files:
 - `kassy.json` - a file describing your module, that can be used by Concierge to start it. [See here](./api/Kassy.json.md) for the properties that should be in this file.
 
 #### Dependencies
-Concierge has been created using [Node.JS](https://nodejs.org/). As with any Node.JS application, it is possible to depend on other Node.JS modules using `require`. Within Concierge, `require` has been extended to automatically install modules from [NPM](https://www.npmjs.com/) if they are not found locally.  
+Concierge has been created using [Node.JS](https://nodejs.org/). As with any Node.JS application, it is possible to depend on other Node.JS modules using `require`. Within Concierge, `require` has been extended to automatically install modules from [NPM](https://www.npmjs.com/) if they are not found locally.
 For example, if you inserted the statement `require('foo')` into a module and `foo` was an NPM module that had not already been installed, `foo` would be installed before letting your module continue execution.
 
-Additional methods are also available with require:
-* ~~require.safe('module')~~ __Deprecated__ available for backwards compatibility and when require has been overridden by another npm module.
-* ~~require.once('module')~~ __Internal__ used internally to allow seemless code hotswap. You should use this whenever you require another `.js` file that you have created (not from NPM) within your module.
-
 ### Methods
-Every module must provide the same basic methods, which can then be expanded to perform whatever tasks are required. These can be found [here](./api/Module.md).
+Every module must provide the some basic methods depending on their type. These are used to perform whatever tasks are required. The basic types are:
+- [Module](./api/Module.md). A module listens for and responds to messages from users.
+- [Integration](./api/Integration.md). An integration links Concerige into a chat platform (such as Facebook). Also see [Integration Creation](./IntegrationCreation.md).
+- [Service](./api/Service.md). A service is for long running tasks. This might involve middleware or hosting a webserver.
 
 ### `kassy.json`
 Every module must have a `kassy.json` file containing some basic information about the module. The properties required can be found [here](./api/Kassy.json.md).

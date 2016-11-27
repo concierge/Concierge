@@ -9,14 +9,23 @@
     *              Copyright (c) Matthew Knox and Contributors 2015.
     */
 
-let path = require('path'),
+const path = require('path'),
     fs = require('fs'),
     configFileName = 'config.json',
     globalScope = '%';
 
-class ConfigService {
+class Configuration {
     constructor() {
         this.configCache = {};
+        this.interceptor = null;
+    }
+
+    /**
+     * Redirects all config method calls to another object.
+     * @param {object} interceptor the object to redirect method calls to.
+     */
+    setInterceptor(interceptor) {
+        this.interceptor = interceptor;
     }
 
     /**
@@ -31,6 +40,10 @@ class ConfigService {
             scope = globalScope;
         }
 
+        if (this.interceptor) {
+            return this.interceptor.loadConfig(scope, name);
+        }
+
         if (this.configCache.hasOwnProperty(scope)) {
             return this.configCache[scope].data;
         }
@@ -40,7 +53,7 @@ class ConfigService {
             configPath = global.rootPathJoin(configFileName);
         }
         else {
-            let p = path.parse(scope);
+            const p = path.parse(scope);
             if (!!p.dir) {
                 configPath = path.join(scope, configFileName);
                 if (!name) {
@@ -55,7 +68,7 @@ class ConfigService {
 
         let data;
         try {
-            let temp = fs.readFileSync(configPath, 'utf8');
+            const temp = fs.readFileSync(configPath, 'utf8');
             data = JSON.parse(temp);
         }
         catch (e) {
@@ -90,7 +103,11 @@ class ConfigService {
      * @return {Object}         The section, or empty object if undefined.
      */
     getSystemConfig(section) {
-        let config = this.loadConfig();
+        if (this.interceptor) {
+            return this.interceptor.getSystemConfig(section);
+        }
+
+        const config = this.loadConfig();
         if (config[section] === void(0)) {
             config[section] = {};
         }
@@ -108,19 +125,85 @@ class ConfigService {
             scope = globalScope;
         }
 
+        if (this.interceptor) {
+            this.interceptor.saveConfig(scope);
+            return;
+        }
+
         if (!this.configCache.hasOwnProperty(scope)) {
             throw new Error('No such config to save.');
         }
-        let config = this.configCache[scope],
+        const config = this.configCache[scope],
             data = JSON.stringify(config.data, (key, value) => {
                 // deliberate use of undefined, will cause property to be deleted.
                 return value === null || typeof value === 'object' && Object.keys(value).length === 0 ? void (0) : value;
             }, 4);
         try {
-            fs.writeFileSync(config.location, data, 'utf8');
+            if (!!data) { // there is data to write
+                fs.writeFileSync(config.location, data, 'utf8');
+            }
             delete this.configCache[scope];
         } catch (e) {}
     }
-};
 
-module.exports = ConfigService;
+    /**
+     * getActiveScopes - Gets an array of all the active scope names.
+     *
+     * @returns {Array<string>} all the active scope names
+     */
+    getActiveScopes() {
+        return Object.keys(this.configCache);
+    }
+}
+
+class ConfigurationService {
+    constructor() {
+        this.configuration = new Configuration();
+    }
+
+    loadHook(obj) {
+        if (!obj.success) {
+            return;
+        }
+        const mod = obj.module;
+        mod.config = module.exports.configuration.loadConfig(mod.__descriptor.folderPath, mod.__descriptor.name);
+        if (mod.__descriptor.type.includes('integration')) {
+            if (!mod.config.commandPrefix) {
+                mod.config.commandPrefix = module.exports.platform.defaultPrefix;
+            }
+            const sysConfig = module.exports.configuration.getSystemConfig('output');
+            if (sysConfig.hasOwnProperty(mod.__descriptor.name)) {
+                process.emitWarning(`Integration '${mod.__descriptor.name}' has configuration in the global configuration file; this should be moved as the behaviour is deprecated.` +
+                    ' Any global configuration will overwrite local configuration, but only local configuration is saved.');
+                for (let key in sysConfig[mod.__descriptor.name]) {
+                    if (sysConfig[mod.__descriptor.name].hasOwnProperty(key)) {
+                        mod.config[key] = sysConfig[mod.__descriptor.name][key];
+                    }
+                }
+            }
+        }
+    }
+
+    unloadHook(obj) {
+        if (!obj.success) {
+            return;
+        }
+        module.exports.configuration.saveConfig(obj.module.__descriptor.name);
+        obj.module.config = null;
+    }
+
+    load() {
+        this.platform.modulesLoader.on('load', this.loadHook);
+        this.platform.modulesLoader.on('unload', this.unloadHook);
+    }
+
+    unload() {
+        this.platform.modulesLoader.removeListener('load', this.loadHook);
+        this.platform.modulesLoader.removeListener('unload', this.unloadHook);
+        for (let conf of this.configuration.getActiveScopes()) {
+            this.configuration.saveConfig(conf);
+        }
+    }
+}
+
+module.exports = new ConfigurationService();
