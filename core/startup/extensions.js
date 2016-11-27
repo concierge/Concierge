@@ -120,4 +120,11 @@ module.exports = (rootPath) => {
         }
         return null;
     };
+
+    // process.emitWarning fallback
+    if (!process.emitWarning) {
+        process.emitWarning = (warning) => {
+            console.error(`(node: 56338) Warning: ${warning}`);
+        };
+    }
 };
