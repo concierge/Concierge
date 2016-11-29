@@ -4,7 +4,7 @@
 (Karma + Sassy) * (Discord + Facebook + Messenger + Slack + Skype + Telegram) = Concierge
 
 
-Concierge is a modular, easily extensible general purpose chat bot. It is platform agnostic and will work with any social network (provided an integration module) desired. The bot utilises small node.js modules for responding in a chat.
+Concierge is a modular, easily extensible general purpose chat bot. It is platform agnostic and will work with any social network desired (provided an integration module). The bot utilises small node.js modules for responding in a chat.
 You can write your own modules and place them in the [modules](https://github.com/concierge/Concierge/tree/master/modules) directory, or use existing modules we've collated [here](https://github.com/concierge/Concierge/wiki/KPM-Table). Existing modules include a variety of functionality from getting gifs,  to running arbitrary sandboxed JavaScript code, voting and giving karma.
 
 Furthermore Concierge is compatible with [Hubot](https://github.com/github/hubot) adapters and integrations.
@@ -23,57 +23,41 @@ git clone https://github.com/concierge/Concierge.git
 cd Concierge
 npm install
 ```
-
-#### Configuration
-After a successful Concierge installation, it needs to be configured to connect with your social network.
-We will connect with Facebook in this example *(since there is a 1 in 4 chance you have a Facebook account)*
-
-Navigate to Concierge's root directory (in the directory that contains main.js) and create a new file, `config.json` that has the following:
-```
-{
-    "output": {
-        "facebook": {
-            "username": "<facebookEmail>",
-            "password": "<facebookPassword>",
-            "commandPrefix": "/"
-        }
-    }
-}
-```
-Replace each of the angle bracketed strings (`<...>`) with the respective information hinted inside the brackets. The `commandPrefix` is a textual marker. Any messages meant for Concierge should begin with the `commandPrefix`.
-
-**NOTE**: Facebook account which is configured into Concierge will NOT be usable to send commands to itself (you will need two accounts). The reasons behind this are documented [here](https://github.com/concierge/Concierge/issues/77#issuecomment-209161404) and [here](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118).
-
-Any and all integrated social networks should be configured through this file alone. The parent `"facebook": {...}` tag specifies the integration name. Therefore, you can configure multiple integrations by simply adding another entry underneath it
-```
-{
-    "output": {
-        "facebook": {
-            ...
-        },
-		"slack": {
-            ...
-        },
-		"skype": {
-            ...
-        }
-    }
-}
-```
-More information on configuring other integrations can be found in the documentation section below.
+Now you are ready to use and develop modules for Concierge.
 
 #### Starting Up
-Awesome job finishing up the tedious bits. Let's have some fun now.
+Concierge comes ready-to-run, so to start the bot:
 - Open up a terminal/prompt, navigate to Concierge's root directory
-- Start Concierge with Facebook's integration name *(so it knows which integration to connect with)* by using `node main.js facebook`.
-- Open your non-Concierge Facebook account and send this message to the Concierge-configured account: `/ping`
+- Start Concierge using `node main.js` (or alternatively `npm start`)
+- First startup will install some of the default modules (these can be configured [here](doc/DefaultCommands.md)) and If all goes well, you should see a prompt prefixed 
+
+> Concierge-bot>
+
+This is the default `Test` integration Concierge assumes if no other is specified during startup (more on this below).
+- You can further test the bot's responses by calling a few of the default commands. Try entering `/ping` in the terminal and press enter.
 - It should reply back with something like:
 
-> Concierge 4.0.0 @ Raven (Linux x64)
+> Concierge-bot 4.0.0-beta.0 @ Raven (Linux x64)
 
-If you've successfully received a message back from Concierge,
+If everything worked without any errors,
 
 **Congratulations!**
+
+Now let's go a step further and connect Concierge with an actual social network
+
+#### Integrating with a social network
+This simply requires installing the social network's `integration` in the `modules` directory.
+
+[kpm](https://github.com/concierge/kpm) is a great module that makes this process a piece of cake. The process can be generalized into the following steps 
+
+- Run Concierge and ensure `kpm` was successfully loaded.
+- Use `/kpm install <integration_name>` to install the integration where `<integration_name>` is the name of the social network integration.
+- Use `/kpm config` with appropriate arguments *(account email, account password, etc.)* to set up the integration for connecting with the social network. Specific arguements and instructions on how to set them can be found in the integration's documentation.
+- Use `/kpm start <integration_name>` to start the integration.
+
+Why not try integrating Concierge with Facebook by following the instructions [here](https://github.com/concierge/facebook).
+
+Links to configuring other integrations can be found in the documentation section below.
 
 #### What Now
 Now you can customize your Concierge by installing or creating your own modules.
@@ -114,7 +98,7 @@ Now you can customize your Concierge by installing or creating your own modules.
 See [Running and writing tests](doc/Testing.md)
 
 ## Disclaimer
-HERE BE DRAGONS!
+HERE BE DRAGONS 🐉!
 Written to see if it could be done, not written to be readable.<br><b>Enter at your own peril.</b>
 
 ## Contributions

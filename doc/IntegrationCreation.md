@@ -45,7 +45,7 @@ let api = new TestIntegration(exports.config.commandPrefix);
 ```
 
 #### Approach 2: Object Definition
-Create an object with only the methods needed. This will at runtime extend the IntegrationApi class as needed. The `commandPrefix` for your module should be provided within the object.
+Create an object with only the methods needed. This will at runtime extend the `IntegrationApi` class as needed. The `commandPrefix` for your module should be provided within the object.
 ```js
 let apiObject = {
     commandPrefix: exports.config.commandPrefix,
