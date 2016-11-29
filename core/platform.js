@@ -25,8 +25,11 @@ class Platform extends MiddlewareHandler {
         this.packageInfo.name = this.packageInfo.name.toProperCase();
         global.shim = require(global.rootPathJoin('core/modules/shim.js'));
         global.shim.current = this;
-        this._boundErrorHandler = this._errorHandler.bind(this);
+        this._boundErrorHandler = (err) => {
+            global.shim.current._errorHandler.call(global.shim.current, err);
+        };
         process.on('uncaughtException', this._boundErrorHandler);
+        process.on('unhandledRejection', this._boundErrorHandler);
     }
 
     _errorHandler (err, api, event) {
@@ -213,6 +216,7 @@ class Platform extends MiddlewareHandler {
         this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
 
         process.removeListener('uncaughtException', this._boundErrorHandler);
+        process.removeListener('unhandledRejection', this._boundErrorHandler);
         console.warn($$`${this.packageInfo.name} Shutdown`);
         this.emit('shutdown', this.statusFlag);
     }

@@ -133,17 +133,20 @@ class Configuration {
         if (!this.configCache.hasOwnProperty(scope)) {
             throw new Error('No such config to save.');
         }
-        const config = this.configCache[scope],
+        try {
+            const config = this.configCache[scope],
             data = JSON.stringify(config.data, (key, value) => {
                 // deliberate use of undefined, will cause property to be deleted.
                 return value === null || typeof value === 'object' && Object.keys(value).length === 0 ? void (0) : value;
             }, 4);
-        try {
             if (!!data) { // there is data to write
                 fs.writeFileSync(config.location, data, 'utf8');
             }
             delete this.configCache[scope];
-        } catch (e) {}
+        }
+        catch (e) {
+            console.critical(e);
+        }
     }
 
     /**
