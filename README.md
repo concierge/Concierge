@@ -87,6 +87,7 @@ Now you can customize your Concierge by installing or creating your own modules.
 		- [Telegram Integration](https://github.com/concierge/telegram)
 		- [Messenger Bots](https://github.com/concierge/messenger)
  		- [MSBot](https://github.com/concierge/msbot)
+		- [HipChat](https://github.com/concierge/hipchat)
  		- [Testing Mode](https://github.com/concierge/testing)
 	- [Creating Integrations](doc/IntegrationCreation.md)
 		- [Integration Methods](doc/api/Integration.md)
