@@ -6,16 +6,19 @@
     *
     * License:
     *              MIT License. All code unless otherwise specified is
-    *              Copyright (c) Matthew Knox and Contributors 2015.
+    *              Copyright (c) Matthew Knox and Contributors 2016.
     */
 
-const path = require('path'),
-    fs = require('fs'),
-    configFileName = 'config.json',
-    globalScope = '%';
+const globalScope = {
+    name: '%',
+    type: ['system']
+};
 
-class Configuration {
+const EventEmitter = require('events');
+
+class Configuration extends EventEmitter {
     constructor() {
+        super();
         this.configCache = {};
         this.interceptor = null;
     }
@@ -26,59 +29,58 @@ class Configuration {
      */
     setInterceptor(interceptor) {
         this.interceptor = interceptor;
+        this.emit('interceptorSet', interceptor);
+    }
+
+    /**
+     * getGlobalIndicator - gets the global scope indicator used to direct the
+     * configuration to retreive the global config file.
+     *
+     * @returns {Object} an object used for the global indicator.
+     */
+    getGlobalIndicator() {
+        return globalScope;
     }
 
     /**
      * loadConfig - loads the configuration of a module.
      *
-     * @param  {string} scope Name or path to the configuration file. Leave empty for global config.
-     * @param  {string} name  Name of the module. Required if {scope} is a path.
-     * @return {Object}       An object representing the configuration.
+     * @param  {Object} descriptor Descriptor of the config to load. Leave empty
+     * for global config.
+     * @return {Object} An object representing the configuration.
      */
-    loadConfig(scope, name) {
-        if (!scope) {
-            scope = globalScope;
+    loadConfig(descriptor) {
+        this.emit('preLoad', descriptor);
+        if (!descriptor) {
+            descriptor = globalScope;
         }
 
-        if (this.interceptor) {
-            return this.interceptor.loadConfig(scope, name);
+        if (this.configCache.hasOwnProperty(descriptor.name)) {
+            this.emit('load', this.configCache[descriptor.name]);
+            return this.configCache[descriptor.name].data;
         }
 
-        if (this.configCache.hasOwnProperty(scope)) {
-            return this.configCache[scope].data;
+        let data = this.interceptor ? this.interceptor.loadConfig(descriptor) : {};
+
+        if (this.configCache.hasOwnProperty(descriptor.name)) {
+            for (let key of Object.keys(this.configCache[descriptor.name].data)) {
+                data[key] = this.configCache[descriptor.name].data[key];
+            }
         }
 
-        let configPath;
-        if (scope === globalScope) {
-            configPath = global.rootPathJoin(configFileName);
-        }
-        else {
-            const p = path.parse(scope);
-            if (!!p.dir) {
-                configPath = path.join(scope, configFileName);
-                if (!name) {
-                    throw new Error('No name provided for loaded module.');
+        if (descriptor.type.includes('integration')) {
+            if (!data.commandPrefix) {
+                data.commandPrefix = global.currentPlatform.defaultPrefix;
+            }
+            const sysConfig = this.getSystemConfig('output');
+            if (sysConfig.hasOwnProperty(descriptor.name)) {
+                process.emitWarning(`Integration '${descriptor.name}' has configuration in the global configuration file; this should be moved as the behaviour is deprecated.` +
+                    ' Any global configuration will overwrite local configuration, but only local configuration is saved.');
+                for (let key in sysConfig[descriptor.name]) {
+                    if (sysConfig[descriptor.name].hasOwnProperty(key)) {
+                        data[key] = sysConfig[descriptor.name][key];
+                    }
                 }
-                scope = name;
-            }
-            else {
-                configPath = path.join(global.__modulesPath, scope, configFileName);
-            }
-        }
-
-        let data;
-        try {
-            const temp = fs.readFileSync(configPath, 'utf8');
-            data = JSON.parse(temp);
-        }
-        catch (e) {
-            console.debug($$`No or invalid configuration file found at "${configPath}".`);
-            data = {};
-        }
-
-        if (this.configCache.hasOwnProperty(scope)) {
-            for (let key of Object.keys(this.configCache[scope].data)) {
-                data[key] = this.configCache[scope].data[key];
             }
         }
 
@@ -87,26 +89,24 @@ class Configuration {
                 process.env[key.substr(4)] = data[key];
             }
         }
-        this.configCache[scope] = {
-            name: scope,
-            location: configPath,
+
+        this.configCache[descriptor.name] = {
+            name: descriptor.name,
             data: data
         };
 
+        this.emit('load', this.configCache[descriptor.name]);
         return data;
     }
 
     /**
-     * getSystemConfig - Convenience method for safely getting system configuration sections.
+     * getSystemConfig - Convenience method for safely getting system
+     * configuration sections.
      *
      * @param  {string} section Section of the configuration file to retrieve.
      * @return {Object}         The section, or empty object if undefined.
      */
     getSystemConfig(section) {
-        if (this.interceptor) {
-            return this.interceptor.getSystemConfig(section);
-        }
-
         const config = this.loadConfig();
         if (config[section] === void(0)) {
             config[section] = {};
@@ -115,98 +115,36 @@ class Configuration {
     }
 
     /**
-     * saveConfig - Save the configuration of a module.
+     * saveConfig - Save the configuration of a module. After this method is
+     * called, all cached configuration references should be immediately
+     * deleted.
      *
-     * @param  {string} scope The name of the module to save.
+     * An interceptor for this method will be passed one additional parameter -
+     * the configuration to save.
+     * @param  {Object} descriptor The descriptor of the module to save
+     * (or nothing for global configuration).
      * @return {undefined}    Returns nothing.
      */
-    saveConfig(scope) {
-        if (!scope) {
-            scope = globalScope;
+    saveConfig(descriptor) {
+        if (!descriptor) {
+            descriptor = globalScope;
         }
 
-        if (this.interceptor) {
-            this.interceptor.saveConfig(scope);
-            return;
-        }
-
-        if (!this.configCache.hasOwnProperty(scope)) {
+        if (!this.configCache.hasOwnProperty(descriptor.name)) {
             throw new Error('No such config to save.');
         }
+
         try {
-            const config = this.configCache[scope],
-            data = JSON.stringify(config.data, (key, value) => {
-                // deliberate use of undefined, will cause property to be deleted.
-                return value === null || typeof value === 'object' && Object.keys(value).length === 0 ? void (0) : value;
-            }, 4);
-            if (!!data) { // there is data to write
-                fs.writeFileSync(config.location, data, 'utf8');
+            if (this.interceptor) {
+                this.interceptor.saveConfig(descriptor,
+                    this.configCache[descriptor.name].data);
             }
-            delete this.configCache[scope];
+            delete this.configCache[descriptor.name];
         }
         catch (e) {
             console.critical(e);
         }
     }
-
-    /**
-     * getActiveScopes - Gets an array of all the active scope names.
-     *
-     * @returns {Array<string>} all the active scope names
-     */
-    getActiveScopes() {
-        return Object.keys(this.configCache);
-    }
 }
 
-class ConfigurationService {
-    constructor() {
-        this.configuration = new Configuration();
-    }
-
-    loadHook(obj) {
-        if (!obj.success) {
-            return;
-        }
-        const mod = obj.module;
-        mod.config = module.exports.configuration.loadConfig(mod.__descriptor.folderPath, mod.__descriptor.name);
-        if (mod.__descriptor.type.includes('integration')) {
-            if (!mod.config.commandPrefix) {
-                mod.config.commandPrefix = module.exports.platform.defaultPrefix;
-            }
-            const sysConfig = module.exports.configuration.getSystemConfig('output');
-            if (sysConfig.hasOwnProperty(mod.__descriptor.name)) {
-                process.emitWarning(`Integration '${mod.__descriptor.name}' has configuration in the global configuration file; this should be moved as the behaviour is deprecated.` +
-                    ' Any global configuration will overwrite local configuration, but only local configuration is saved.');
-                for (let key in sysConfig[mod.__descriptor.name]) {
-                    if (sysConfig[mod.__descriptor.name].hasOwnProperty(key)) {
-                        mod.config[key] = sysConfig[mod.__descriptor.name][key];
-                    }
-                }
-            }
-        }
-    }
-
-    unloadHook(obj) {
-        if (!obj.success) {
-            return;
-        }
-        module.exports.configuration.saveConfig(obj.module.__descriptor.name);
-        obj.module.config = null;
-    }
-
-    load() {
-        this.platform.modulesLoader.on('load', this.loadHook);
-        this.platform.modulesLoader.on('unload', this.unloadHook);
-    }
-
-    unload() {
-        this.platform.modulesLoader.removeListener('load', this.loadHook);
-        this.platform.modulesLoader.removeListener('unload', this.unloadHook);
-        for (let conf of this.configuration.getActiveScopes()) {
-            this.configuration.saveConfig(conf);
-        }
-    }
-}
-
-module.exports = new ConfigurationService();
+module.exports = new Configuration();

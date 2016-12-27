@@ -18,12 +18,12 @@
 const translationsReq = rootPathJoin('core/translations/translations.js'),
     platformReq = rootPathJoin('core/platform.js');
 
-let platform = null,
-    startArgs = null;
+let startArgs = null;
 
 const checkShutdownCode = (code) => {
     if (code === StatusFlag.ShutdownShouldRestart) {
-        platform.removeListener('shutdown', checkShutdownCode);
+        global.currentPlatform.removeListener('shutdown', checkShutdownCode);
+        global.currentPlatform = null;
         require.unrequire(translationsReq, __filename);
         require.unrequire(platformReq, __filename);
         exports.run();
@@ -43,9 +43,9 @@ exports.run = (startArgsP) => {
         // quickest way to clone in JS, prevents reuse of same object between startups
         const startClone = JSON.parse(JSON.stringify(startArgs)),
             Platform = require(platformReq);
-        platform = new Platform();
-        platform.on('shutdown', checkShutdownCode);
-        platform.start(startClone);
+        global.currentPlatform = new Platform();
+        global.currentPlatform.on('shutdown', checkShutdownCode);
+        global.currentPlatform.start(startClone);
     }
     catch (e) {
         console.critical(e);
@@ -55,8 +55,8 @@ exports.run = (startArgsP) => {
 };
 
 const stop = () => {
-    if (platform) {
-        platform.shutdown();
+    if (global.currentPlatform) {
+        global.currentPlatform.shutdown();
     }
     process.exit(0);
 };

@@ -87,11 +87,13 @@ exports.loadModule = (module) => {
                 module.type = [module.type];
             }
 
-            if (!module.type.every(t => types.includes(t))) {
+            if (!module.type.every(t => types.includes(t) || t === 'system')) {
                 throw new Error($$`Module is not one of the defined module types.`);
             }
         }
-        module.type = types;
+        else {
+            module.type = types;
+        }
     }
     catch (e) {
         console.critical(e);
