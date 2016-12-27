@@ -2,6 +2,7 @@ const exec = require('child_process').execSync,
 
     commandWithPath = (path, args, callback) => {
         args.unshift('git');
+        args.forEach((seg, index, arr) => arr[index] = `"${seg}"`);
         const cmd = args.join(' ');
         try {
             const stdOut = exec(cmd, {cwd:path});
