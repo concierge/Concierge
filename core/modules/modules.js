@@ -111,8 +111,8 @@ class ModuleLoader extends EventEmitter {
             if (!this._loaded.hasOwnProperty(type)) {
                 continue;
             }
-            const filtered = this._loaded[type].filter(val => val.__descriptor.name === module.name
-                && val.__descriptor.version === module.version);
+            const filtered = this._loaded[type].filter(val => val.__descriptor.name === module.name &&
+                val.__descriptor.version === module.version);
             if (filtered.length > 0) {
                 return true;
             }
