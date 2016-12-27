@@ -19,7 +19,9 @@ const npm = require(global.rootPathJoin('core/common/npm.js')),
     fs = require('fs'),
     nativeReloadHacksCache = {},
     nativeReloadHacks = ['deasync'],
-    npmDirectory = global.rootPathJoin('node_modules'),
+    npmFolder = 'node_modules',
+    npmDirectory = global.rootPathJoin(npmFolder),
+    npmLocalDirective = 'package.json',
     nativeModules = Object.getOwnPropertyNames(process.binding('natives')),
     common = {},
     referenceCounts = {};
@@ -64,12 +66,40 @@ const resolve = (request, dirName) => {
             return file && (file.isFile() || file.isDirectory());
         }
         else {
-            const dir = fs.statSync(path.join(npmDirectory, request));
-            return dir && dir.isDirectory();
+            const npmDirs = [path.join(dirName, npmFolder, request), path.join(npmDirectory, request)];
+            for (let n of npmDirs) {
+                try {
+                    const dir = fs.statSync(n);
+                    if (dir && dir.isDirectory()) {
+                        return true;
+                    }
+                }
+                catch (e2) {}
+            }
+            throw new Error();
         }
     }
     catch (e) {
         return parsed.dir.indexOf('.') === 0;
+    }
+};
+
+/**
+ * Determines if an NPM install should be performed in a modules directory.
+ * @param {string} dirName the directory of the module
+ * @returns {boolean} if NPM install should be run on the directory.
+ */
+const shouldInstallLocally = (dirName) => {
+    try {
+        const p = path.join(dirName, npmLocalDirective),
+            d = fs.statSync(p);
+        if (dirName.startsWith(global.__modulesPath) && d.isFile()) {
+            return JSON.parse(fs.readFileSync(p));
+        }
+        return false;
+    }
+    catch (e) {
+        return false;
     }
 };
 
@@ -82,12 +112,21 @@ const resolve = (request, dirName) => {
 const installAndRequire = (req, name, dirName) => {
     const v = resolve(name, dirName);
     if (!v) {
+        const args = [],
+            local = shouldInstallLocally(dirName);
+        let cwd = global.__rootPath,
+            npmName = name;
+        if (local) {
+            cwd = dirName;
+            const ver = local.dependencies[name] || local.devDependencies[name];
+            npmName = `${name}@${ver}`;
+        }
         const t = global.$$, // translations might not have loaded
-            startStr = t ? t`Installing "${name}" from npm.` : `Installing "${name}" from npm.`,
+            startStr = t ? t`Installing "${npmName}" from npm.` : `Installing "${npmName}" from npm.`,
             endStr = t ? t`Installation complete.` : 'Installation complete.';
 
         console.info(startStr);
-        npm.install([name]);
+        npm.install([npmName], cwd);
         console.info(endStr);
     }
     else if (nativeReloadHacksCache.hasOwnProperty(name)) {
