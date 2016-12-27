@@ -162,7 +162,7 @@ module.exports = (req, dirName, fileName) => {
         const res = installAndRequire(req, mod, dirName),
             p = req.resolve(mod),
             refName = global.moduleNameFromPath(p) || p;
-        if (!p.startsWith(npmDirectory) && !nativeModules.includes(mod)) {
+        if (!p.contains(npmDirectory) && !nativeModules.includes(mod)) {
             if (!referenceCounts.hasOwnProperty(refName)) {
                 referenceCounts[refName] = {
                     self: [],
