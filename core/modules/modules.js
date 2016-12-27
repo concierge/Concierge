@@ -102,6 +102,25 @@ class ModuleLoader extends EventEmitter {
     }
 
     /**
+     * Check for existing loaded modules of the same name.
+     * @param {Object<>} module the module descriptor to check for.
+     * @returns {boolean} if a module of the same name and version have been loaded.
+     */
+    _checkExisting(module) {
+        for (let type of Object.keys(this._loaded)) {
+            if (!this._loaded.hasOwnProperty(type)) {
+                continue;
+            }
+            const filtered = this._loaded[type].filter(val => val.__descriptor.name === module.name
+                && val.__descriptor.version === module.version);
+            if (filtered.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Loads a module based on a provided module descriptor.
      * @param {Object<>} module the module descriptor.
      * @fires ModuleLoader#preload
@@ -115,6 +134,11 @@ class ModuleLoader extends EventEmitter {
          * @type {object} module descriptor.
          */
         this.emit('preload', module);
+
+        if (this._checkExisting(module)) {
+            return null; // already loaded
+        }
+
         const ld = this._loadModuleInternal(module);
         if (!ld) {
             const loadObj = {
