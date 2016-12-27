@@ -35,6 +35,8 @@ It will contain the following files:
 Concierge has been created using [Node.JS](https://nodejs.org/). As with any Node.JS application, it is possible to depend on other Node.JS modules using `require`. Within Concierge, `require` has been extended to automatically install modules from [NPM](https://www.npmjs.com/) if they are not found locally.
 For example, if you inserted the statement `require('foo')` into a module and `foo` was an NPM module that had not already been installed, `foo` would be installed before letting your module continue execution.
 
+In addition, node modules within the `core/common` directory can be required using `require('concierge/*')`, where `*` is the name of the module. These have been created for common use cases of Concierge.
+
 ### Methods
 Every module must provide the some basic methods depending on their type. These are used to perform whatever tasks are required. The basic types are:
 - [Module](./api/Module.md). A module listens for and responds to messages from users.
@@ -60,3 +62,14 @@ New modules will be automatically detected and loaded after a restart of the app
 - `/restart` from the `restart` module. This restarts Concierge, reloading the module in the process.
 
 Please note that the `/update` command from the `update` module only updates Concierge, not the modules installed within it.
+
+### Globals
+Within Concierge, a number of globals are defined for your convenience. Modifications to these could have adverse affects on the stability and functionality of Concierge.
+- `shim`, see [Integration Creation](./IntegrationCreation.md).
+- `platform`, the current instance of the platform object used to control overall Concierge.
+- `rootPathJoin(path)`, a function which allows finding a path relative to the root install directory of Concierge.
+- `__rootPath`, the install path of Concierge.
+- `__modulesPath`, the path to the default module install directory.
+- `moduleNameFromPath(path)`, a function to get the name of a module from a path passed to it.
+- `getStackTrace()`, a function to get the stack trace object until this method call.
+- `getBlame(min, max, error)`, attempts to determine from an error which module is to blame.
