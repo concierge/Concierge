@@ -21,6 +21,7 @@ class Configuration extends EventEmitter {
         super();
         this.configCache = {};
         this.interceptor = null;
+        this.interceptorCount = 0;
     }
 
     /**
@@ -29,6 +30,7 @@ class Configuration extends EventEmitter {
      */
     setInterceptor(interceptor) {
         this.interceptor = interceptor;
+        this.interceptorCount++;
         this.emit('interceptorSet', interceptor);
     }
 
@@ -46,7 +48,8 @@ class Configuration extends EventEmitter {
      * loadConfig - loads the configuration of a module.
      *
      * @param  {Object} descriptor Descriptor of the config to load. Leave empty
-     * for global config.
+     * for global config. Must contain name and type properties. Optionally can
+     * contain a force property to force the next call to load to merge configs.
      * @return {Object} An object representing the configuration.
      */
     loadConfig(descriptor) {
@@ -56,11 +59,15 @@ class Configuration extends EventEmitter {
         }
 
         if (this.configCache.hasOwnProperty(descriptor.name)) {
-            this.emit('load', this.configCache[descriptor.name]);
-            return this.configCache[descriptor.name].data;
+            if (this.configCache[descriptor.name].ic === this.interceptorCount &&
+                !this.configCache[descriptor.name].force) {
+                this.emit('load', this.configCache[descriptor.name]);
+                return this.configCache[descriptor.name].data;
+            }
+            this.configCache[descriptor.name].force = false;
         }
 
-        let data = this.interceptor ? this.interceptor.loadConfig(descriptor) : {};
+        const data = this.interceptor ? this.interceptor.loadConfig(descriptor) : {};
 
         if (this.configCache.hasOwnProperty(descriptor.name)) {
             for (let key of Object.keys(this.configCache[descriptor.name].data)) {
@@ -92,7 +99,9 @@ class Configuration extends EventEmitter {
 
         this.configCache[descriptor.name] = {
             name: descriptor.name,
-            data: data
+            data: data,
+            ic: this.interceptorCount,
+            force: !!descriptor.force
         };
 
         this.emit('load', this.configCache[descriptor.name]);
@@ -136,8 +145,7 @@ class Configuration extends EventEmitter {
 
         try {
             if (this.interceptor) {
-                this.interceptor.saveConfig(descriptor,
-                    this.configCache[descriptor.name].data);
+                this.interceptor.saveConfig(descriptor, this.configCache[descriptor.name].data);
             }
             delete this.configCache[descriptor.name];
         }
