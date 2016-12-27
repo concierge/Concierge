@@ -112,8 +112,7 @@ const shouldInstallLocally = (dirName) => {
 const installAndRequire = (req, name, dirName) => {
     const v = resolve(name, dirName);
     if (!v) {
-        const args = [],
-            local = shouldInstallLocally(dirName);
+        const local = shouldInstallLocally(dirName);
         let cwd = global.__rootPath,
             npmName = name;
         if (local) {
