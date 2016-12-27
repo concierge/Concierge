@@ -77,3 +77,6 @@ let message = 'This is a test of a very long message. But one that is not too lo
 
  // [ 'This is a ', 'test of a ', 'very long ', 'message. ', 'But one ', 'that is ', 'not too ', 'long\n I ', 'mean come ', 'on how ', 'much text ', 'do you ', 'expect me ', 'to make ', 'up for ', 'this. I\'m ', 'simply ', 'too lazy ', 'to do ', 'more.' ]
 ```
+
+### Best Practises
+- In order to be configurable at runtime, an integration should not read/depend on full configuration until the point that `start` is called. Before this point (e.g. in `load`) configuration should not be required for use (it can be initialised or looked at but not depended upon).
