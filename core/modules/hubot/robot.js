@@ -113,6 +113,17 @@ class Robot extends EventEmitter {
     }
 
     static generateHubotJson (folderPath, scriptLocation) {
+        let mod = path.join(folderPath, scriptLocation);
+        for (let ext of Object.keys(require.extensions).concat('')) {
+            try {
+                fs.statSync(mod + ext, 'utf-8');
+                scriptLocation += ext;
+                mod += ext;
+                break;
+            }
+            catch (e) {
+            }
+        }
         const hubotDocumentationSections = [
                 'description',
                 'dependencies',
@@ -125,7 +136,6 @@ class Robot extends EventEmitter {
                 'tags',
                 'urls'
             ],
-            mod = path.join(folderPath, scriptLocation),
             body = fs.readFileSync(mod, 'utf-8'),
             scriptDocumentation = { name: path.basename(mod).replace(/\.(coffee|js)$/, '') },
             ref = body.split('\n'),

@@ -1,6 +1,6 @@
 const scopedHttpClient = require('scoped-http-client'),
     sendMessageToMultiple = (message, threads) => {
-        const apis = exports.current.getIntegrationApis();
+        const apis = global.currentPlatform.getIntegrationApis();
         for (let integ in threads) {
             if (!threads.hasOwnProperty(integ)) {
                 continue;
@@ -303,11 +303,11 @@ const IntegrationApi = module.exports = class {
             if (!thread) {
                 throw new Error('A thread must be specified.');
             }
-            global.shim.current.runMiddleware('after', origionalSend.bind(api), data, thread);
-            if (exports.current && exports.current.allowLoopback) {
+            global.currentPlatform.runMiddleware('after', origionalSend.bind(api), data, thread);
+            if (global.currentPlatform.allowLoopback) {
                 const newEvent = exports.createEvent(thread, -1, 'Bot', data);
                 newEvent.event_source = 'loopback';
-                exports.current.onMessage(api, newEvent);
+                global.currentPlatform.onMessage(api, newEvent);
             }
         };
     }

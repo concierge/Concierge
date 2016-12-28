@@ -100,7 +100,7 @@ exports.help = (commandPrefix) => {
 ## config ⇒ <code>Object</code>
 **Kind**: Object property
 
-Object for storing configuration data of the module within. Any property set on this object will automatically be persisted between restarts of your module to a `config.json` file within your modules directory. Please note that although this file has the same name as the global configuration file, it is not the same (different location and contains configuration only for your module).
+Object for storing configuration data of the module within. Provided the config (or other persistence) module is installed, any property set on this object will automatically be persisted between restarts of your module; usually to a `config.json` file within your modules directory. Please note that although this file has the same name as the global configuration file, it is not the same (different location and contains configuration only for your module).
 
 <a name="platform"></a>
 ## platform ⇒ <code>Platform</code>

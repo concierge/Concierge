@@ -16,9 +16,10 @@ module.exports = (args, cwd) => {
 /**
  * Perform an NPM install in the root directory of the program.
  * @param {Array<string>} args additional arguments to pass to NPM
+ * @param {string} cwd working directory, defaults to global.
  */
-module.exports.install = (args) => {
-    module.exports(['install'].concat(args));
+module.exports.install = (args, cwd) => {
+    module.exports(['install'].concat(args || []), cwd);
 };
 
 /**
@@ -26,5 +27,5 @@ module.exports.install = (args) => {
  * @param {Array<string>} args additional arguments to pass to NPM
  */
 module.exports.update = (args) => {
-    module.exports(['update'].concat(args));
+    module.exports(['update'].concat(args || []));
 };

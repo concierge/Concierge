@@ -35,7 +35,6 @@
   "LoadingModules": "Ładowanie modułów...",
   "LoadingSystemConfig": "Ładowanie konfiguracji systemowej...",
   "Module \"${0}\" could not be loaded.": "Moduł \"${0}\" nie mógł zostać załadowany.",
-  "No or invalid configuration file found at \"${0}\".": "Brak lub nieprawidłowy plik konfiguracyjny znaleziony w \"${0}\".",
   "Not enough information provided to describe integration.": "Niewystarczająca ilość informacji dostarczona, aby opisać integrację.",
   "ShutdownError": "Nie można wyłączyć platformy, gdy nie jest wystartowana.",
   "Skipping \"${0}\". It isn't a Hubot module.": "Pomijam \"${0}\". To nie jest moduł Hubot.",

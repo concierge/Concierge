@@ -35,7 +35,6 @@
   "LoadingModules": "मॉड्यूल लोड हो रहे है ...",
   "LoadingSystemConfig": "सिस्टम की कॉन्फ़िगरेशन लोड हो रही है ...",
   "Module \"${0}\" could not be loaded.": "\"${0}\" मॉड्यूल लोड नहीं हो पाया।",
-  "No or invalid configuration file found at \"${0}\".": "\"${0}\" में कॉन्फ़िगरेशन फ़ाइल नहीं पाई गयी य फ़िर फ़ाइल अवैध है।",
   "Not enough information provided to describe integration.": "इंटीग्रेशन का वर्णन करने के लिए प्रदान जानकारी पर्याप्त नहीं है।",
   "ShutdownError": "बिना शुरू किये प्लेटफार्म शटडाउन नहीं कर सकते हैं।",
   "Skipping \"${0}\". It isn't a Hubot module.": "\"${0}\" को छोड़ रहे है। यह एक हियूबॉट मॉड्यूल नहीं है।",

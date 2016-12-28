@@ -47,16 +47,6 @@ exports.conciergeArguments = [
             global.__modulesPath = path.resolve(value[0]);
             out.log(`Modules directory set to "${value}".`.yellow);
         }
-    },
-    {
-        long: '--configserv',
-        short: '-c',
-        description: 'Overrides the builtin configuration service with another.',
-        expects: ['FILE'],
-        run: (out, value) => {
-            global.__configService = value[0];
-            out.log('Configuration service overridden.'.yellow);
-        }
     }
 ];
 

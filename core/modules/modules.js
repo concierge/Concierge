@@ -102,6 +102,25 @@ class ModuleLoader extends EventEmitter {
     }
 
     /**
+     * Check for existing loaded modules of the same name.
+     * @param {Object<>} module the module descriptor to check for.
+     * @returns {boolean} if a module of the same name and version have been loaded.
+     */
+    _checkExisting(module) {
+        for (let type of Object.keys(this._loaded)) {
+            if (!this._loaded.hasOwnProperty(type)) {
+                continue;
+            }
+            const filtered = this._loaded[type].filter(val => val.__descriptor.name === module.name &&
+                val.__descriptor.version === module.version);
+            if (filtered.length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Loads a module based on a provided module descriptor.
      * @param {Object<>} module the module descriptor.
      * @fires ModuleLoader#preload
@@ -115,6 +134,11 @@ class ModuleLoader extends EventEmitter {
          * @type {object} module descriptor.
          */
         this.emit('preload', module);
+
+        if (this._checkExisting(module)) {
+            return null; // already loaded
+        }
+
         const ld = this._loadModuleInternal(module);
         if (!ld) {
             const loadObj = {
@@ -125,6 +149,7 @@ class ModuleLoader extends EventEmitter {
             return loadObj;
         }
         this._insertSorted(ld);
+        ld.config = ld.platform.config.loadConfig(ld.__descriptor);
         const loadObj = {
             success: true,
             module: ld
@@ -147,13 +172,15 @@ class ModuleLoader extends EventEmitter {
      * Loads all modules in the modules directory and starts the configuration service.
      */
     loadAllModules() {
-        const data = files.filesInDirectory(global.__modulesPath);
+        const data = files.filesInDirectory(global.__modulesPath),
+            resolvedModules = [],
+            resolvedSystem = [];
         for (let i = 0; i < data.length; i++) {
             try {
                 const candidate = path.resolve(path.join(global.__modulesPath, data[i])),
                     output = this.verifyModule(candidate);
                 if (output) {
-                    this.loadModule(output);
+                    (output.type.includes('system') ? resolvedSystem : resolvedModules).push(output);
                 }
                 else {
                     console.debug($$`Skipping "${data[i]}". It isn't a module.`);
@@ -164,6 +191,13 @@ class ModuleLoader extends EventEmitter {
                 console.critical(e);
                 continue;
             }
+        }
+        for (let output of resolvedSystem) {
+            this.loadModule(output); // force system to be first
+        }
+        this.emit('loadSystem');
+        for (let output of resolvedModules) {
+            this.loadModule(output);
         }
     }
 
@@ -273,6 +307,8 @@ class ModuleLoader extends EventEmitter {
             if (mod.unload) {
                 mod.unload();
             }
+            mod.platform.config.saveConfig(mod.__descriptor);
+            mod.config = null;
             mod.platform = null;
             for (let type of mod.__descriptor.type) {
                 const index = this._loaded[type].indexOf(mod);
@@ -305,15 +341,19 @@ class ModuleLoader extends EventEmitter {
      * Unloads all currently loaded modules.
      */
     unloadAllModules() {
-        for (let type in this._loaded) {
-            if (!this._loaded.hasOwnProperty(type)) {
-                continue;
-            }
-            const loadedModules = this._loaded[type].slice();
+        const unloadType = type => {
+            const loadedModules = this._loaded[type] ? this._loaded[type].slice() : [];
             for (let mod of loadedModules) {
                 this.unloadModule(mod);
             }
+        };
+        for (let type in this._loaded) {
+            if (!this._loaded.hasOwnProperty(type) || type === 'system') {
+                continue;
+            }
+            unloadType(type);
         }
+        unloadType('system'); // force system to be last
     }
 
     /**

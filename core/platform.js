@@ -11,7 +11,7 @@
 */
 
 const figlet = require('figlet'),
-    MiddlewareHandler = require('./middleware.js');
+    MiddlewareHandler = require(global.rootPathJoin('core/middleware.js'));
 
 class Platform extends MiddlewareHandler {
     constructor() {
@@ -23,10 +23,11 @@ class Platform extends MiddlewareHandler {
         this.onShutdown = null;
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
+        this.config = require(global.rootPathJoin('core/modules/config.js'));
+        this.modulesLoader.on('loadSystem', this._loadSystemConfig.bind(this));
         global.shim = require(global.rootPathJoin('core/modules/shim.js'));
-        global.shim.current = this;
         this._boundErrorHandler = (err) => {
-            global.shim.current._errorHandler.call(global.shim.current, err);
+            global.currentPlatform._errorHandler.call(global.currentPlatform, err);
         };
         process.on('uncaughtException', this._boundErrorHandler);
         process.on('unhandledRejection', this._boundErrorHandler);
@@ -122,6 +123,7 @@ class Platform extends MiddlewareHandler {
         }
         catch (e) {
             defaultModules = [
+                ['https://github.com/concierge/config.git', 'config'],
                 ['https://github.com/concierge/creator.git', 'creator'],
                 ['https://github.com/concierge/help.git', 'help'],
                 ['https://github.com/concierge/kpm.git', 'kpm'],
@@ -145,6 +147,18 @@ class Platform extends MiddlewareHandler {
                 }
             });
         }
+        this.modulesLoader.loadAllModules(this);
+    }
+
+    _loadSystemConfig() {
+        console.warn($$`LoadingSystemConfig`);
+        $$.setLocale(this.config.getSystemConfig('i18n').locale);
+        const firstRun = this.config.getSystemConfig('firstRun');
+        if (!firstRun.hasRun) {
+            firstRun.hasRun = true;
+            this._firstRun();
+        }
+        this.allowLoopback = !!this.config.getSystemConfig('loopback').enabled;
     }
 
     start(integrations) {
@@ -156,25 +170,6 @@ class Platform extends MiddlewareHandler {
         console.title(` ${this.packageInfo.version}`);
         console.info('------------------------------------');
         console.warn($$`StartingSystem`);
-
-        // Load system config
-        console.warn($$`LoadingSystemConfig`);
-        this.modulesLoader.loadModule({
-            name: 'Configuration',
-            version: 1.0,
-            type: ['service'],
-            startup: global.__configService || global.rootPathJoin('core/modules/config.js'),
-            __loaderUID: 0
-        });
-        this.config = this.modulesLoader.getLoadedModules('service')[0].configuration;
-
-        $$.setLocale(this.config.getSystemConfig('i18n').locale);
-        const firstRun = this.config.getSystemConfig('firstRun');
-        if (!firstRun.hasRun) {
-            firstRun.hasRun = true;
-            this._firstRun();
-        }
-        this.allowLoopback = !!this.config.getSystemConfig('loopback').enabled;
 
         // Load modules
         console.warn($$`LoadingModules`);
