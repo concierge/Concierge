@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /** Node.js server for a bot
  *
  * Herein lies the Node.js serverside script to tell node what to do to ensure
