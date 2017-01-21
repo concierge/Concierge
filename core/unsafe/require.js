@@ -52,8 +52,9 @@ const getActualName = (mod) => common[mod] || mod;
  * Detect if a code module needs to be installed through NPM without using any internal node
  * require mechanisms. This needs to be done manually, because newer versions of node cache resolve/require
  * lookups, which means that after they have been installed they will not be detected by using require().
- * @param request the lookup to perform.
- * @param dirName relative directory to perform the lookup from.
+ * @param {string} request the lookup to perform.
+ * @param {string} dirName relative directory to perform the lookup from.
+ * @returns {boolean} if the module has already been installed.
  */
 const resolve = (request, dirName) => {
     if (nativeModules.includes(request)) {
@@ -67,7 +68,14 @@ const resolve = (request, dirName) => {
             return file && (file.isFile() || file.isDirectory());
         }
         else {
-            const npmDirs = [path.join(dirName, npmFolder, request)];
+            const npmDirs = [];
+            const modName = global.moduleNameFromPath(dirName);
+            if (modName === null) {
+                npmDirs.push(path.join(dirName, npmFolder, request));
+            }
+            else {
+                npmDirs.push(path.join(global.__modulesPath, modName, npmFolder, request));
+            }
             if (global.__runAsLocal || dirName.startsWith(coreDirectory)) {
                 npmDirs.push(path.join(npmDirectory, request));
             }
@@ -77,13 +85,14 @@ const resolve = (request, dirName) => {
                     if (dir && dir.isDirectory()) {
                         return true;
                     }
-                }
-                catch (e2) {}
+                } catch (e2) {}
             }
             throw new Error();
         }
     }
     catch (e) {
+        console.log(e);
+        console.log(e.stack)
         return parsed.dir.indexOf('.') === 0;
     }
 };
