@@ -208,6 +208,7 @@ class Platform extends MiddlewareHandler {
         }
 
         // Unload user modules
+        this.config.saveConfig();
         this.modulesLoader.unloadAllModules();
         this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
 
