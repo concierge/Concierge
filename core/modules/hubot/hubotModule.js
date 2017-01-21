@@ -39,7 +39,7 @@ exports.verifyModule = (location) => {
             hj.version = p.version;
         }
         catch (e) {
-            const dirFiles = fs.readdirSync(folderPath);
+            const dirFiles = fs.readdirSync(folderPath).filter(f => f !== '.url');
             if (dirFiles.length !== 1) {
                 return null;
             }

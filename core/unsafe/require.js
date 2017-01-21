@@ -91,8 +91,6 @@ const resolve = (request, dirName) => {
         }
     }
     catch (e) {
-        console.log(e);
-        console.log(e.stack)
         return parsed.dir.indexOf('.') === 0;
     }
 };
