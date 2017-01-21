@@ -52,7 +52,15 @@ module.exports = (rootPath) => {
                     path.unshiftContainer('body', babylon.parse(requireInjectionStr).program.body[0]);
                 }
             }
-        }]});
+        }],
+        ignore: filename => {
+            let file = path.resolve(filename);
+            if (file.startsWith(global.__rootPath)) {
+                file = file.substr(global.__rootPath.length);
+            }
+            return file.split(path.sep).indexOf("node_modules") >= 0;
+        }
+    });
     require('babel-polyfill');
     const cs = require('coffee-script');
     cs.register();
