@@ -24,11 +24,12 @@ module.exports = (rootPath) => {
     };
 
     global.__modulesPath = rootPath === cwd ? global.rootPathJoin('modules/') : cwd;
-    global.moduleNameFromPath = (p) => {
+    global.moduleNameFromPath = p => {
         if (!p.startsWith(global.__modulesPath)) {
             return null;
         }
-        const trimmed = p.substr(global.__modulesPath.length);
+        const add = global.__modulesPath.endsWith(path.sep) ? 0 : 1;
+        const trimmed = p.substr(global.__modulesPath.length + add);
         let index = trimmed.indexOf(path.sep);
         if (index < 0) {
             index = trimmed.length;
