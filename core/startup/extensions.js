@@ -15,15 +15,15 @@ module.exports = (rootPath) => {
         cwd = process.cwd();
     // Arbitary location module loading requirements
     global.__rootPath = rootPath;
+    global.__runAsLocal = rootPath === cwd;
     global.rootPathJoin = function () {
         let root = global.__rootPath;
-        if (global.__rootPath !== cwd && arguments[0].startsWith('modules')) {
+        if (!global.__runAsLocal && arguments[0].startsWith('modules')) {
             root = cwd;
         }
         return path.join.apply(this, [root].concat(Array.from(arguments)));
     };
-
-    global.__modulesPath = rootPath === cwd ? global.rootPathJoin('modules/') : cwd;
+    global.__modulesPath = global.__runAsLocal ? global.rootPathJoin('modules/') : cwd;
     global.moduleNameFromPath = p => {
         if (!p.startsWith(global.__modulesPath)) {
             return null;

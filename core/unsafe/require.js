@@ -22,6 +22,7 @@ const npm = require(global.rootPathJoin('core/common/npm.js')),
     npmFolder = 'node_modules',
     npmDirectory = global.rootPathJoin(npmFolder),
     npmLocalDirective = 'package.json',
+    coreDirectory = global.rootPathJoin('core'),
     nativeModules = Object.getOwnPropertyNames(process.binding('natives')),
     common = {},
     referenceCounts = {};
@@ -66,7 +67,10 @@ const resolve = (request, dirName) => {
             return file && (file.isFile() || file.isDirectory());
         }
         else {
-            const npmDirs = [path.join(dirName, npmFolder, request), path.join(npmDirectory, request)];
+            const npmDirs = [path.join(dirName, npmFolder, request)];
+            if (global.__runAsLocal || dirName.startsWith(coreDirectory)) {
+                npmDirs.push(path.join(npmDirectory, request));
+            }
             for (let n of npmDirs) {
                 try {
                     const dir = fs.statSync(n);
@@ -87,10 +91,18 @@ const resolve = (request, dirName) => {
 /**
  * Determines if an NPM install should be performed in a modules directory.
  * @param {string} dirName the directory of the module
+ * @param {string} name the name of the package that is being installed
  * @returns {boolean} if NPM install should be run on the directory.
  */
-const shouldInstallLocally = (dirName) => {
+const shouldInstallLocally = (dirName, name) => {
     try {
+        if (!global.__runAsLocal) {
+            const mock = {
+                dependencies: {}
+            };
+            mock.dependencies[name] = '*';
+            return mock;
+        }
         const p = path.join(dirName, npmLocalDirective),
             d = fs.statSync(p);
         if (dirName.startsWith(global.__modulesPath) && d.isFile()) {
@@ -112,7 +124,7 @@ const shouldInstallLocally = (dirName) => {
 const installAndRequire = (req, name, dirName) => {
     const v = resolve(name, dirName);
     if (!v) {
-        const local = shouldInstallLocally(dirName);
+        const local = shouldInstallLocally(dirName, name);
         let cwd = global.__rootPath,
             npmName = name;
         if (local) {
