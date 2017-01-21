@@ -194,6 +194,7 @@ class Platform extends MiddlewareHandler {
 
         this.statusFlag = global.StatusFlag.Started;
         console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
+        this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
     }
 
     shutdown(flag) {
@@ -213,6 +214,7 @@ class Platform extends MiddlewareHandler {
         process.removeListener('uncaughtException', this._boundErrorHandler);
         process.removeListener('unhandledRejection', this._boundErrorHandler);
         console.warn($$`${this.packageInfo.name} Shutdown`);
+        clearInterval(this.heartBeat);
         this.emit('shutdown', this.statusFlag);
     }
 };
