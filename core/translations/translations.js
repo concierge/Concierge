@@ -88,7 +88,7 @@ class TranslatorService extends EventEmitter {
     }
 }
 
-contextMap[globalContext] = new TranslatorService('./core/translations/i18n/');
+contextMap[globalContext] = new TranslatorService(global.rootPathJoin('core/translations/i18n/'));
 
 /**
  * Translates a given format string.

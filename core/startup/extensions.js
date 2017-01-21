@@ -11,13 +11,19 @@
 'use strict';
 
 module.exports = (rootPath) => {
-    const path = require('path');
+    const path = require('path'),
+        cwd = process.cwd();
     // Arbitary location module loading requirements
     global.__rootPath = rootPath;
-    global.rootPathJoin = function() {
-        return path.join.apply(this, [global.__rootPath].concat(Array.from(arguments)));
+    global.rootPathJoin = function () {
+        let root = global.__rootPath;
+        if (global.__rootPath !== cwd && arguments[0].startsWith('modules')) {
+            root = cwd;
+        }
+        return path.join.apply(this, [root].concat(Array.from(arguments)));
     };
-    global.__modulesPath = global.rootPathJoin('modules/');
+
+    global.__modulesPath = rootPath === cwd ? global.rootPathJoin('modules/') : cwd;
     global.moduleNameFromPath = (p) => {
         if (!p.startsWith(global.__modulesPath)) {
             return null;
@@ -58,7 +64,7 @@ module.exports = (rootPath) => {
             if (file.startsWith(global.__rootPath)) {
                 file = file.substr(global.__rootPath.length);
             }
-            return file.split(path.sep).indexOf("node_modules") >= 0;
+            return file.split(path.sep).indexOf('node_modules') >= 0;
         }
     });
     require('babel-polyfill');
