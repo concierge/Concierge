@@ -1,6 +1,8 @@
 # Concierge
 [![Build Status](https://api.travis-ci.org/concierge/Concierge.svg?branch=master)](https://travis-ci.org/concierge/Concierge) [![Build status](https://ci.appveyor.com/api/projects/status/eis48if0bf8ynq69?svg=true)](https://ci.appveyor.com/project/mrkno/concierge) [![Codacy Badge](https://api.codacy.com/project/badge/Grade/0d267567f8874ad2ae3d72ac44c9c492)](https://www.codacy.com/app/Concierge/Concierge?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=concierge/Concierge&amp;utm_campaign=Badge_Grade)
 
+[![NPM](https://nodei.co/npm/concierge-bot.png?compact=true)](https://npmjs.org/package/concierge-bot)
+
 (Karma + Sassy) * (Discord + Facebook + Messenger + Slack + Skype + Telegram) = Concierge
 
 
