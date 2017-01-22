@@ -26,22 +26,29 @@
 // Load NodeJS Modifications/Variables
 require('./core/startup/extensions.js')(__dirname);
 
-const startup = require('./core/startup/startup.js'),
-    argp = require('./core/common/arguments.js');
+const startup = require('./core/startup/startup.js');
 
-// Parse optional arguments
-const args = argp.parseArguments(process.argv.slice(2), argp.conciergeArguments, { enabled: true, string: 'node main.js', colours: true }, true);
+// Directly called?
+if (require.main === module) {
+    const argp = require('./core/common/arguments.js');
 
-// Check if help was run
-if (args.parsed['-h']) {
-    process.exit(0);
+    // Parse optional arguments
+    const args = argp.parseArguments(process.argv.slice(2), argp.conciergeArguments, { enabled: true, string: 'node main.js', colours: true }, true);
+
+    // Check if help was run
+    if (args.parsed['-h']) {
+        process.exit(0);
+    }
+
+    // Check startup modes
+    if (args.unassociated.length === 0) {
+        console.info('No integrations specified, defaulting to \'test\'.');
+        args.unassociated.push('test');
+    }
+
+    const startArgs = args.unassociated.map(arg => arg.toLowerCase());
+    startup.run(startArgs);
+    return;
 }
 
-// Check startup modes
-if (args.unassociated.length === 0) {
-    console.info('No integrations specified, defaulting to \'test\'.');
-    args.unassociated.push('test');
-}
-
-const startArgs = args.unassociated.map(arg => arg.toLowerCase());
-startup.run(startArgs);
+module.exports = require('./core/startup/exports.js')(startup);

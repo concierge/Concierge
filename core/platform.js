@@ -14,8 +14,9 @@ const figlet = require('figlet'),
     MiddlewareHandler = require(global.rootPathJoin('core/middleware.js'));
 
 class Platform extends MiddlewareHandler {
-    constructor() {
+    constructor(bypassInit) {
         super();
+        this.bypassInit = bypassInit;
         this.defaultPrefix = '/';
         this.packageInfo = require(global.rootPathJoin('package.json'));
         this.modulesLoader = new (require(global.rootPathJoin('core/modules/modules.js')))(this);
@@ -115,6 +116,9 @@ class Platform extends MiddlewareHandler {
     }
 
     _firstRun () {
+        if (this.bypassInit) {
+            return;
+        }
         const git = require('concierge/git'),
             path = require('path');
         let defaultModules;

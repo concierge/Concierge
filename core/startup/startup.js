@@ -18,7 +18,8 @@
 const translationsReq = rootPathJoin('core/translations/translations.js'),
     platformReq = rootPathJoin('core/platform.js');
 
-let startArgs = null;
+let startArgs = null,
+    directRequire = false;
 
 const checkShutdownCode = (code) => {
     if (code === StatusFlag.ShutdownShouldRestart) {
@@ -26,31 +27,41 @@ const checkShutdownCode = (code) => {
         global.currentPlatform = null;
         require.unrequire(translationsReq, __filename);
         require.unrequire(platformReq, __filename);
-        exports.run();
+        if (!directRequire) {
+            exports.run();
+        }
     }
-    else {
+    else if (!directRequire) {
         process.exit(0);
     }
 };
 
-exports.run = (startArgsP) => {
+exports.run = startArgsP => {
     try {
         if (!startArgs && startArgsP) {
             startArgs = startArgsP;
+        }
+        else if (!startArgs && !startArgsP) {
+            directRequire = true;
+            startArgs = [];
         }
         global.$$ = require(translationsReq);
 
         // quickest way to clone in JS, prevents reuse of same object between startups
         const startClone = JSON.parse(JSON.stringify(startArgs)),
             Platform = require(platformReq);
-        global.currentPlatform = new Platform();
+        global.currentPlatform = new Platform(directRequire);
         global.currentPlatform.on('shutdown', checkShutdownCode);
         global.currentPlatform.start(startClone);
+        return global.currentPlatform;
     }
     catch (e) {
         console.critical(e);
         console.error('A critical error occurred while running. Please check your configuration or report a bug.');
-        process.exit(-3);
+        if (!directRequire) {
+            process.exit(-3);
+        }
+        throw e;
     }
 };
 
@@ -58,7 +69,9 @@ const stop = () => {
     if (global.currentPlatform) {
         global.currentPlatform.shutdown();
     }
-    process.exit(0);
+    if (!directRequire) {
+        process.exit(0);
+    }
 };
 
 process.on('SIGHUP', () => {
