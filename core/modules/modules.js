@@ -211,7 +211,7 @@ class ModuleLoader extends EventEmitter {
      */
     startIntegration(callback, integration) {
         if (typeof (integration) === 'string') {
-            const filtered = this._loaded.integration.filter(val => val.__descriptor.name === integration);
+            const filtered = (this._loaded.integration || []).filter(val => val.__descriptor.name === integration);
             if (filtered.length !== 1) {
                 throw new Error('Cannot find integration to start');
             }
@@ -365,7 +365,7 @@ class ModuleLoader extends EventEmitter {
      */
     stopIntegration(integration) {
         if (typeof(integration) === 'string') {
-            const filtered = this._loaded.integration.filter(val => val.__descriptor.name === integration);
+            const filtered = (this._loaded.integration || []).filter(val => val.__descriptor.name === integration);
             if (filtered.length !== 1) {
                 throw new Error('Cannot find integration to stop.');
             }

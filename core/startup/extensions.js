@@ -34,7 +34,11 @@ module.exports = (rootPath) => {
         if (index < 0) {
             index = trimmed.length;
         }
-        return trimmed.substr(0, index);
+        const res = trimmed.substr(0, index);
+        if (res === 'node_modules') {
+            return null;
+        }
+        return res;
     };
 
     // Platform status flags
