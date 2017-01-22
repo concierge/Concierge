@@ -23,7 +23,7 @@ module.exports = startup => {
         if (opts.locale) {
             $$.setLocale(opts.locale);
         }
-        p.allowLoopback = !!opts.allowLoopback;
+        p.allowLoopback = !!opts.loopback;
         const con = require('../unsafe/console.js');
         con.setDebug(!!opts.debug);
         con.setTimestamp(!!opts.timestamp);
@@ -39,7 +39,7 @@ module.exports = startup => {
         // start integrations
         if (Array.isArray(opts.integrations)) {
             for (let i of opts.integrations) {
-                p.modulesLoader.startIntegration(p.onMessage, i);
+                p.modulesLoader.startIntegration(p.onMessage.bind(p), i);
             }
         }
 

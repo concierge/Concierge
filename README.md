@@ -17,7 +17,7 @@ Make sure you have **GIT** and **NPM** installed and added to your system PATH b
 - [Install NPM](https://nodejs.org/en/download/)
 
 #### Installation
-Open a terminal/prompt and enter the following commands to clone the repository and install required npm packages:
+Installation can either be done using `git` or `npm` ([see which approach is right for you here](doc/UsageTypes.md)). One approach is to open a terminal/prompt and enter the following commands to clone the repository and install required npm packages:
 ```
 git clone https://github.com/concierge/Concierge.git
 cd Concierge
@@ -29,7 +29,7 @@ Now you are ready to use and develop modules for Concierge.
 Concierge comes ready-to-run, so to start the bot:
 - Open up a terminal/prompt, navigate to Concierge's root directory
 - Start Concierge using `node main.js` (or alternatively `npm start`)
-- First startup will install some of the default modules (these can be configured [here](doc/DefaultCommands.md)) and If all goes well, you should see a prompt prefixed 
+- First startup will install some of the default modules (these can be configured [here](doc/DefaultCommands.md)) and If all goes well, you should see a prompt prefixed
 
 > Concierge-bot>
 
@@ -48,7 +48,7 @@ Now let's go a step further and connect Concierge with an actual social network
 #### Integrating with a social network
 This simply requires installing the social network's `integration` in the `modules` directory.
 
-[kpm](https://github.com/concierge/kpm) is a great module that makes this process a piece of cake. The process can be generalized into the following steps 
+[kpm](https://github.com/concierge/kpm) is a great module that makes this process a piece of cake. The process can be generalized into the following steps
 
 - Run Concierge and ensure `kpm` was successfully loaded.
 - Use `/kpm install <integration_name>` to install the integration where `<integration_name>` is the name of the social network integration.
@@ -77,6 +77,7 @@ Now you can customize your Concierge by installing or creating your own modules.
 	- [Translations](doc/api/Translation.md)
 - [KPM Modules Table](https://github.com/concierge/Concierge/wiki/KPM-Table)
 - [Default Commands](doc/DefaultCommands.md)
+- [Usage Types](doc/UsageTypes.md)
 - [Usage Example/Overview](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118)
 - Integrations (Integrations are chat platforms that Concierge integrates into)
 	- Existing Integrations. *Look here for documentation on how to set them up.*
@@ -106,4 +107,4 @@ Written to see if it could be done, not written to be readable.<br><b>Enter at y
 Contributions welcome, see [Contributing](doc/Contributing.md).
 
 ## Copyright and License
-Licensed under the MIT license. Unless otherwise specified, code is Copyright (c) Matthew Knox 2015.
+Licensed under the MIT license. Unless otherwise specified, code is Copyright (c) Matthew Knox 2017.
