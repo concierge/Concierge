@@ -24,9 +24,9 @@ module.exports = startup => {
             $$.setLocale(opts.locale);
         }
         p.allowLoopback = !!opts.loopback;
-        const con = require('../unsafe/console.js');
-        con.setDebug(!!opts.debug);
-        con.setTimestamp(!!opts.timestamp);
+        // const con = require('../unsafe/console.js');
+        // con.setDebug(!!opts.debug);
+        // con.setTimestamp(!!opts.timestamp);
 
         // load modules
         if (Array.isArray(opts.modules)) {

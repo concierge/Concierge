@@ -170,9 +170,8 @@ class Platform extends MiddlewareHandler {
             throw new Error($$`StartError`);
         }
 
-        console.title(figlet.textSync(this.packageInfo.name.toProperCase()));
-        console.title(` ${this.packageInfo.version}`);
-        console.info('------------------------------------');
+        console.title(`\n${figlet.textSync(this.packageInfo.name.toProperCase())}\n `
+            + `${this.packageInfo.version}\n------------------------------------`);
         console.warn($$`StartingSystem`);
 
         // Load modules

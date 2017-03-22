@@ -1,30 +1,29 @@
-const consolec = require(global.rootPathJoin('core/unsafe/console.js'));
 exports.conciergeArguments = [
     {
         long: '--debug',
         short: '-d',
         description: 'Enables debug level logging.',
-        run: (out) => {
+        run: out => {
             out.log('Debug mode enabled.'.yellow);
-            consolec.setDebug(true);
+            console.setDebug(true);
         }
     },
     {
         long: '--log',
         short: '-l',
         description: 'Saves logs to a local file.',
-        run: (out) => {
+        run: out => {
             out.log('Logging mode enabled.'.yellow);
-            consolec.setLog(true);
+            console.setLog(true);
         }
     },
     {
         long: '--timestamp',
         short: '-t',
         description: 'Adds a timestamp to each output log message.',
-        run: (out) => {
+        run: out => {
             out.log('Console timestamps enabled.'.yellow);
-            consolec.setTimestamp(true);
+            console.setTimestamp(true);
         }
     },
     {
