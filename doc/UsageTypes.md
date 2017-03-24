@@ -41,7 +41,7 @@ const platform = concierge({
     ],
     integrations: ['test'],
     locale: 'en',
-    debug: true,
+    debug: 'verbose',
     timestamp: false,
     loopback: false
 });

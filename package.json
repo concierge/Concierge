@@ -1,6 +1,6 @@
 {
   "name": "concierge-bot",
-  "version": "4.0.0-beta.2.0.3",
+  "version": "4.0.0",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -12,7 +12,8 @@
     "coffee-script": "^1.10.0",
     "colors": "^1.1.2",
     "figlet": "^1.1.1",
-    "scoped-http-client": "^0.11.0"
+    "scoped-http-client": "^0.11.0",
+    "winston": "^2.3.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",

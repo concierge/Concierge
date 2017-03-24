@@ -30,23 +30,9 @@ const startup = require('./core/startup/startup.js');
 
 // Directly called?
 if (require.main === module) {
-    const argp = require('./core/common/arguments.js');
-
-    // Parse optional arguments
-    const args = argp.parseArguments(process.argv.slice(2), argp.conciergeArguments, { enabled: true, string: 'node main.js', colours: true }, true);
-
-    // Check if help was run
-    if (args.parsed['-h']) {
-        process.exit(0);
-    }
-
-    // Check startup modes
-    if (args.unassociated.length === 0) {
-        console.info('No integrations specified, defaulting to \'test\'.');
-        args.unassociated.push('test');
-    }
-
-    const startArgs = args.unassociated.map(arg => arg.toLowerCase());
+    const cli = require('./core/startup/cli.js'),
+        args = cli(process.argv.slice(2)),
+        startArgs = args.unassociated.map(arg => arg.toLowerCase());
     startup.run(startArgs);
     return;
 }

@@ -95,8 +95,8 @@ module.exports = (rootPath) => {
         return this.length >= 2 ? this[0].toUpperCase() + this.substring(1) : this;
     };
 
-    // console modifications
-    require(rootPathJoin('core/unsafe/console.js'));
+    // logging modifications
+    require(rootPathJoin('core/unsafe/logging.js'));
 
     // Raw stack traces
     if (!Error.prepareStackTrace) {

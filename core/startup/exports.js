@@ -15,7 +15,7 @@ module.exports = startup => {
 
         // start platform
         const p = startup.run();
-        if (p === null) {
+        if (p === null || p === void(0)) {
             throw new Error('An unexpected error occurred during startup.');
         }
 
@@ -24,9 +24,14 @@ module.exports = startup => {
             $$.setLocale(opts.locale);
         }
         p.allowLoopback = !!opts.loopback;
-        const con = require('../unsafe/console.js');
-        con.setDebug(!!opts.debug);
-        con.setTimestamp(!!opts.timestamp);
+
+        console.setTimestamp(!!opts.timestamp);
+        if (typeof (opts.debug) === 'string') {
+            console.setLogLevel(opts.debug.trim().toLowerCase());
+        }
+        else {
+            console.setLogLevel(!!opts.debug ? 'debug' : 'info');
+        }
 
         // load modules
         if (Array.isArray(opts.modules)) {

@@ -1,55 +1,3 @@
-const consolec = require(global.rootPathJoin('core/unsafe/console.js'));
-exports.conciergeArguments = [
-    {
-        long: '--debug',
-        short: '-d',
-        description: 'Enables debug level logging.',
-        run: (out) => {
-            out.log('Debug mode enabled.'.yellow);
-            consolec.setDebug(true);
-        }
-    },
-    {
-        long: '--log',
-        short: '-l',
-        description: 'Saves logs to a local file.',
-        run: (out) => {
-            out.log('Logging mode enabled.'.yellow);
-            consolec.setLog(true);
-        }
-    },
-    {
-        long: '--timestamp',
-        short: '-t',
-        description: 'Adds a timestamp to each output log message.',
-        run: (out) => {
-            out.log('Console timestamps enabled.'.yellow);
-            consolec.setTimestamp(true);
-        }
-    },
-    {
-        long: '--language',
-        short: '-i',
-        description: 'Sets the locale that should be used by the bot.',
-        expects: ['LOCALE'],
-        run: (out, value) => {
-            out.log(`Locale set to "${value[0]}".`.yellow);
-            global.__i18nLocale = value[0];
-        }
-    },
-    {
-        long: '--moduledir',
-        short: '-m',
-        description: 'Sets the search path for modules used by the bot.',
-        expects: ['DIRECTORY'],
-        run: (out, value) => {
-            let path = require('path');
-            global.__modulesPath = path.resolve(value[0]);
-            out.log(`Modules directory set to "${value}".`.yellow);
-        }
-    }
-];
-
 class OutputBuffer {
     constructor(consoleOutput) {
         this.output = '';
@@ -127,8 +75,9 @@ const generateHelp = (options, config) => {
  * {
  *    long: '--example',
  *    short: '-e',
- *    description: 'An example option that calls a function with its associated argument "FILE"',
- *    expects: ['FILE'],
+ *    description: 'An example option that calls a function with its associated arguments "FILE" and "FOLDER"',
+ *    expects: ['FILE', 'FOLDER'],
+ *    defaults: ['default_folder'],
  *    run: (out, vals) => {
  *        // vals[0] === file
  *    }
@@ -157,7 +106,7 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
     };
     for (let i = 0; i < args.length; i++) {
         const arg = args[i],
-            pargs = options.filter((value) => { return value.short === arg || value.long === arg; });
+            pargs = options.filter(value => value.short === arg || value.long === arg);
         if (pargs.length === 0) {
             continue;
         }
@@ -168,22 +117,39 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
         const vals = [],
             count = (pargs[0].expects || {}).length || 0;
         for (let j = 1; j <= count; j++) {
-            if (args[i + j]) {
+            const nexta = args[i + j];
+            if (nexta && !options.some(value => value.short === nexta || value.long === nexta)) {
                 vals.push(args[i + j]);
             }
+            else if (pargs[0].defaults && j > count - pargs[0].defaults.length) {
+                vals.push(pargs[0].defaults[j - pargs[0].defaults.length]);
+            }
             else if (!ignoreError) {
+                console.log();
                 throw new Error(`Too few arguments given to "${arg}"`);
             }
         }
-        const diff = 1 + count;
-        args.splice(i, diff);
-        i -= diff;
         const out = new OutputBuffer(consoleOutput),
-            res = pargs[0].run ? pargs[0].run(out, vals) : false,
             p = {
                 vals: vals,
-                out: out.toString()
+                out: null
             };
+        let res;
+        try {
+            res = pargs[0].run ? pargs[0].run(out, vals) : false;
+            p.out = out.toString();
+        }
+        catch (e) {
+            // if there is a default, execute that instead
+            if (pargs[0].defaults && pargs[0].run) {
+                for (let j = pargs[0].defaults.length - 1, k = vals.length - 1; j >= 0; j--, k--) {
+                    vals[k] = pargs[0].defaults[j];
+                }
+                out.clear();
+                res = pargs[0].run(out, vals);
+                p.out = out.toString();
+            }
+        }
         if (parsed.parsed[pargs[0].short]) {
             let next = parsed.parsed[pargs[0].short];
             while (next.next) {
@@ -194,6 +160,10 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
         else {
             parsed.parsed[pargs[0].short] = p;
         }
+
+        const diff = 1 + count;
+        args.splice(i, diff);
+        i -= diff;
 
         if (res) {
             break;
