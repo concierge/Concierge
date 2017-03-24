@@ -42,7 +42,6 @@ module.exports = (bypassInit, config, modulesLoader) => {
                 console.error($$`Failed to install module from "${def[0]}"`);
             }
             else {
-                ;
                 console.warn($$`"${def[1]}" (${getJson(path.join(installPath, 'kassy.json')).version}) is now installed.`);
             }
         });

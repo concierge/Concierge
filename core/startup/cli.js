@@ -57,11 +57,11 @@ module.exports = cliArgs => {
     try {
         // Parse optional arguments
         const args = argsParser.parseArguments(cliArgs, conciergeArguments, {
-                enabled: true,
-                string: 'node main.js',
-                colours: true
-            },
-            true);
+            enabled: true,
+            string: 'node main.js',
+            colours: true
+        },
+        true);
         // Check if help was run
         if (args.parsed['-h']) {
             process.exit(0);

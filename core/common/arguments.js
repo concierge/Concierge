@@ -129,15 +129,27 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
                 throw new Error(`Too few arguments given to "${arg}"`);
             }
         }
-        const diff = 1 + count;
-        args.splice(i, diff);
-        i -= diff;
         const out = new OutputBuffer(consoleOutput),
-            res = pargs[0].run ? pargs[0].run(out, vals) : false,
             p = {
                 vals: vals,
-                out: out.toString()
+                out: null
             };
+        let res;
+        try {
+            res = pargs[0].run ? pargs[0].run(out, vals) : false;
+            p.out = out.toString();
+        }
+        catch (e) {
+            // if there is a default, execute that instead
+            if (pargs[0].defaults && pargs[0].run) {
+                for (let j = pargs[0].defaults.length - 1, k = vals.length - 1; j >= 0; j--, k--) {
+                    vals[k] = pargs[0].defaults[j];
+                }
+                out.clear();
+                res = pargs[0].run(out, vals);
+                p.out = out.toString();
+            }
+        }
         if (parsed.parsed[pargs[0].short]) {
             let next = parsed.parsed[pargs[0].short];
             while (next.next) {
@@ -148,6 +160,10 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
         else {
             parsed.parsed[pargs[0].short] = p;
         }
+        
+        const diff = 1 + count;
+        args.splice(i, diff);
+        i -= diff;
 
         if (res) {
             break;
