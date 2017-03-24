@@ -247,7 +247,7 @@ class Robot extends EventEmitter {
                 event.__robotCallbackListeners[i].callback(responder);
             }
         };
-        Object.defineProperty(wrapper, "name", { value: funcName });
+        Object.defineProperty(wrapper, 'name', { value: funcName });
         wrapper();
     }
 
