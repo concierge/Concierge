@@ -15,3 +15,4 @@ obj/*
 .DS_Store
 WE-Palette.css
 defaults.json
+npm-debug.log.*

@@ -26,7 +26,10 @@ const util = require('util'),
 global.LOG = new winston.Logger();
 
 colours.setTheme({
-    info: 'cyan',
+    silly: 'blue',
+    debug: 'cyan',
+    log: 'white',
+    info: 'green',
     warn: 'yellow',
     error: ['red', 'bold'],
     title: ['green', 'bold']
@@ -39,22 +42,30 @@ global.LOG.add(winston.transports.Console, {
 });
 
 const formatArgs = (args, colour) => {
-    const out = [util.format.apply(util.format, Array.prototype.slice.call(args))];
-    if (colour)
-        out[0] = out[0][colour];
-    return out;
+    const res = [util.format.apply(util.format, Array.prototype.slice.call(args))];
+    if (colour) {
+        res[0] = res[0][colour];
+    }
+    return res;
 };
 
-console.log = (...args) => global.LOG.info.apply(global.LOG, formatArgs(args));
-console.info = (...args) => global.LOG.info.apply(global.LOG, formatArgs(args, 'info'));
-console.warn = (...args) => global.LOG.warn.apply(global.LOG, formatArgs(args, 'warn'));
 console.error = (...args) => global.LOG.error.apply(global.LOG, formatArgs(args, 'error'));
-console.debug = (...args) => global.LOG.debug.apply(global.LOG, formatArgs(args, 'warn'));
+console.warn = (...args) => global.LOG.warn.apply(global.LOG, formatArgs(args, 'warn'));
+console.info = (...args) => global.LOG.info.apply(global.LOG, formatArgs(args, 'info'));
+console.log = (...args) => global.LOG.verbose.apply(global.LOG, formatArgs(args, 'log'));
+console.debug = (...args) => global.LOG.debug.apply(global.LOG, formatArgs(args, 'debug'));
+console.silly = (...args) => global.LOG.silly.apply(global.LOG, formatArgs(args, 'silly'));
+
 console.critical = args => console.error(args.stack.toString() || args.toString());
 console.title = (...args) => global.LOG.info.apply(global.LOG, formatArgs(args, 'title'));
-console.write = console.log;
 
-console.isDebug = () => global.LOG.transports.console.level === 'debug';
-console.setDebug = enabled => fileLogger.level = global.LOG.transports.console.level = enabled ? 'debug' : 'info';
 console.setLog = enabled => global.LOG[enabled ? 'add' : 'remove'](fileLogger, null, true);
-console.setTimestamp = enabled => global.LOG.transports.console.level = fileLogger.timestamp = enabled;
+console.setLogLevel = logLevel => {
+    if (!['error', 'warn', 'info', 'verbose', 'debug', 'silly'].includes(logLevel)) {
+        throw new Error(`${logLevel} is not a valid log level.`);
+    }
+    return fileLogger.level = global.LOG.transports.console.level = logLevel;
+};
+console.setTimestamp = enabled => {
+    return global.LOG.transports.console.timestamp = fileLogger.timestamp = enabled;
+};

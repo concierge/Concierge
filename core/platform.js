@@ -27,9 +27,10 @@ class Platform extends MiddlewareHandler {
         this.config = require(global.rootPathJoin('core/modules/config.js'));
         this.modulesLoader.on('loadSystem', this._loadSystemConfig.bind(this));
         global.shim = require(global.rootPathJoin('core/modules/shim.js'));
-        this._boundErrorHandler = (err) => {
+        this._boundErrorHandler = err => {
             global.currentPlatform._errorHandler.call(global.currentPlatform, err);
         };
+        this.onMessage = this.onMessage.bind(this);
         process.on('uncaughtException', this._boundErrorHandler);
         process.on('unhandledRejection', this._boundErrorHandler);
     }
@@ -115,52 +116,13 @@ class Platform extends MiddlewareHandler {
         return apis;
     }
 
-    _firstRun () {
-        if (this.bypassInit) {
-            return;
-        }
-        const git = require('concierge/git'),
-            path = require('path');
-        let defaultModules;
-        try {
-            defaultModules = require('../defaults.json');
-        }
-        catch (e) {
-            defaultModules = [
-                ['https://github.com/concierge/config.git', 'config'],
-                ['https://github.com/concierge/creator.git', 'creator'],
-                ['https://github.com/concierge/help.git', 'help'],
-                ['https://github.com/concierge/kpm.git', 'kpm'],
-                ['https://github.com/concierge/ping.git', 'ping'],
-                ['https://github.com/concierge/restart.git', 'restart'],
-                ['https://github.com/concierge/shutdown.git', 'shutdown'],
-                ['https://github.com/concierge/update.git', 'update'],
-                ['https://github.com/concierge/test.git', 'test']
-            ];
-        }
-
-        for (let i = 0; i < defaultModules.length; i++) {
-            console.warn($$`Attempting to install module from "${defaultModules[i][0]}"`);
-            git.clone(defaultModules[i][0], path.join(global.__modulesPath, defaultModules[i][1]), (err) => {
-                if (err) {
-                    console.critical(err);
-                    console.error($$`Failed to install module from "${defaultModules[i][0]}"`);
-                }
-                else {
-                    console.warn($$`"${defaultModules[i][1]}" (${'core_' + this.packageInfo.version}) is now installed.`);
-                }
-            });
-        }
-        this.modulesLoader.loadAllModules(this);
-    }
-
     _loadSystemConfig() {
         console.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
         const firstRun = this.config.getSystemConfig('firstRun');
         if (!firstRun.hasRun) {
             firstRun.hasRun = true;
-            this._firstRun();
+            require(global.rootPathJoin('core/modules/firstRun.js'))(this.bypassInit, this.config, this.modulesLoader);
         }
         this.allowLoopback = !!this.config.getSystemConfig('loopback').enabled;
     }
@@ -170,8 +132,8 @@ class Platform extends MiddlewareHandler {
             throw new Error($$`StartError`);
         }
 
-        console.title(`\n${figlet.textSync(this.packageInfo.name.toProperCase())}\n `
-            + `${this.packageInfo.version}\n------------------------------------`);
+        console.title(`\n${figlet.textSync(this.packageInfo.name.toProperCase())}` +
+            `\n ${this.packageInfo.version}\n------------------------------------`);
         console.warn($$`StartingSystem`);
 
         // Load modules
@@ -182,7 +144,7 @@ class Platform extends MiddlewareHandler {
         for (let integration of integrations) {
             try {
                 console.info($$`Loading integration '${integration}'...\t`);
-                this.modulesLoader.startIntegration(this.onMessage.bind(this), integration);
+                this.modulesLoader.startIntegration(this.onMessage, integration);
             }
             catch (e) {
                 if (e.message === 'Cannot find integration to start') {

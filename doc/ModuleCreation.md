@@ -50,11 +50,18 @@ Every module must have a `kassy.json` file containing some basic information abo
 Any data stored in `exports.config` within the scope of a module will automatically be persistent between restarts of the program, provided a safe shutdown and an error free startup. Note that data in this variable is not guaranteed to be set before `load()` is called on your module. See [Module.md#config](./api/Module.md#config) for more information.
 
 ### Logging and Errors
-Any logging and errors should **NOT** be logged to the console using any methods other than:
-- `console.debug(str)` - logs `str` to the console if and only if debugging is enabled.
-- `console.critical(exception)`- logs the message and trace of an Exception (`exception`) to the console if and only if debugging is enabled.
+Concierge uses `winston` logging with `npm` log levels (default log level is `info`). This means that the following log levels are avalible:  
 
-This is to prevent spamming users with information that is not relevant.
+| Log Level | Usage | Console Equivalent | Winston Equivalent | CLI Argument |
+|:---------:|-------|:------------------:|:------------------:|:------------:|
+|Error      | When a critical error occurs within your module. | `console.error` (use `console.critical` for exceptions) | `LOG.error` | `error` |
+|Warn       | When a non-critical error/problem or major status change occurs within your module. | `console.warn` | `LOG.warn` | `warn` |
+|Info       | Useful but undetailed status information; summary. | `console.info` (use `console.title` for message emphasis) | `LOG.info` | `info` |
+|Verbose    | Useful detailed status information. | `console.log` | `LOG.verbose` | `verbose` |
+|Debug      | Useful debugging information. | `console.debug` | `LOG.debug` | `debug` |
+|Silly      | Anything that does not fit into the previous categories. | `console.silly` | `LOG.silly` | `silly` |
+
+Conforming to these log levels will help prevent spamming end users with messages that they do not need to see.
 
 ### Loading Modules
 New modules will be automatically detected and loaded after a restart of the application. Aside from a normal restart of the application this task can also be achieved using the following commands if the appropriate modules are installed:

@@ -27,15 +27,15 @@ class ModuleLoader extends EventEmitter {
 
     _loadModuleInternal(module) {
         try {
-            console.write($$`Loading module '${module.name}'... ${(console.isDebug() ? '\n' : '\t')}`);
+            console.info($$`Loading module '${module.name}'... ${' '}`);
             const m = this._loaders[module.__loaderUID].loadModule(module);
             m.__descriptor = module;
             m.platform = this.platform;
-            console.info(console.isDebug() ? $$`Loading Succeeded` : $$`[DONE]`);
+            console.info($$`Loading Succeeded`);
             return m;
         }
         catch (e) {
-            console.error(console.isDebug() ? $$`Loading Failed` : $$`[FAIL]`);
+            console.error($$`Loading Failed`);
             console.critical(e);
             console.debug($$`Module "${module.name}" could not be loaded.`);
             return null;
