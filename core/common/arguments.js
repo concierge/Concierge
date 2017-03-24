@@ -160,7 +160,7 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
         else {
             parsed.parsed[pargs[0].short] = p;
         }
-        
+
         const diff = 1 + count;
         args.splice(i, diff);
         i -= diff;
