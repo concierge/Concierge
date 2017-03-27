@@ -114,8 +114,8 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
             throw new Error('Invalid Arguments');
         }
 
-        const vals = [],
-            count = (pargs[0].expects || {}).length || 0;
+        const vals = [];
+        let count = (pargs[0].expects || {}).length || 0;
         for (let j = 1; j <= count; j++) {
             const nexta = args[i + j];
             if (nexta && !options.some(value => value.short === nexta || value.long === nexta)) {
@@ -123,9 +123,9 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
             }
             else if (pargs[0].defaults && j > count - pargs[0].defaults.length) {
                 vals.push(pargs[0].defaults[j - pargs[0].defaults.length]);
+                count--;
             }
             else if (!ignoreError) {
-                console.log();
                 throw new Error(`Too few arguments given to "${arg}"`);
             }
         }
@@ -144,6 +144,7 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
             if (pargs[0].defaults && pargs[0].run) {
                 for (let j = pargs[0].defaults.length - 1, k = vals.length - 1; j >= 0; j--, k--) {
                     vals[k] = pargs[0].defaults[j];
+                    count--;
                 }
                 out.clear();
                 res = pargs[0].run(out, vals);
