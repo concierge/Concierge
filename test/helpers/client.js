@@ -1,5 +1,4 @@
-const fs = require('fs'),
-    WebSocket = require('ws');
+const WebSocket = require('ws');
 
 class Client {
     constructor() {

@@ -52,6 +52,8 @@ module.exports = function (grunt) {
             concierge: {
                 cmd: 'node',
                 args: [
+                    '--use_strict',
+                    '--harmony',
                     'main.js',
                     'grunt',
                     '--debug',
