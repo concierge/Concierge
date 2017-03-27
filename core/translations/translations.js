@@ -11,6 +11,7 @@
 
 const EventEmitter = require('events'),
     path = require('path'),
+    fs = require('fs'),
     files = require('concierge/files'),
     defaultLocale = 'en',
     globalContext = '*',
@@ -26,7 +27,9 @@ class TranslatorService extends EventEmitter {
         const translationFiles = files.filesInDirectory(translationsDir);
         for (let i = 0; i < translationFiles.length; i++) {
             const translationFile = path.join(translationsDir, translationFiles[i]);
-            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = require(translationFile);
+            // avoid using require so we don't have to deal with caching during module unloads...
+            const data = fs.readFileSync(translationFile, 'utf8').replace(/^\uFEFF/, '');
+            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = JSON.parse(data);
         }
         this.hook = null;
     }
@@ -168,6 +171,5 @@ module.exports.getLocale = () => {
 module.exports.removeContextIfExists = (context) => {
     if (contextMap.hasOwnProperty(context)) {
         delete contextMap[context];
-        require.unrequire(context, __filename);
     }
 };

@@ -242,6 +242,7 @@ module.exports = (req, dirName, fileName) => {
             refs = referenceCounts[curr].refs,
             ind = refs.indexOf(mod);
         if (ind < 0) {
+            LOG.silly(`mod: ${mod}\ncontext: ${context}\ncurr: ${curr}\nrefs: ${refs}`);
             throw new Error('You never required that!');
         }
         refs.splice(ind, 1);
