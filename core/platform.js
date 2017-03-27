@@ -7,14 +7,14 @@
 *
 * License:
 *        MIT License. All code unless otherwise specified is
-*        Copyright (c) Matthew Knox and Contributors 2015.
+*        Copyright (c) Matthew Knox and Contributors 2017.
 */
 
 const figlet = require('figlet'),
-    MiddlewareHandler = require(global.rootPathJoin('core/middleware.js'));
+    MiddlewareHandler = require('concierge/middleware');
 
 class Platform extends MiddlewareHandler {
-    constructor(bypassInit) {
+    constructor (bypassInit) {
         super();
         this.bypassInit = bypassInit;
         this.defaultPrefix = '/';
@@ -61,7 +61,8 @@ class Platform extends MiddlewareHandler {
             args[0].sendTyping(args[1].thread_id);
         }, this.waitingTime);
         try {
-            returnVal = module.run.apply(this, args);
+            returnVal = this.runMiddlewareSync.apply(this,
+                ['run', module.run.bind(module)].concat(args));
         }
         catch (e) {
             this._errorHandler(e, args[0], args[1]);
@@ -73,26 +74,26 @@ class Platform extends MiddlewareHandler {
         return returnVal;
     }
 
-    _handleMessage(api, event) {
+    _handleMessage (api, event) {
         const matchArgs = [event, api.commandPrefix],
             runArgs = [api, event],
             loadedModules = this.modulesLoader.getLoadedModules('module');
 
         event.module_match_count = 0;
-        for (let i = 0; i < loadedModules.length; i++) {
+        for (let lm of loadedModules) {
             let matchResult;
             try {
-                matchResult = loadedModules[i].match.apply(loadedModules[i], matchArgs);
+                matchResult = this.runMiddlewareSync.apply(this, ['match', lm.match.bind(lm)].concat(matchArgs));
             }
             catch (e) {
-                console.error($$`BrokenModule ${loadedModules[i].name}`);
+                console.error($$`BrokenModule ${lm.__descriptor.name}`);
                 console.critical(e);
                 continue;
             }
 
             if (matchResult) {
                 event.module_match_count++;
-                const transactionRes = this._handleTransaction(loadedModules[i], runArgs);
+                const transactionRes = this._handleTransaction(lm, runArgs);
                 if (event.shouldAbort || transactionRes) {
                     return;
                 }
@@ -101,22 +102,44 @@ class Platform extends MiddlewareHandler {
         this.emitAsync('message', api, event);
     }
 
-    onMessage(api, event) {
+    /**
+     * Callback for integrations, for passing messages to integrations.
+     * @param {Object} api the api that raised the message.
+     * @param {Object} event the event that occured.
+     */
+    onMessage (api, event) {
         this.runMiddleware('before', this._handleMessage, api, event);
     }
 
+    /**
+     * Gets all of the started integration APIs as a key-value pair object.
+     * @return {Object} a key-value pair object of integrations.
+     */
     getIntegrationApis () {
         const integs = this.modulesLoader.getLoadedModules('integration'),
             apis = {};
-        for (let i of integs) {
-            if (i.__running) {
-                apis[i.__descriptor.name] = i.getApi();
-            }
-        }
+        integs.filter(i => !!i.__running).each(i => {
+            apis[i.__descriptor.name] = i.getApi();
+        });
         return apis;
     }
 
-    _loadSystemConfig() {
+    /**
+     * Gets a loaded module by name or filter function.
+     * @param {string|function()} arg either the name or a filter function to find the module.
+     * @return {Object} the module (if found), array-like otherwise.
+     * @emits Platform#started
+     */
+    getModule (arg) {
+        const modules = this.modulesLoader.getLoadedModules('module');
+        let func = arg;
+        if (typeof(func) !== 'function') {
+            func = mod => mod.__descriptor.name.trim().toLowerCase() === arg.trim().toLowerCase();
+        }
+        return modules.find(func);
+    }
+
+    _loadSystemConfig () {
         console.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
         const firstRun = this.config.getSystemConfig('firstRun');
@@ -127,7 +150,12 @@ class Platform extends MiddlewareHandler {
         this.allowLoopback = !!this.config.getSystemConfig('loopback').enabled;
     }
 
-    start(integrations) {
+    /**
+     * Start Concierge, load modules and start integrations.
+     * @param {Array<string>} integrations list of integrations to start.
+     * @emits Platform#started
+     */
+    start (integrations) {
         if (this.statusFlag !== global.StatusFlag.NotStarted) {
             throw new Error($$`StartError`);
         }
@@ -160,9 +188,17 @@ class Platform extends MiddlewareHandler {
         this.statusFlag = global.StatusFlag.Started;
         console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
         this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
+        this.emitAsync('started');
     }
 
-    shutdown(flag) {
+    /**
+     * Shutdown Concierge.
+     * @param {Symbol(string)} flag shutdown status. Defaults to `global.StatusFlag.Shutdown`.
+     * @emits Platform#preshutdown
+     * @emits Platform#shutdown
+     * @see `global.StatusFlag`
+     */
+    shutdown (flag) {
         if (this.statusFlag !== global.StatusFlag.Started) {
             throw new Error($$`ShutdownError`);
         }
@@ -175,7 +211,7 @@ class Platform extends MiddlewareHandler {
         // Unload user modules
         this.config.saveConfig();
         this.modulesLoader.unloadAllModules();
-        this.statusFlag = flag ? flag : global.StatusFlag.Shutdown;
+        this.statusFlag = flag || global.StatusFlag.Shutdown;
 
         process.removeListener('uncaughtException', this._boundErrorHandler);
         process.removeListener('unhandledRejection', this._boundErrorHandler);
