@@ -150,6 +150,9 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
                 res = pargs[0].run(out, vals);
                 p.out = out.toString();
             }
+            else {
+                throw e;
+            }
         }
         if (parsed.parsed[pargs[0].short]) {
             let next = parsed.parsed[pargs[0].short];
