@@ -3,9 +3,10 @@ var assert = require('chai').assert,
     client = null;
 
 describe('Test core modules', function() {
-    this.timeout(5000);
+    this.timeout(10000);
     before(function(done) {
-        client = new Client(done);
+        client = new Client();
+        client.start(done);
     });
 
     after(function(done) {
