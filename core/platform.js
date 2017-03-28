@@ -83,7 +83,8 @@ class Platform extends MiddlewareHandler {
         for (let lm of loadedModules) {
             let matchResult;
             try {
-                matchResult = this.runMiddlewareSync.apply(this, ['match', lm.match.bind(lm)].concat(matchArgs));
+                matchResult = this.runMiddlewareSync.apply(this,
+                    ['match', lm.match.bind(lm)].concat(matchArgs, lm.__descriptor));
             }
             catch (e) {
                 console.error($$`BrokenModule ${lm.__descriptor.name}`);
