@@ -305,7 +305,7 @@ class ModuleLoader extends EventEmitter {
                 this.stopIntegration(mod);
             }
             if (mod.unload) {
-                mod.unload();
+                mod.unload(mod.platform);
             }
             mod.platform.config.saveConfig(mod.__descriptor);
             mod.config = null;
