@@ -54,7 +54,7 @@ This simply requires installing the social network's `integration` in the `modul
 
 - Run Concierge and ensure `kpm` was successfully loaded.
 - Use `/kpm install <integration_name>` to install the integration where `<integration_name>` is the name of the social network integration.
-- Use `/kpm config` with appropriate arguments *(account email, account password, etc.)* to set up the integration for connecting with the social network. Specific arguements and instructions on how to set them can be found in the integration's documentation.
+- Use `/kpm config` with appropriate arguments *(account email, account password, etc.)* to set up the integration for connecting with the social network. Specific arguments and instructions on how to set them can be found in the integration's documentation.
 - Use `/kpm start <integration_name>` to start the integration.
 
 Why not try integrating Concierge with Facebook by following the instructions [here](https://github.com/concierge/facebook).
