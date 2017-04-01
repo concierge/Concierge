@@ -102,10 +102,6 @@ Now you can customize your Concierge by installing or creating your own modules.
 ### Testing
 See [Running and writing tests](doc/Testing.md)
 
-## Disclaimer
-HERE BE DRAGONS 🐉!
-Written to see if it could be done, not written to be readable.<br><b>Enter at your own peril.</b>
-
 ## Contributions
 Contributions welcome, see [Contributing](doc/Contributing.md).
 
