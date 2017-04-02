@@ -208,6 +208,18 @@ module.exports = (req, dirName, fileName) => {
         func[key] = req[key];
     }
 
+    func.forcePackageInstall = dir => {
+        const locally = shouldInstallLocally(dir);
+        let stat = null;
+        try {
+            stat = fs.statSync(path.join(dir, npmFolder));
+        }
+        catch (e) {}
+        if (global.__runAsLocal && !stat && locally && Object.keys(locally.dependencies).length > 0) {
+            npm.install(Object.keys(locally.dependencies).map(d => `${d}@${locally.dependencies[d]}`), dir);
+        }
+    };
+
     func.searchCache = (moduleName, callback) => {
         moduleName = getActualName(moduleName);
         let mod = func.resolve(moduleName);

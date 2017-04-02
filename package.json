@@ -1,6 +1,6 @@
 {
   "name": "concierge-bot",
-  "version": "4.1.2",
+  "version": "4.1.3",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {

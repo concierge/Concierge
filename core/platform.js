@@ -119,9 +119,9 @@ class Platform extends MiddlewareHandler {
     getIntegrationApis () {
         const integs = this.modulesLoader.getLoadedModules('integration'),
             apis = {};
-        integs.filter(i => !!i.__running).each(i => {
-            apis[i.__descriptor.name] = i.getApi();
-        });
+        for (let integ of integs.filter(i => !!i.__running)) {
+            apis[integ.__descriptor.name] = integ.getApi();
+        }
         return apis;
     }
 

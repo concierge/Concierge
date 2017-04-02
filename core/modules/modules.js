@@ -28,6 +28,7 @@ class ModuleLoader extends EventEmitter {
     _loadModuleInternal(module) {
         try {
             console.info($$`Loading module '${module.name}'... ${' '}`);
+            require.forcePackageInstall(module.folderPath);
             const m = this._loaders[module.__loaderUID].loadModule(module);
             m.__descriptor = module;
             m.platform = this.platform;
