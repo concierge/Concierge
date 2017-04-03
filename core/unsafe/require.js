@@ -215,9 +215,12 @@ module.exports = (req, dirName, fileName) => {
             stat = fs.statSync(path.join(dir, npmFolder));
         }
         catch (e) {}
-        if (global.__runAsLocal && !stat && locally && Object.keys(locally.dependencies).length > 0) {
-            npm.install(Object.keys(locally.dependencies).map(d => `${d}@${locally.dependencies[d]}`), dir);
+        try {
+            if (global.__runAsLocal && !stat && locally && Object.keys(locally.dependencies).length > 0) {
+                npm.install(Object.keys(locally.dependencies).map(d => `${d}@${locally.dependencies[d]}`), dir);
+            }
         }
+        catch (e) {} // ignoring is an ugly solution, but this code *must not fail*
     };
 
     func.searchCache = (moduleName, callback) => {
