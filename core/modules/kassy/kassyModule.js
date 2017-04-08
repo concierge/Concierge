@@ -38,7 +38,7 @@ exports.verifyModule = (location) => {
     }
 
     const kj = require(p);
-    if (!(kj.name && kj.startup && kj.version)) {
+    if (!(kj.name && kj.startup && kj.version !== void(0) && kj.version != null)) {
         return null;
     }
 
