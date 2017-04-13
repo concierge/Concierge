@@ -1,23 +1,36 @@
 const path = require('path');
+const fs = require('fs');
 global.c_require = p => require(path.join(__dirname, p));
+
+const checkDirExists = dir => {
+    try {
+        const stats = fs.lstatSync(dir);
+        if (!stats.isDirectory()) {
+            throw new Error();
+        }
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+};
 
 module.exports = function (grunt) {
 
     // install the grunt integration if it does not exist
-    const fs = require('fs');
-    try {
-        const stats = fs.lstatSync('./modules/grunt');
-        if (!stats.isDirectory()) {
-            throw new Error('Grunt is not installed.');
-        }
-    }
-    catch (e) {
+    if (!checkDirExists('./modules/grunt')) {
         const git = c_require('core/common/git.js');
-        git.clone('https://github.com/concierge/grunt.git', './modules/grunt', (err) => {
+        git.clone('https://github.com/concierge/grunt.git', './modules/grunt', err => {
             if (err) {
                 throw new Error('Could not install required testing code.');
             }
         });
+    }
+
+    //  need redwrap for reddit tests
+    if (!checkDirExists('./node_modules/redwrap')) {
+        const npm = c_require('core/common/npm.js');
+        npm.install('redwrap', __dirname);
     }
 
     grunt.initConfig({
