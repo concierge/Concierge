@@ -8,6 +8,7 @@
  *              MIT License. All code unless otherwise specified is
  *              Copyright (c) Matthew Knox and Contributors 2016.
  */
+'use strict';
 
 const fs = require('fs');
 exports.filesInDirectory = (directory) => {

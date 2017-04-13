@@ -1,3 +1,5 @@
+'use strict';
+
 const exec = require('child_process').execSync,
 
     commandWithPath = (path, args, callback) => {

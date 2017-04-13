@@ -1,3 +1,5 @@
+'use strict';
+
 class OutputBuffer {
     constructor(consoleOutput) {
         this.output = '';

@@ -1,3 +1,5 @@
+'use strict';
+
 const reddit = require('redwrap');
 
 exports.reddit = (subreddit, numberOfQueries, callback) => {

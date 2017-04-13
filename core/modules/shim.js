@@ -1,3 +1,5 @@
+'use strict';
+
 const scopedHttpClient = require('scoped-http-client'),
     sendMessageToMultiple = (message, threads) => {
         const apis = global.currentPlatform.getIntegrationApis();
