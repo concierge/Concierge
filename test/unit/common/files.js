@@ -1,4 +1,6 @@
-﻿const chai = require('chai');
+﻿'use strict';
+
+const chai = require('chai');
 const assert = chai.assert;
 const files = c_require('core/common/files.js');
 

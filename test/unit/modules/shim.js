@@ -1,3 +1,5 @@
+'use strict';
+
 const chai = require('chai');
 const assert = chai.assert;
 const expect = chai.expect;
@@ -51,7 +53,7 @@ describe('shim', () => {
 
     describe('#sendMessageToMultiple()', () => {
         expect(() => instance.sendMessageToMultiple('foo', {
-                grunt: ['grunt']
+            grunt: ['grunt']
         })).to.throw($$`What kind of platform is this that doesn\'t even support sending messages?`);
     });
 
@@ -135,7 +137,7 @@ describe('shim', () => {
 
     describe('#createEvent()', () => {
         const rxdMessage = '/hello world "this is a test" comma"nd foo"';
-        const event = IntegrationApi.createEvent('thread', 'senderId', 'myName', rxdMessage); 
+        const event = IntegrationApi.createEvent('thread', 'senderId', 'myName', rxdMessage);
 
         it('should split message into arguments', () => {
             assert.deepEqual(['/hello', 'world', 'this is a test', 'comma"nd', 'foo"'], event.arguments);
@@ -153,7 +155,7 @@ describe('shim', () => {
         it('should set the thread_id', () => {
             assert.equal('thread', event.thread_id);
         });
-        
+
         it('should set the sender_id', () => {
             assert.equal('senderId', event.sender_id);
         });
@@ -163,7 +165,7 @@ describe('shim', () => {
         });
 
         it('should treat null as "null" for sender_name', () => {
-            const event2 = IntegrationApi.createEvent('thread', 'senderId', null, rxdMessage); 
+            const event2 = IntegrationApi.createEvent('thread', 'senderId', null, rxdMessage);
             assert.equal('null', event2.sender_name);
         });
 

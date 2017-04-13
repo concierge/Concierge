@@ -1,3 +1,5 @@
+'use strict';
+
 const chai = require('chai');
 const assert = chai.assert;
 const MiddlewareHandler = c_require('core/common/middleware.js');

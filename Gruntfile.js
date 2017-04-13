@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 const fs = require('fs');
 global.c_require = p => require(path.join(__dirname, p));
