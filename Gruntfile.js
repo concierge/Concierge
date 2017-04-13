@@ -1,3 +1,6 @@
+const path = require('path');
+global.c_require = p => require(path.join(__dirname, p));
+
 module.exports = function (grunt) {
 
     // install the grunt integration if it does not exist
@@ -9,7 +12,7 @@ module.exports = function (grunt) {
         }
     }
     catch (e) {
-        const git = require('./core/common/git.js');
+        const git = c_require('core/common/git.js');
         git.clone('https://github.com/concierge/grunt.git', './modules/grunt', (err) => {
             if (err) {
                 throw new Error('Could not install required testing code.');
@@ -28,7 +31,7 @@ module.exports = function (grunt) {
                 recursive: true,
                 dely: true
             },
-            src: ['test/acceptance/*.js', 'test/unit/*.js']
+            src: ['test/acceptance/*.js', 'test/unit/**/*.js']
         },
         watch: {
             test: {
@@ -70,5 +73,5 @@ module.exports = function (grunt) {
     grunt.registerTask('wcore', ['run:concierge', 'watch:core']);
     grunt.registerTask('wtest', ['run:concierge', 'watch:test']);
     grunt.registerTask('test', ['run:concierge', 'mochaTest']);
-    grunt.registerTask('default', ['run:concierge', 'watch:core']);
+    grunt.registerTask('default', ['run:concierge', 'mochaTest']);
 };
