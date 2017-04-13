@@ -114,18 +114,19 @@ exports.parseArguments = (args, options, help = {enabled:false, string:null, col
             throw new Error('Invalid Arguments');
         }
 
-        const vals = [];
-        let count = (pargs[0].expects || {}).length || 0;
+        let count = (pargs[0].expects || []).length;
+        const def = (pargs[0].defaults || []).length;
+        const vals = Array(count - def).concat(pargs[0].defaults || []);
         for (let j = 1; j <= count; j++) {
             const nexta = args[i + j];
             if (nexta && !options.some(value => value.short === nexta || value.long === nexta)) {
-                vals.push(args[i + j]);
+                vals[j - 1] = args[i + j];
             }
-            else if (pargs[0].defaults && j > count - pargs[0].defaults.length) {
-                vals.push(pargs[0].defaults[j - pargs[0].defaults.length]);
-                count--;
+            else if (!vals.includes(void(0)) || ignoreError) {
+                count = j - 1;
+                break;
             }
-            else if (!ignoreError) {
+            else {
                 throw new Error(`Too few arguments given to "${arg}"`);
             }
         }
