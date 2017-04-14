@@ -1,4 +1,14 @@
-'use strict';
+/**
+ * A base integration implementation which handles fallbacks,
+ * loopback, middleware and some error checking.
+ *
+ * Written By:
+ *              Matthew Knox
+ *
+ * License:
+ *              MIT License. All code unless otherwise specified is
+ *              Copyright (c) Matthew Knox and Contributors 2017.
+ */
 
 const scopedHttpClient = require('scoped-http-client'),
     sendMessageToMultiple = (message, threads) => {

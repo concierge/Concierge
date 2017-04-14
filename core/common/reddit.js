@@ -1,8 +1,17 @@
-'use strict';
+/**
+ * Provides helper methods for working with reddit.
+ *
+ * Written By:
+ *              Matthew Knox
+ *
+ * License:
+ *              MIT License. All code unless otherwise specified is
+ *              Copyright (c) Matthew Knox and Contributors 2017.
+ */
 
 const reddit = require('redwrap');
 
-exports.reddit = (subreddit, numberOfQueries, callback) => {
+module.exports = exports = (subreddit, numberOfQueries, callback) => {
     reddit.r(subreddit).limit(numberOfQueries, (err, req) => {
         if (!err && req && req.data) {
             callback(false, req.data.children);
@@ -12,3 +21,4 @@ exports.reddit = (subreddit, numberOfQueries, callback) => {
         }
     });
 };
+exports.reddit = exports; // backwards compatibility

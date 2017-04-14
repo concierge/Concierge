@@ -1,4 +1,13 @@
-'use strict';
+/**
+ * A generic, multipurpose CLI arguments parser.
+ *
+ * Written By:
+ *              Matthew Knox
+ *
+ * License:
+ *              MIT License. All code unless otherwise specified is
+ *              Copyright (c) Matthew Knox and Contributors 2017.
+ */
 
 class OutputBuffer {
     constructor(consoleOutput) {

@@ -1,4 +1,13 @@
-'use strict';
+/**
+ * Provides helper methods for working with NPM.
+ *
+ * Written By:
+ *              Matthew Knox
+ *
+ * License:
+ *              MIT License. All code unless otherwise specified is
+ *              Copyright (c) Matthew Knox and Contributors 2017.
+ */
 
 const exec = require('child_process').execSync;
 

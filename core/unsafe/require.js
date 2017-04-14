@@ -9,10 +9,8 @@
  *
  * License:
  *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2016.
+ *        Copyright (c) Matthew Knox and Contributors 2017.
  */
-
-'use strict';
 
 const npm = require(global.rootPathJoin('core/common/npm.js')),
     path = require('path'),
