@@ -6,7 +6,6 @@ const fs = require('fs');
 require('babel-register')(JSON.parse(fs.readFileSync('./.babelrc', 'ascii')));
 require('babel-polyfill');
 
-global.$$ = (strings, ...values) => strings.map((v, i) => [v, values[i]]).reduce((a, b) => a.concat(b));
 global.c_require = p => require(path.join(__dirname, p));
 const Middleware = global.c_require('core/common/middleware.js');
 global.currentPlatform = new Middleware();

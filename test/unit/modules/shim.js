@@ -3,12 +3,7 @@
 const chai = require('chai');
 const assert = chai.assert;
 const expect = chai.expect;
-
 global.$$ = (strings, ...values) => strings.map((v, i) => [v, values[i]]).reduce((a, b) => a.concat(b));
-
-const Middleware = c_require('core/common/middleware.js');
-global.currentPlatform = new Middleware();
-
 const IntegrationApi = c_require('core/modules/shim.js');
 
 describe('shim', () => {
