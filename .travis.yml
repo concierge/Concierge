@@ -3,8 +3,8 @@ os:
     - linux
     - osx
 node_js:
-    - "4.6"
-    - "6"
+    - "4"
+    - "7"
 before_script:
     - npm install grunt-cli -g
 env:

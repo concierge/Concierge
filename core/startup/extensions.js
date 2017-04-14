@@ -6,11 +6,10 @@
  *
  * License:
  *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2016.
+ *        Copyright (c) Matthew Knox and Contributors 2017.
  */
-'use strict';
 
-module.exports = (rootPath) => {
+module.exports = rootPath => {
     const path = require('path'),
         cwd = process.cwd();
     // Arbitary location module loading requirements

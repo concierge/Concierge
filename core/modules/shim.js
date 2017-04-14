@@ -1,3 +1,15 @@
+/**
+ * A base integration implementation which handles fallbacks,
+ * loopback, middleware and some error checking.
+ *
+ * Written By:
+ *              Matthew Knox
+ *
+ * License:
+ *              MIT License. All code unless otherwise specified is
+ *              Copyright (c) Matthew Knox and Contributors 2017.
+ */
+
 const scopedHttpClient = require('scoped-http-client'),
     sendMessageToMultiple = (message, threads) => {
         const apis = global.currentPlatform.getIntegrationApis();
@@ -210,7 +222,7 @@ const IntegrationApi = module.exports = class {
     */
     static _chunkMessage(message, limit, callback) {
         const messages = [];
-        if (!limit || isNaN(limit)) {
+        if (!limit || isNaN(limit) || limit < 1) {
             messages.push(message);
         }
         else {
@@ -282,13 +294,15 @@ const IntegrationApi = module.exports = class {
             body: message,
             event_source: null
         };
-        event.arguments = event.body.match(/(?:[^\s"]+|"[^"]*")+/g);
+        event.arguments = event.body.match(/"(?:\\"|[^"])*?"|[^ ]+/g);
         if (event.arguments === null) {
             event.arguments = [''];
         }
         event.arguments_body = event.body.substr(event.arguments[0].length + 1);
         for (let i = 0; i < event.arguments.length; i++) {
-            event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
+            if (event.arguments[i].match(/^".*"$/)) {
+                event.arguments[i] = event.arguments[i].replace(/(^["])|(["]$)/g, '');
+            }
         }
         return event;
     }

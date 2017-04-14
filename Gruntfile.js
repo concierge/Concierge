@@ -1,20 +1,44 @@
+'use strict';
+
+const path = require('path');
+const fs = require('fs');
+
+require('babel-register')(JSON.parse(fs.readFileSync('./.babelrc', 'ascii')));
+require('babel-polyfill');
+
+global.c_require = p => require(path.join(__dirname, p));
+const Middleware = global.c_require('core/common/middleware.js');
+global.currentPlatform = new Middleware();
+
+const checkDirExists = dir => {
+    try {
+        const stats = fs.lstatSync(dir);
+        if (!stats.isDirectory()) {
+            throw new Error();
+        }
+        return true;
+    }
+    catch (e) {
+        return false;
+    }
+};
+
 module.exports = function (grunt) {
 
     // install the grunt integration if it does not exist
-    const fs = require('fs');
-    try {
-        const stats = fs.lstatSync('./modules/grunt');
-        if (!stats.isDirectory()) {
-            throw new Error('Grunt is not installed.');
-        }
-    }
-    catch (e) {
-        const git = require('./core/common/git.js');
-        git.clone('https://github.com/concierge/grunt.git', './modules/grunt', (err) => {
+    if (!checkDirExists('./modules/grunt')) {
+        const git = c_require('core/common/git.js');
+        git.clone('https://github.com/concierge/grunt.git', './modules/grunt', err => {
             if (err) {
                 throw new Error('Could not install required testing code.');
             }
         });
+    }
+
+    //  need redwrap for reddit tests
+    if (!checkDirExists('./node_modules/redwrap')) {
+        const npm = c_require('core/common/npm.js');
+        npm.install('redwrap', __dirname);
     }
 
     grunt.initConfig({
@@ -28,7 +52,7 @@ module.exports = function (grunt) {
                 recursive: true,
                 dely: true
             },
-            src: ['test/acceptance/*.js', 'test/unit/*.js']
+            src: ['test/acceptance/*.js', 'test/unit/**/*.js']
         },
         watch: {
             test: {
@@ -70,5 +94,5 @@ module.exports = function (grunt) {
     grunt.registerTask('wcore', ['run:concierge', 'watch:core']);
     grunt.registerTask('wtest', ['run:concierge', 'watch:test']);
     grunt.registerTask('test', ['run:concierge', 'mochaTest']);
-    grunt.registerTask('default', ['run:concierge', 'watch:core']);
+    grunt.registerTask('default', ['run:concierge', 'mochaTest']);
 };
