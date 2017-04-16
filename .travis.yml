@@ -33,8 +33,10 @@ deploy:
       acl: public_read
       detect_encoding: true
       on:
-        repo: concierge/concierge
+        repo: concierge/Concierge
         branch: feature/aws-deploy
+        node: "7"
+        os: "linux"
     - provider: codedeploy
       access_key_id: $AWS_ACCESS_KEY
       secreet_access_key: $AWS_SECRET_KEY
@@ -45,6 +47,8 @@ deploy:
       deployment_group: ConciergeDemo-DepGrp
       region: us-west-2
       on:
-        repo: concierge/concierge
+        repo: concierge/Concierge
         branch: feature/aws-deploy
+        node: "7"
+        os: "linux"
         
