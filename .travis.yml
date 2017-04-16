@@ -36,7 +36,7 @@ deploy:
         repo: concierge/Concierge
         branch: feature/aws-deploy
         node: "7"
-        os: "linux"
+        condition: "$TRAVIS_OS_NAME = linux"
     - provider: codedeploy
       access_key_id: $AWS_ACCESS_KEY
       secret_access_key: $AWS_SECRET_KEY
@@ -50,7 +50,7 @@ deploy:
         repo: concierge/Concierge
         branch: feature/aws-deploy
         node: "7"
-        os: "linux"
+        condition: "$TRAVIS_OS_NAME = linux"
 deploy:
     - provider: s3
       access_key_id: $AWS_ACCESS_KEY
@@ -65,7 +65,7 @@ deploy:
         repo: concierge/Concierge
         branch: master
         node: "7"
-        os: "linux"
+        condition: "$TRAVIS_OS_NAME = linux"
     - provider: codedeploy
       access_key_id: $AWS_ACCESS_KEY
       secret_access_key: $AWS_SECRET_KEY
@@ -79,5 +79,5 @@ deploy:
         repo: concierge/Concierge
         branch: master
         node: "7"
-        os: "linux"
+        condition: "$TRAVIS_OS_NAME = linux"
         
