@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 cd /home/ubuntu/concierge
-node main.js --debug test 
+tmux new-session -d -s concierge '/usr/bin/node /home/ubuntu/concierge/main.js --debug --log --timestamp test'
