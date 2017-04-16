@@ -18,7 +18,9 @@ addons:
             - g++-4.8
 
 before_deploy:
-    - zip -r Concierge.zip core scripts main.js package.json appspec.yml || true
+    - git fetch aws-deploy master
+    - git subtree pull --prefix deploy aws-deploy master --squash
+    - zip -r Concierge.zip core deploy/scripts main.js package.json deploy/appspec.yml || true
     - mkdir -p "dpl_cd_upload"
     - mv Concierge.zip dpl_cd_upload/Concierge.zip || true
 
