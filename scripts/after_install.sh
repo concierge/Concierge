@@ -3,6 +3,9 @@ set -e
 
 #POSTGRESQL_URL="postgresql://postgres:postgres@concierge.ccyxjykvxqyi.us-west-2.rds.amazonaws.com:5432/concierge"
 
+sudo chown -R ubuntu:ubuntu /home/ubuntu/concierge
+sudo chmod -R 755 /home/ubuntu/concierge
+
 cd /home/ubuntu/concierge
 
 # install dependancies
