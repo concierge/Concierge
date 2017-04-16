@@ -18,6 +18,8 @@ addons:
             - g++-4.8
 
 before_deploy:
+    - git config user.email "travis@travis.travis"
+    - git config user.name "Travis"
     - git remote add -f aws-deploy https://github.com/concierge/aws-deploy.git
     - git fetch aws-deploy master
     - git subtree pull --prefix deploy aws-deploy master --squash
