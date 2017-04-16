@@ -2,14 +2,14 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user
+    destination: /home/ubuntu
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
       runas: root
   AfterInstall:
     - location: scripts/after_install.sh
-      runas: ec2-user
+      runas: ubuntu
   ApplicationStart:
     - location: scripts/run.sh
-      runas: ec2-user
+      runas: ubuntu
