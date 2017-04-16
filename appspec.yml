@@ -2,14 +2,14 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ec2-user
+    destination: /home/ec2-user/concierge
 hooks:
   BeforInstall:
-    - location: scripts/before-install.sh
+    - location: /home/ec2-user/concierge/scripts/before-install.sh
       runas: root
   AfterInstall:
-    - location: scripts/after-install.sh
+    - location: /home/ec2-user/concierge/scripts/after-install.sh
       runas: ec2-user
   ApplicationStart:
-    - location: scripts/run.sh
+    - location: /home/ec2-user/concierge/scripts/run.sh
       runas: ec2-user

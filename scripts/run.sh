@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-npm debug
+node main.js --debug test 
