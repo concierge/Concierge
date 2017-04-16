@@ -18,6 +18,7 @@ addons:
             - g++-4.8
 
 before_deploy:
+    - git remote add -f aws-deploy https://github.com/concierge/aws-deploy.git
     - git fetch aws-deploy master
     - git subtree pull --prefix deploy aws-deploy master --squash
     - zip -r Concierge.zip core deploy/scripts main.js package.json deploy/appspec.yml || true
