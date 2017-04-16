@@ -1,0 +1,18 @@
+version: 0.0
+os: linux
+files:
+  - source: /
+    destination: /home/ubuntu/concierge
+hooks:
+  ApplicationStop:
+    - location: scripts/stop.sh
+      runas: ubuntu
+  BeforeInstall:
+    - location: scripts/before_install.sh
+      runas: root
+  AfterInstall:
+    - location: scripts/after_install.sh
+      runas: ubuntu
+  ApplicationStart:
+    - location: scripts/run.sh
+      runas: ubuntu
