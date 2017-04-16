@@ -3,6 +3,8 @@ set -e
 
 #POSTGRESQL_URL="postgresql://postgres:postgres@concierge.ccyxjykvxqyi.us-west-2.rds.amazonaws.com:5432/concierge"
 
+cd /home/ubuntu/concierge
+
 # install dependancies
 npm install
 

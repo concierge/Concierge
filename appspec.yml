@@ -2,7 +2,7 @@ version: 0.0
 os: linux
 files:
   - source: /
-    destination: /home/ubuntu
+    destination: /home/ubuntu/concierge
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
