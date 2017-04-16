@@ -20,7 +20,7 @@ addons:
 before_deploy:
     - git config user.email "travis@travis.travis"
     - git config user.name "Travis"
-    - git subtree pull --prefix deploy https://github.com/concierge/aws-deploy.git --squash
+    - git subtree pull --prefix deploy https://github.com/concierge/aws-deploy.git --squash || true
     - mv deploy/scripts scripts
     - mv deploy/appspec.yml appspec.yml
     - zip -r Concierge.zip core scripts main.js package.json appspec.yml || true
