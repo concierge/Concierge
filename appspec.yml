@@ -4,7 +4,7 @@ files:
   - source: /
     destination: /home/ec2-user
 hooks:
-  BeforInstall:
+  BeforeInstall:
     - location: scripts/before_install.sh
       runas: root
   AfterInstall:
