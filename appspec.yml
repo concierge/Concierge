@@ -5,10 +5,10 @@ files:
     destination: /home/ec2-user
 hooks:
   BeforInstall:
-    - location: scripts/before-install.sh
+    - location: scripts/before_install.sh
       runas: root
   AfterInstall:
-    - location: scripts/after-install.sh
+    - location: scripts/after_install.sh
       runas: ec2-user
   ApplicationStart:
     - location: scripts/run.sh
