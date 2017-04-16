@@ -3,6 +3,13 @@ os: linux
 files:
   - source: /
     destination: /home/ubuntu/concierge
+permissions:
+  - object: /home/ubuntu/concierge
+    owner: ubuntu
+    group: ubuntu
+    mode: 744
+    type:
+      - directory
 hooks:
   BeforeInstall:
     - location: scripts/before_install.sh
