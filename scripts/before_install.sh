@@ -2,8 +2,8 @@
 set -e
 
 # update instance
-yum -y update
+apt-get update
 
 # add nodejs to yum
-curl --silent --location https://rpm.nodesource.com/setup_7.x | bash -
-yum -y install nodejs
+curl -sL https://deb.nodesource.com/setup_7.x | sudo -E bash -
+apt-get install -y nodejs
