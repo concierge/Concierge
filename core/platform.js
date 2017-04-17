@@ -25,6 +25,7 @@ class Platform extends MiddlewareHandler {
         this.waitingTime = 250;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
         this.config = require(global.rootPathJoin('core/modules/config.js'));
+        this.loopbackBuilder = require(global.rootPathJoin('core/modules/loopback.js'))(this);
         this.modulesLoader.on('loadSystem', this._loadSystemConfig.bind(this));
         global.shim = require(global.rootPathJoin('core/modules/shim.js'));
         this._boundErrorHandler = err => {
@@ -109,7 +110,8 @@ class Platform extends MiddlewareHandler {
      * @param {Object} event the event that occured.
      */
     onMessage (api, event) {
-        this.runMiddleware('before', this._handleMessage, api, event);
+        const loopBack = this.loopbackBuilder(api, event);
+        this.runMiddleware('before', this._handleMessage, loopBack.api, loopBack.event);
     }
 
     /**
@@ -148,7 +150,6 @@ class Platform extends MiddlewareHandler {
             firstRun.hasRun = true;
             require(global.rootPathJoin('core/modules/firstRun.js'))(this.bypassInit, this.config, this.modulesLoader);
         }
-        this.allowLoopback = !!this.config.getSystemConfig('loopback').enabled;
     }
 
     /**

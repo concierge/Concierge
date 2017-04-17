@@ -23,7 +23,6 @@ module.exports = startup => {
         if (opts.locale) {
             $$.setLocale(opts.locale);
         }
-        p.allowLoopback = !!opts.loopback;
 
         console.setTimestamp(!!opts.timestamp);
         if (typeof (opts.debug) === 'string') {

@@ -318,11 +318,6 @@ const IntegrationApi = module.exports = class {
                 throw new Error('A thread must be specified.');
             }
             global.currentPlatform.runMiddleware('after', origionalSend.bind(api), data, thread);
-            if (global.currentPlatform.allowLoopback) {
-                const newEvent = exports.createEvent(thread, -1, 'Bot', data);
-                newEvent.event_source = 'loopback';
-                global.currentPlatform.onMessage(api, newEvent);
-            }
         };
     }
 };
