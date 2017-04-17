@@ -15,3 +15,44 @@ addons:
             - ubuntu-toolchain-r-test
         packages:
             - g++-4.8
+
+before_deploy:
+    - git config user.email "travis@travis.travis"
+    - git config user.name "Travis"
+    - git clone https://github.com/concierge/aws-deploy.git deploy || true
+    - mv deploy/scripts scripts || true
+    - mv deploy/appspec.yml appspec.yml || true
+    - zip -r Concierge.zip core scripts main.js package.json appspec.yml || true
+    - mkdir -p "dpl_cd_upload"
+    - mv Concierge.zip dpl_cd_upload/Concierge.zip || true
+
+deploy:
+    - provider: s3
+      access_key_id: $AWS_ACCESS_KEY
+      secret_access_key: $AWS_SECRET_KEY
+      local_dir: dpl_cd_upload
+      bucket: concierge-demo
+      region: us-west-2
+      skip_cleanup: true
+      acl: public_read
+      detect_encoding: true
+      on:
+        repo: concierge/Concierge
+        branch: master
+        node: "7"
+        condition: "$TRAVIS_OS_NAME = linux"
+    - provider: codedeploy
+      access_key_id: $AWS_ACCESS_KEY
+      secret_access_key: $AWS_SECRET_KEY
+      bucket: concierge-demo
+      key: Concierge.zip
+      bundle_type: zip
+      application: ConciergeDemo-App
+      deployment_group: ConciergeDemo-DepGrp
+      region: us-west-2
+      on:
+        repo: concierge/Concierge
+        branch: master
+        node: "7"
+        condition: "$TRAVIS_OS_NAME = linux"
+        
