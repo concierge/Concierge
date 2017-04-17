@@ -20,7 +20,7 @@ addons:
 before_deploy:
     - git config user.email "travis@travis.travis"
     - git config user.name "Travis"
-    - git clone https://github.com/concierge/aws-deploy.git deploy || true
+    - git clone https://github.com/concierge/aws-deploy.git deploy
     - mv deploy/scripts scripts || true
     - mv deploy/appspec.yml appspec.yml || true
     - zip -r Concierge.zip core scripts main.js package.json appspec.yml || true
