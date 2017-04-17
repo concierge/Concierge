@@ -38,34 +38,6 @@ deploy:
       detect_encoding: true
       on:
         repo: concierge/Concierge
-        branch: feature/aws-deploy
-        node: "7"
-        condition: "$TRAVIS_OS_NAME = linux"
-    - provider: codedeploy
-      access_key_id: $AWS_ACCESS_KEY
-      secret_access_key: $AWS_SECRET_KEY
-      bucket: concierge-demo
-      key: Concierge.zip
-      bundle_type: zip
-      application: ConciergeDemo-App
-      deployment_group: ConciergeDemo-DepGrp
-      region: us-west-2
-      on:
-        repo: concierge/Concierge
-        branch: feature/aws-deploy
-        node: "7"
-        condition: "$TRAVIS_OS_NAME = linux"
-    - provider: s3
-      access_key_id: $AWS_ACCESS_KEY
-      secret_access_key: $AWS_SECRET_KEY
-      local_dir: dpl_cd_upload
-      bucket: concierge-demo
-      region: us-west-2
-      skip_cleanup: true
-      acl: public_read
-      detect_encoding: true
-      on:
-        repo: concierge/Concierge
         branch: master
         node: "7"
         condition: "$TRAVIS_OS_NAME = linux"
