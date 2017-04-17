@@ -67,9 +67,9 @@ class LoopbackApi {
     _copyApiMethods() {
         for (let key of this._getClassKeys(this._baseApi).concat(Object.keys(this._baseApi))) {
             if (!this[key]) {
-                this[key] = typeof (this._baseApi[key]) === 'function'
-                    ? this._baseApi[key].bind(this._baseApi)
-                    : this._baseApi[key];
+                this[key] = typeof (this._baseApi[key]) === 'function' ?
+                    this._baseApi[key].bind(this._baseApi) :
+                    this._baseApi[key];
             }
         }
     }
@@ -119,4 +119,4 @@ class LoopbackApi {
 module.exports = plat => { // avoid using globals
     platform = plat;
     return (api, event) => LoopbackApi.getLoopbackApi(api, event);
-}
+};

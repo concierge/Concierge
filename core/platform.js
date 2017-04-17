@@ -221,6 +221,6 @@ class Platform extends MiddlewareHandler {
         clearInterval(this.heartBeat);
         this.emit('shutdown', this.statusFlag);
     }
-};
+}
 
 module.exports = Platform;
