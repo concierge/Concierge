@@ -21,7 +21,8 @@ module.exports = (args, cwd) => {
         cwd = global.__rootPath;
     }
     args.unshift('npm', '--silent');
-    exec(args.join(' '), { cwd: cwd });
+    const res = exec(args.join(' '), { cwd: cwd });
+    return res ? res.toString() : '';
 };
 
 /**
@@ -36,7 +37,8 @@ module.exports.install = (args, cwd) => {
 /**
  * Perform an NPM update in the root directory of the program.
  * @param {Array<string>} args additional arguments to pass to NPM
+ * @param {string} cwd working directory, defaults to global.
  */
-module.exports.update = (args) => {
-    module.exports(['update'].concat(args || []));
+module.exports.update = (args, cwd) => {
+    module.exports(['update'].concat(args || []), cwd);
 };
