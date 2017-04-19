@@ -9,7 +9,7 @@
 Concierge is a modular, easily extensible general purpose chat bot. It is platform agnostic and will work with any social network desired (provided an integration module). The bot utilises small node.js modules for responding in a chat.
 You can write your own modules and place them in the [modules](https://github.com/concierge/Concierge/tree/master/modules) directory, or use existing modules we've collated [here](https://github.com/concierge/Concierge/wiki/KPM-Table). Existing modules include a variety of functionality from getting gifs,  to running arbitrary sandboxed JavaScript code, voting and giving karma.
 
-Furthermore Concierge is compatible with [Hubot](https://github.com/github/hubot) adapters and integrations.
+Furthermore Concierge is compatible with [Hubot](https://github.com/github/hubot) adapters and scripts.
 
 ## Getting Started
 
