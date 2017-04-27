@@ -155,9 +155,10 @@ class Platform extends MiddlewareHandler {
     /**
      * Start Concierge, load modules and start integrations.
      * @param {Array<string>} integrations list of integrations to start.
+     * @param {Array<string>} modules optional list of modules to load.
      * @emits Platform#started
      */
-    start (integrations) {
+    start (integrations, modules) {
         if (this.statusFlag !== global.StatusFlag.NotStarted) {
             throw new Error($$`StartError`);
         }
@@ -168,7 +169,7 @@ class Platform extends MiddlewareHandler {
 
         // Load modules
         console.warn($$`LoadingModules`);
-        this.modulesLoader.loadAllModules(this);
+        this.modulesLoader.loadAllModules(modules);
 
         console.warn($$`StartingIntegrations`);
         for (let integration of integrations) {

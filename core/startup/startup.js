@@ -18,8 +18,7 @@
 const translationsReq = rootPathJoin('core/translations/translations.js'),
     platformReq = rootPathJoin('core/platform.js');
 
-let startArgs = null,
-    directRequire = false;
+let startArgs = null;
 
 const checkShutdownCode = (code) => {
     if (code === StatusFlag.ShutdownShouldRestart) {
@@ -27,38 +26,38 @@ const checkShutdownCode = (code) => {
         global.currentPlatform = null;
         require.unrequire(translationsReq, __filename);
         require.unrequire(platformReq, __filename);
-        if (!directRequire) {
+        if (!global.__runAsRequired) {
             exports.run();
         }
     }
-    else if (!directRequire) {
+    else if (!global.__runAsRequired) {
         process.exit(0);
     }
 };
 
-exports.run = startArgsP => {
+exports.run = (...args) => {
     try {
-        if (!startArgs && startArgsP) {
-            startArgs = startArgsP;
+        if (args.length > 0) {
+            if (!args[0]) {
+                args[0] = [];
+            }
+            startArgs = JSON.stringify(args);
         }
-        else if (!startArgs && !startArgsP) {
-            directRequire = true;
-            startArgs = [];
-        }
+
         global.$$ = require(translationsReq);
 
         // quickest way to clone in JS, prevents reuse of same object between startups
-        const startClone = JSON.parse(JSON.stringify(startArgs)),
+        const startClone = JSON.parse(startArgs),
             Platform = require(platformReq);
-        global.currentPlatform = new Platform(directRequire);
+        global.currentPlatform = new Platform(global.__runAsRequired);
         global.currentPlatform.on('shutdown', checkShutdownCode);
-        global.currentPlatform.start(startClone);
+        global.currentPlatform.start.apply(global.currentPlatform, startClone);
         return global.currentPlatform;
     }
     catch (e) {
         console.critical(e);
         console.error('A critical error occurred while running. Please check your configuration or report a bug.');
-        if (!directRequire) {
+        if (!global.__runAsRequired) {
             process.exit(-3);
         }
         throw e;
@@ -69,7 +68,7 @@ const stop = () => {
     if (global.currentPlatform) {
         global.currentPlatform.shutdown();
     }
-    if (!directRequire) {
+    if (!global.__runAsRequired) {
         process.exit(0);
     }
 };
