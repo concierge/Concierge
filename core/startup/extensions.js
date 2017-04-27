@@ -9,18 +9,16 @@
  *        Copyright (c) Matthew Knox and Contributors 2017.
  */
 
-module.exports = rootPath => {
+module.exports = (rootPath, direct) => {
     const path = require('path'),
         cwd = process.cwd();
     // Arbitary location module loading requirements
     global.__rootPath = rootPath;
     global.__runAsLocal = rootPath === cwd;
-    global.rootPathJoin = function () {
-        let root = global.__rootPath;
-        if (!global.__runAsLocal && arguments[0].startsWith('modules')) {
-            root = cwd;
-        }
-        return path.join.apply(this, [root].concat(Array.from(arguments)));
+    global.__runAsRequired = !direct;
+    global.rootPathJoin = (...args) => {
+        const root = !global.__runAsLocal && args[0].startsWith('modules') ? cwd : global.__rootPath;
+        return path.join.apply(this, [root].concat(args));
     };
     global.__modulesPath = global.__runAsLocal ? global.rootPathJoin('modules/') : cwd;
     global.moduleNameFromPath = p => {
