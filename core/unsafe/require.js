@@ -77,6 +77,9 @@ const resolve = (request, dirName) => {
             if (global.__runAsLocal || dirName.startsWith(coreDirectory)) {
                 npmDirs.push(path.join(npmDirectory, request));
             }
+            if (global.__runAsRequired) {
+                npmDirs.push(path.join(global.__modulesPath, npmFolder, request));
+            }
             for (let n of npmDirs) {
                 try {
                     const dir = fs.statSync(n);

@@ -9,41 +9,52 @@
  *        Copyright (c) Matthew Knox and Contributors 2017.
  */
 
+const checkType = (obj, key, expectation, ret = false) => {
+    const type = Array.isArray(obj[key]) ? 'array' : typeof (obj[key]);
+    if (type !== expectation && !ret) {
+        throw new Error(`"${key}" has an invalid type "${type}" when "${expectation}" was expected.`);
+    }
+    return type === expectation;
+};
+
 module.exports = startup => {
     return opts => {
         opts = opts || {};
 
-        // start platform
-        const p = startup.run();
-        if (p === null || p === void(0)) {
-            throw new Error('An unexpected error occurred during startup.');
-        }
-
         // config options
-        if (opts.locale) {
+        if (opts.locale && checkType(opts, 'locale', 'string')) {
             $$.setLocale(opts.locale);
         }
 
         console.setTimestamp(!!opts.timestamp);
-        if (typeof (opts.debug) === 'string') {
+        if (checkType(opts, 'debug', 'string', true)) {
             console.setLogLevel(opts.debug.trim().toLowerCase());
         }
-        else {
-            console.setLogLevel(!!opts.debug ? 'debug' : 'info');
+        else if (checkType(opts, 'debug', 'boolean')) {
+            console.setLogLevel(opts.debug ? 'debug' : 'info');
         }
 
-        // load modules
-        if (Array.isArray(opts.modules)) {
-            for (let m of opts.modules) {
-                const descriptor = p.modulesLoader.verifyModule(m);
-                p.modulesLoader.loadModule(descriptor);
+        // start platform
+        checkType(opts, 'modules', 'array');
+        if (opts.integrations) {
+            checkType(opts, 'integrations', 'array');
+        }
+        const p = startup.run(opts.integrations || [], opts.modules);
+        if (p === null || p === void(0)) {
+            throw new Error('An unexpected error occurred during startup.');
+        }
+
+        // loopback
+        if (opts.loopback) {
+            const cfg = p.config.getSystemConfig('loopback');
+            if (checkType(opts, 'loopback', 'boolean', true)) {
+                cfg.enabled = true;
+                cfg.maxDepth = 5;
             }
-        }
-
-        // start integrations
-        if (Array.isArray(opts.integrations)) {
-            for (let i of opts.integrations) {
-                p.modulesLoader.startIntegration(p.onMessage.bind(p), i);
+            else if (checkType(opts, 'loopback', 'object')) {
+                for (let key in opts.loopback) {
+                    cfg[key] = opts.loopback[key];
+                }
             }
         }
 

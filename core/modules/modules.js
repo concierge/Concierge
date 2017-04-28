@@ -171,14 +171,18 @@ class ModuleLoader extends EventEmitter {
 
     /**
      * Loads all modules in the modules directory and starts the configuration service.
+     * @param {Array<string>} modules optional list of modules to load.
      */
-    loadAllModules() {
-        const data = files.filesInDirectory(global.__modulesPath),
+    loadAllModules(modules) {
+        const data = modules || files.filesInDirectory(global.__modulesPath),
             resolvedModules = [],
             resolvedSystem = [];
         for (let i = 0; i < data.length; i++) {
             try {
-                const candidate = path.resolve(path.join(global.__modulesPath, data[i])),
+                if (!modules) {
+                    data[i] = path.join(global.__modulesPath, data[i]);
+                }
+                const candidate = path.resolve(data[i]),
                     output = this.verifyModule(candidate);
                 if (output) {
                     (output.type.includes('system') ? resolvedSystem : resolvedModules).push(output);
@@ -198,7 +202,12 @@ class ModuleLoader extends EventEmitter {
         }
         this.emit('loadSystem');
         for (let output of resolvedModules) {
-            this.loadModule(output);
+            try {
+                this.loadModule(output);
+            }
+            catch (e) {
+                console.critical(e);
+            }
         }
     }
 
