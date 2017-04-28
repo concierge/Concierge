@@ -202,7 +202,12 @@ class ModuleLoader extends EventEmitter {
         }
         this.emit('loadSystem');
         for (let output of resolvedModules) {
-            this.loadModule(output);
+            try {
+                this.loadModule(output);
+            }
+            catch (e) {
+                console.critical(e);
+            }
         }
     }
 
