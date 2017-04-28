@@ -22,7 +22,7 @@ module.exports = (rootPath, direct) => {
     };
     global.__modulesPath = global.__runAsLocal ? global.rootPathJoin('modules/') : cwd;
     global.moduleNameFromPath = p => {
-        if (!p.startsWith(global.__modulesPath)) {
+        if (!p || !p.startsWith(global.__modulesPath)) {
             return null;
         }
         const add = global.__modulesPath.endsWith(path.sep) ? 0 : 1;
