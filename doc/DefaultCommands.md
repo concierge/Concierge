@@ -1,5 +1,6 @@
 ## Default Commands
 On the first install of Concierge, the following modules are installed (if `git` is in the path, otherwise they must be manually installed):
+- `boss` - A web-based admin control panel for Concierge.
 - `creator` - Displays information about the creators of Concierge
 - `help` - Displays module help.
 - `kpm` - Package Manager, assists with the installing and managing of packages.

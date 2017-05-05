@@ -11,27 +11,38 @@ You can write your own modules and place them in the [modules](https://github.co
 
 Furthermore Concierge is compatible with [Hubot](https://github.com/github/hubot) adapters and scripts.
 
+**[<img src="https://discordapp.com/assets/41484d92c876f76b20c7f746221e8151.svg" width="24">Experiment with our hosted Concierge instance on discord</img>](https://discord.gg/Kj2a9qp)**.
+
 ## Getting Started
 
 #### Pre-Requisites
-Make sure you have **GIT** and **NPM** installed and added to your system PATH before installing Concierge.
+Make sure you have **Node.JS** and **NPM** installed and added to your system PATH before installing Concierge. It is also *highly recommended* you do the same with **GIT**.
+- [Install Node.JS and NPM](https://nodejs.org/en/download/)
 - [Install Git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
-- [Install NPM](https://nodejs.org/en/download/)
 
 #### Installation
-Installation can either be done using `git` or `npm` ([see which approach is right for you here](doc/UsageTypes.md)). One approach is to open a terminal/prompt and enter the following commands to clone the repository and install required npm packages:
+Installation can either be done using `npm` (global or local) or `git` ([see which approach is right for you here](doc/UsageTypes.md)).
+
+***NPM (global)***
 ```
-git clone https://github.com/concierge/Concierge.git
+npm install concierge-bot -g
+```
+***GIT***
+```
+git clone https://github.com/concierge/Concierge.git Concierge
 cd Concierge
 npm install
 ```
-Now you are ready to use and develop modules for Concierge.
+***NPM (local)***
+For all documentation regarding local installs, refer to [Usage Types](doc/UsageTypes.md).
 
 #### Starting Up
 Concierge comes ready-to-run, so to start the bot:
-- Open up a terminal/prompt, navigate to Concierge's root directory
-- Start Concierge using `node main.js` (or alternatively `npm start`)
-- First startup will install some of the default modules (these can be configured [here](doc/DefaultCommands.md)) and If all goes well, you should see a prompt prefixed
+- In the directory being used for Concierge development run the following command:
+    - NPM global: `concierge`
+    - git: `node main.js`
+- On the first run, provided GIT is installed some default modules will be installed (see [here](doc/DefaultCommands.md) for details)
+- After startup you will see the following prompt:
 
 > Concierge-bot>
 
@@ -65,6 +76,7 @@ Links to configuring other integrations can be found in the documentation sectio
 Now you can customize your Concierge by installing or creating your own modules.
 
 - You can install an existing modules from the [KPM Modules List](https://github.com/concierge/Concierge/wiki/KPM-Table). Use the `/kpm` module *(which is installed by default)* to install using the KPM List.
+- You can install any Concierge or Hubot modules from NPM.
 - Or create your own modules by following the [ Module Creation](doc/ModuleCreation.md) guide.
 
 **Hint**: Use `/help kpm` to find out how to install a module or have a look at the KPM List for a more elaborate instructions.
