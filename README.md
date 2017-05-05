@@ -34,7 +34,7 @@ cd Concierge
 npm install
 ```
 ***NPM (local)***
-For all documentation regarding local installs, refer to ([Usage Types](doc/UsageTypes.md)).
+For all documentation regarding local installs, refer to [Usage Types](doc/UsageTypes.md).
 
 #### Starting Up
 Concierge comes ready-to-run, so to start the bot:
