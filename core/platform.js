@@ -14,9 +14,9 @@ const figlet = require('figlet'),
     MiddlewareHandler = require('concierge/middleware');
 
 class Platform extends MiddlewareHandler {
-    constructor (bypassInit) {
+    constructor (runInit) {
         super();
-        this.bypassInit = bypassInit;
+        this.bypassInit = !runInit;
         this.defaultPrefix = '/';
         this.packageInfo = require(global.rootPathJoin('package.json'));
         this.modulesLoader = new (require(global.rootPathJoin('core/modules/modules.js')))(this);
@@ -207,9 +207,6 @@ class Platform extends MiddlewareHandler {
         }
 
         this.emit('preshutdown');
-        if (!flag) {
-            flag = global.StatusFlag.Unknown;
-        }
 
         // Unload user modules
         this.config.saveConfig();
@@ -221,6 +218,7 @@ class Platform extends MiddlewareHandler {
         console.warn($$`${this.packageInfo.name} Shutdown`);
         clearInterval(this.heartBeat);
         this.emit('shutdown', this.statusFlag);
+        this.removeAllListeners();
     }
 }
 

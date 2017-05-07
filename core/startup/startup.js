@@ -12,72 +12,103 @@
  *
  * License:
  *        MIT License. All code unless otherwise specified is
- *        Copyright (c) Matthew Knox and Contributors 2016.
+ *        Copyright (c) Matthew Knox and Contributors 2017.
  */
 
-const translationsReq = rootPathJoin('core/translations/translations.js'),
-    platformReq = rootPathJoin('core/platform.js');
+'use strict';
 
-let startArgs = null;
+const fork = require('child_process').fork,
+    path = require('path'),
+    concierge_fork_check = '1';
 
-const checkShutdownCode = (code) => {
-    if (code === StatusFlag.ShutdownShouldRestart) {
-        global.currentPlatform.removeListener('shutdown', checkShutdownCode);
-        global.currentPlatform = null;
-        require.unrequire(translationsReq, __filename);
-        require.unrequire(platformReq, __filename);
-        if (!global.__runAsRequired) {
-            exports.run();
-        }
+global.StatusFlag = {
+    Unknown: 1,
+    NotStarted: 2,
+    Started: 3,
+    ShutdownShouldRestart: 4,
+    Shutdown: 0
+};
+
+class ConciergeProcess {
+    constructor (args) {
+        this._exit = this._exit.bind(this);
+        this._args = args;
+        this._start();
     }
-    else if (!global.__runAsRequired) {
-        process.exit(0);
+
+    _fixDebugArgs () {
+        const currArgs = process.execArgv;
+        for (let i = 0; i < currArgs.length; i++) {
+            if (/=[0-9]{4}$/.test(currArgs[i])) {
+                const val = parseInt(currArgs[i].substr(currArgs[i].length - 4)) + 1;
+                currArgs[i] = currArgs[i].substring(0, currArgs[i].length - 4) + val;
+            }
+        }
+        return currArgs;
+    }
+
+    _start () {
+        process.env.__concierge_fork = concierge_fork_check;
+        this._process = fork(path.join(__dirname, 'startup.js'), this._args, {
+            cwd: process.cwd(),
+            env: process.env,
+            execArgv: this._fixDebugArgs(),
+            stdio: 'inherit'
+        });
+        this._process.on('exit', this._exit);
+    }
+
+    _criticalError (code, signal) {
+        console.error(`!CORE! critical error was unhandled (${code}, ${signal}). Please report this to developers.`);
+        process.exit(code);
+    }
+
+    _exit (code, signal) {
+        if (!code && !signal) {
+            code = 0;
+        }
+        switch (code) {
+            case global.StatusFlag.Shutdown:
+                process.exit(code);
+            case global.StatusFlag.ShutdownShouldRestart:
+                this._start();
+                break;
+            default:
+                this._criticalError(code, signal || 'NONE');
+        }
     }
 };
 
-exports.run = (...args) => {
+const start = direct => {
+    require('./extensions.js')(process.cwd(), !!direct);
+    return module.exports = require('./exports.js');
+};
+
+exports.run = (cli, args) => cli ? new ConciergeProcess(args) : start();
+
+if (process.env.__concierge_fork === concierge_fork_check) {
     try {
-        if (args.length > 0) {
-            if (!args[0]) {
-                args[0] = [];
+        const platform = start(true),
+            cli = require('./cli.js')(process.argv.slice(2)),
+            instance = platform(cli);
+
+        const abort = message => {
+            if (message) {
+                LOG.warn(message);
             }
-            startArgs = JSON.stringify(args);
-        }
+            instance.shutdown();
+        };
 
-        global.$$ = require(translationsReq);
+        instance.once('shutdown', code => {
+            process.removeAllListeners();
+            process.exit(code);
+        });
 
-        // quickest way to clone in JS, prevents reuse of same object between startups
-        const startClone = JSON.parse(startArgs),
-            Platform = require(platformReq);
-        global.currentPlatform = new Platform(global.__runAsRequired);
-        global.currentPlatform.on('shutdown', checkShutdownCode);
-        global.currentPlatform.start.apply(global.currentPlatform, startClone);
-        return global.currentPlatform;
+        process.on('SIGINT', abort);
+        process.on('SIGHUP', abort.bind(this, 'SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...'));
     }
     catch (e) {
-        console.critical(e);
-        console.error('A critical error occurred while running. Please check your configuration or report a bug.');
-        if (!global.__runAsRequired) {
-            process.exit(-3);
-        }
-        throw e;
+        console.critical ? console.critical(e) : console.error(e);
+        process.exit(global.currentPlatform ? global.currentPlatform.statusFlag : global.StatusFlag.Unknown);
     }
-};
-
-const stop = () => {
-    if (global.currentPlatform) {
-        global.currentPlatform.shutdown();
-    }
-    if (!global.__runAsRequired) {
-        process.exit(0);
-    }
-};
-
-process.on('SIGHUP', () => {
-    console.warn('SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...');
-    stop();
-});
-
-process.on('SIGINT', () => {
-    stop();
-});
+}

@@ -18,54 +18,52 @@ const util = require('util'),
     fileLogger = new (winston.transports.File)({
         name: 'concierge-file',
         filename: 'concierge.log',
-        level: 'info',
-        timestamp: false,
+        level: 'silly',
+        timestamp: true,
         colorize: false
     });
 
 global.LOG = new winston.Logger();
-
-colours.setTheme({
-    silly: 'blue',
-    debug: 'cyan',
-    log: 'white',
-    info: 'green',
-    warn: 'yellow',
-    error: ['red', 'bold'],
-    title: ['green', 'bold']
-});
+const theme = {
+    silly: ['magenta', 'reset'],
+    debug: ['cyan', 'reset'],
+    verbose: ['grey', 'reset'],
+    info: ['green', 'reset'],
+    warn: ['yellow', 'bold', 'reset'],
+    error: ['red', 'bold', 'reset']
+};
+winston.addColors(theme);
 
 global.LOG.add(winston.transports.Console, {
-    colorize: true,
+    colorize: 'all',
     timestamp: false,
     level: 'info'
 });
 
-const formatArgs = (args, colour) => {
-    const res = [util.format.apply(util.format, Array.prototype.slice.call(args))];
-    if (colour) {
-        res[0] = res[0][colour];
-    }
-    return res;
+const wrapMethod = (obj, method, logMethod = null) => {
+    obj[method] = (...args) => global.LOG[logMethod || method]
+        .apply(global.LOG, [util.format.apply(util.format, Array.prototype.slice.call(args))]);
 };
 
-console.error = (...args) => global.LOG.error.apply(global.LOG, formatArgs(args, 'error'));
-console.warn = (...args) => global.LOG.warn.apply(global.LOG, formatArgs(args, 'warn'));
-console.info = (...args) => global.LOG.info.apply(global.LOG, formatArgs(args, 'info'));
-console.log = (...args) => global.LOG.verbose.apply(global.LOG, formatArgs(args, 'log'));
-console.debug = (...args) => global.LOG.debug.apply(global.LOG, formatArgs(args, 'debug'));
-console.silly = (...args) => global.LOG.silly.apply(global.LOG, formatArgs(args, 'silly'));
+wrapMethod(console, 'error');
+wrapMethod(console, 'warn');
+wrapMethod(console, 'info');
+wrapMethod(console, 'log', 'verbose');
+wrapMethod(console, 'debug');
+wrapMethod(console, 'silly');
 
-console.critical = args => console.error(args.stack.toString() || args.toString());
-console.title = (...args) => global.LOG.info.apply(global.LOG, formatArgs(args, 'title'));
-
-console.setLog = enabled => global.LOG[enabled ? 'add' : 'remove'](fileLogger, null, true);
-console.setLogLevel = logLevel => {
-    if (!['error', 'warn', 'info', 'verbose', 'debug', 'silly'].includes(logLevel)) {
+global.LOG.title = console.title = args => console.warn(args.white.bold.reset);
+global.LOG.critical = console.critical = args => console.error(args.stack.toString() || args.toString());
+global.LOG.setLog = console.setLog = enabled => global.LOG[enabled ? 'add' : 'remove'](fileLogger, null, true);
+global.LOG.validateLogLevel = console.validateLogLevel = logLevel => {
+    logLevel = logLevel.trim().toLowerCase();
+    return !!theme[logLevel] ? logLevel : null;
+};
+global.LOG.setLogLevel = console.setLogLevel = logLevel => {
+    logLevel = global.LOG.validateLogLevel(logLevel);
+    if (!logLevel) {
         throw new Error(`${logLevel} is not a valid log level.`);
     }
-    return fileLogger.level = global.LOG.transports.console.level = logLevel;
+    return global.LOG.transports.console.level = logLevel;
 };
-console.setTimestamp = enabled => {
-    return global.LOG.transports.console.timestamp = fileLogger.timestamp = enabled;
-};
+global.LOG.setTimestamp = console.setTimestamp = enabled => global.LOG.transports.console.timestamp = enabled;
