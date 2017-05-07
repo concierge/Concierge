@@ -27,6 +27,14 @@ before_deploy:
     - mv Concierge.zip dpl_cd_upload/Concierge.zip || true
 
 deploy:
+    - provider: npm
+      api_key: $NPM_API_KEY
+      email: $NPM_EMAIL_ADDRESS
+      on:
+        repo: concierge/Concierge
+        branch: master
+        node: "7"
+        condition: "$TRAVIS_OS_NAME = linux"
     - provider: s3
       access_key_id: $AWS_ACCESS_KEY
       secret_access_key: $AWS_SECRET_KEY
@@ -55,4 +63,3 @@ deploy:
         branch: master
         node: "7"
         condition: "$TRAVIS_OS_NAME = linux"
-        
