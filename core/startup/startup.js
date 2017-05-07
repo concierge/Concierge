@@ -68,16 +68,16 @@ class ConciergeProcess {
             code = 0;
         }
         switch (code) {
-            case global.StatusFlag.Shutdown:
-                process.exit(code);
-            case global.StatusFlag.ShutdownShouldRestart:
-                this._start();
-                break;
-            default:
-                this._criticalError(code, signal || 'NONE');
+        case global.StatusFlag.Shutdown:
+            process.exit(code);
+        case global.StatusFlag.ShutdownShouldRestart:
+            this._start();
+            break;
+        default:
+            this._criticalError(code, signal || 'NONE');
         }
     }
-};
+}
 
 const start = (direct, rootPath) => {
     require('./extensions.js')(rootPath, !!direct);
@@ -93,7 +93,7 @@ if (process.env.__concierge_fork) {
         return platform(cli);
     }
     catch (e) {
-        console.critical ? console.critical(e) : console.error(e);
+        console.error(e);
         process.exit(global.currentPlatform ? global.currentPlatform.statusFlag : global.StatusFlag.Unknown);
     }
 }

@@ -14,7 +14,6 @@
 
 const util = require('util'),
     winston = require('winston'),
-    colours = require('colors'),
     fileLogger = new (winston.transports.File)({
         name: 'concierge-file',
         filename: 'concierge.log',
@@ -22,6 +21,7 @@ const util = require('util'),
         timestamp: true,
         colorize: false
     });
+require('colors');
 
 global.LOG = new winston.Logger();
 const theme = {

@@ -1,5 +1,4 @@
-﻿const argsParser = require('concierge/arguments'),
-    path = require('path');
+﻿const argsParser = require('concierge/arguments');
 const conciergeArguments = [
     {
         long: '--debug',
