@@ -39,7 +39,7 @@ class ConciergeProcess {
     _fixDebugArgs () {
         const currArgs = process.execArgv;
         for (let i = 0; i < currArgs.length; i++) {
-            if (/=[0-9]{4}$/.test(currArgs[i])) {
+            if (/\=[0-9]{4}$/.test(currArgs[i])) {
                 const val = parseInt(currArgs[i].substr(currArgs[i].length - 4)) + 1;
                 currArgs[i] = currArgs[i].substring(0, currArgs[i].length - 4) + val;
             }
