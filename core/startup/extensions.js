@@ -10,6 +10,10 @@
  */
 
 module.exports = (rootPath, direct) => {
+    if (global.__rootPath) {
+        throw new Error('There can be only one instance per process.');
+    }
+
     const path = require('path'),
         cwd = process.cwd();
     // Arbitary location module loading requirements

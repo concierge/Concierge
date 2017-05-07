@@ -26,4 +26,4 @@
 const startup = require('./core/startup/startup.js'),
     direct = require.main === module;
 
-return startup.run(direct, process.argv.slice(2));
+module.exports = startup.run(direct, process.argv.slice(2), __dirname);

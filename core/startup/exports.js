@@ -44,7 +44,7 @@ module.exports = opts => {
     }
 
     // start platform
-    if (opts.modules || !opts.runInit) {
+    if (opts.modules || !opts.firstRunInitialisation) {
         if (checkType(opts, 'modules', 'string', true)) {
             global.__modulesPath = path.resolve(opts.modules);
             delete opts.modules;
@@ -56,12 +56,33 @@ module.exports = opts => {
     if (opts.integrations) {
         checkType(opts, 'integrations', 'array');
     }
-
-    const p = new Platform(!!opts.runInit);
+    opts.firstRunInitialisation = !!opts.firstRunInitialisation;
+    const p = new Platform(!opts.firstRunInitialisation);
     if (p === null || p === void(0)) {
         throw new Error('An unexpected error occurred during startup.');
     }
     global.currentPlatform = p;
+    p.once('shutdown', () => global.currentPlatform = null);
+    const term = code => {
+        process.removeAllListeners();
+        process.exit(code);
+    };
+    if (opts.firstRunInitialisation) {
+        p.once('shutdown', term);
+    }
+    const abort = message => {
+        if (!global.currentPlatform) {
+            return;
+        }
+        if (message) {
+            LOG.warn(message);
+        }
+        global.currentPlatform.once('shutdown', term);
+        global.currentPlatform.shutdown();
+    };
+    process.on('SIGINT', abort);
+    process.on('SIGHUP', abort.bind(this, 'SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...'));
+
     p.start(opts.integrations || [], opts.modules);
 
     // loopback

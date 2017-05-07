@@ -18,8 +18,7 @@
 'use strict';
 
 const fork = require('child_process').fork,
-    path = require('path'),
-    concierge_fork_check = '1';
+    path = require('path');
 
 global.StatusFlag = {
     Unknown: 1,
@@ -30,9 +29,10 @@ global.StatusFlag = {
 };
 
 class ConciergeProcess {
-    constructor (args) {
+    constructor (args, rootPath) {
         this._exit = this._exit.bind(this);
         this._args = args;
+        this._rootPath = rootPath;
         this._start();
     }
 
@@ -48,7 +48,7 @@ class ConciergeProcess {
     }
 
     _start () {
-        process.env.__concierge_fork = concierge_fork_check;
+        process.env.__concierge_fork = this._rootPath;
         this._process = fork(path.join(__dirname, 'startup.js'), this._args, {
             cwd: process.cwd(),
             env: process.env,
@@ -79,33 +79,18 @@ class ConciergeProcess {
     }
 };
 
-const start = direct => {
-    require('./extensions.js')(process.cwd(), !!direct);
-    return module.exports = require('./exports.js');
+const start = (direct, rootPath) => {
+    require('./extensions.js')(rootPath, !!direct);
+    return require('./exports.js');
 };
 
-exports.run = (cli, args) => cli ? new ConciergeProcess(args) : start();
+exports.run = (cli, args, rootPath) => cli ? new ConciergeProcess(args, rootPath) : start(false, rootPath);
 
-if (process.env.__concierge_fork === concierge_fork_check) {
+if (process.env.__concierge_fork) {
     try {
-        const platform = start(true),
-            cli = require('./cli.js')(process.argv.slice(2)),
-            instance = platform(cli);
-
-        const abort = message => {
-            if (message) {
-                LOG.warn(message);
-            }
-            instance.shutdown();
-        };
-
-        instance.once('shutdown', code => {
-            process.removeAllListeners();
-            process.exit(code);
-        });
-
-        process.on('SIGINT', abort);
-        process.on('SIGHUP', abort.bind(this, 'SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...'));
+        const platform = start(true, process.env.__concierge_fork),
+            cli = require('./cli.js')(process.argv.slice(2));
+        return platform(cli);
     }
     catch (e) {
         console.critical ? console.critical(e) : console.error(e);

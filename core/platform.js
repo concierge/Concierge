@@ -14,9 +14,9 @@ const figlet = require('figlet'),
     MiddlewareHandler = require('concierge/middleware');
 
 class Platform extends MiddlewareHandler {
-    constructor (runInit) {
+    constructor (bypassInit) {
         super();
-        this.bypassInit = !runInit;
+        this.bypassInit = bypassInit;
         this.defaultPrefix = '/';
         this.packageInfo = require(global.rootPathJoin('package.json'));
         this.modulesLoader = new (require(global.rootPathJoin('core/modules/modules.js')))(this);

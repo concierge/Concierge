@@ -77,7 +77,7 @@ module.exports = cliArgs => {
     }
 
     return {
-        runInit: true,
+        firstRunInitialisation: true,
         integrations: getValue(args.unassociated, ['test'], 'No integrations specified, defaulting to "test".'),
         locale: getValue(args.parsed['-i'], 'en', 'Locale set to "${0}".'),
         debug: getValue(args.parsed['-d'], 'info', 'Log level set to "${0}".'),
