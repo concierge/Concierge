@@ -23,20 +23,7 @@
 
 'use strict';
 
-const direct = require.main === module;
+const startup = require('./core/startup/startup.js'),
+    direct = require.main === module;
 
-// Load NodeJS Modifications/Variables
-require('./core/startup/extensions.js')(__dirname, direct);
-
-const startup = require('./core/startup/startup.js');
-
-// Directly called?
-if (direct) {
-    const cli = require('./core/startup/cli.js'),
-        args = cli(process.argv.slice(2)),
-        startArgs = args.unassociated.map(arg => arg.toLowerCase());
-    startup.run(startArgs);
-    return;
-}
-
-module.exports = require('./core/startup/exports.js')(startup);
+module.exports = startup.run(direct, process.argv.slice(2), __dirname);

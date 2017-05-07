@@ -10,6 +10,10 @@
  */
 
 module.exports = (rootPath, direct) => {
+    if (global.__rootPath) {
+        throw new Error('There can be only one instance per process.');
+    }
+
     const path = require('path'),
         cwd = process.cwd();
     // Arbitary location module loading requirements
@@ -37,16 +41,6 @@ module.exports = (rootPath, direct) => {
         }
         return res;
     };
-
-    // Platform status flags
-    global.StatusFlag = {
-        NotStarted: Symbol('NotStarted'),
-        Unknown: Symbol('Unknown'),
-        Started: Symbol('Started'),
-        Shutdown: Symbol('Shutdown'),
-        ShutdownShouldRestart: Symbol('ShutdownShouldRestart')
-    };
-
 
     // babel and coffee-script setup
     global.requireHook = require(global.rootPathJoin('core/unsafe/require.js'));

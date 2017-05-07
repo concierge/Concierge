@@ -23,9 +23,9 @@ class OutputBuffer {
     log(data) {
         this.write(data + '\n');
     }
-    clear() {
+    clear(clearConsole) {
         this.output = '';
-        if (this.consoleOutput) {
+        if (this.consoleOutput && clearConsole) {
             process.stdout.write('\u001b[2J\u001b[0;0H');
         }
     }
@@ -46,26 +46,31 @@ const verifyUnique = (options) => {
 
 const generateHelp = (options, config) => {
     const colourise = (str, col) => {
-        return config.colours ? str[col] : str;
+        return config.colours ? str[col].bold.reset : str;
     };
     options.push({
         long: '--help',
         short: '-h',
         description: 'Shows this help.',
-        run: (out) => {
-            let result = 'USAGE\n\t' + colourise(config.string, 'red') + ' ' + colourise('<options...>', 'cyan') + '\nOPTIONS\n';
+        run: out => {
+            const outOptions = ['OPTIONS'];
             for (let i = 0; i < options.length; i++) {
-                let infoStr = '\t' + colourise(options[i].short + ', ' + options[i].long, 'cyan');
+                outOptions.push(colourise(options[i].short + ', ' + options[i].long, 'cyan'));
                 if (options[i].expects) {
-                    infoStr += ' ';
-                    for (let j = 0; j < options[i].expects.length; j++) {
-                        infoStr += '{' + colourise(options[i].expects[j], 'yellow') + '} ';
-                    }
+                    outOptions[outOptions.length - 1] += ' ' + options[i].expects.map(e => `{${colourise(e, 'yellow')}} `);
                 }
-                result += infoStr + '\n\t\t' + options[i].description + '\n';
+                outOptions.push('\t' + options[i].description);
             }
-            out.clear();
-            out.log(result);
+            const sections = [
+                ['USAGE', colourise(config.string, 'red') + ' ' + colourise('[<options...>]', 'cyan')],
+                outOptions
+            ];
+            for (let section of config.sections || []) {
+                const ind = section.splice(0, 1);
+                sections.splice(ind, 0, section);
+            }
+            out.clear(config.clearConsole);
+            out.log(sections.map(s => s.join('\n\t')).join('\n\n'));
             return true;
         }
     });
@@ -103,7 +108,7 @@ const generateHelp = (options, config) => {
  * }
  * ```
  */
-exports.parseArguments = (args, options, help = {enabled:false, string:null, colours:true}, consoleOutput = false, ignoreError = false) => {
+exports.parseArguments = (args, options, help = {enabled:false, string:null, colours:true, clearConsole:false, sections:[]}, consoleOutput = false, ignoreError = false) => {
     if (help && help.enabled) {
         generateHelp(options, help);
     }
