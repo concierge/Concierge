@@ -146,9 +146,14 @@ class Platform extends MiddlewareHandler {
         console.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
         const firstRun = this.config.getSystemConfig('firstRun');
-        if (!firstRun.hasRun) {
+        if (!this.bypassInit && !firstRun.hasRun) {
             firstRun.hasRun = true;
-            require(global.rootPathJoin('core/modules/firstRun.js'))(this.bypassInit, this.config, this.modulesLoader);
+            const firstRunDir = require('path').join(global.__modulesPath, 'first-run');
+            require('concierge/git').clone('https://github.com/concierge/first-run.git', firstRunDir, err => {
+                if (!err) {
+                    this.modulesLoader.loadModule(this.modulesLoader.verifyModule(firstRunDir));
+                }
+            });
         }
     }
 
