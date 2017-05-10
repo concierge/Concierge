@@ -44,17 +44,22 @@ class Client {
         this._respondWithCallback(JSON.parse(data));
     }
 
+    _setupMessageEvents() {
+        this.ws.on('open', this._onOpen.bind(this));
+        this.ws.on('close', this._onClose.bind(this));
+        this.ws.on('message', this._onMessage.bind(this));
+    }
+
     _checkError(error) {
         // Assumes that an instance of the server is not running, so lets start one.
-        if (error.errno === "ECONNREFUSED") {
+        if (error.errno === 'ECONNREFUSED') {
             if (!this.child) {
-                this.child = fork('main.js', ['grunt', '--debug', 'silly'])
+                this.child = fork('main.js', ['grunt', '--debug', 'silly']);
             }
+            // Wait until the server has started before attempting to connect to it.
             setTimeout(() => {
                 this.ws = new WebSocket(`ws://localhost:${this.port}`);
-                this.ws.on('open', this._onOpen.bind(this));
-                this.ws.on('close', this._onClose.bind(this));
-                this.ws.on('message', this._onMessage.bind(this));
+                this._setupMessageEvents();
             }, 5000);
         }
         else {
@@ -79,9 +84,9 @@ class Client {
     start (cb) {
         this.callback = cb;
         this.ws = new WebSocket(`ws://localhost:${this.port}`);
-        this.ws.on('open', this._onOpen.bind(this));
-        this.ws.on('close', this._onClose.bind(this));
-        this.ws.on('message', this._onMessage.bind(this));
+        this._setupMessageEvents();
+        // Only check for errors on the initial startup, otherwise there is a chance
+        // Where the bot could try to be started and the connection still fail to be established, at which point it would try again and again...
         this.ws.on('error', this._checkError.bind(this));
     }
 

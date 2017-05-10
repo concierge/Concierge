@@ -14,9 +14,8 @@ Most grunt tasks will first launch a testing instance of the bot, to perform acc
 
 For examples on writing acceptance tests see [tests/acceptance/test_core_modules.js]
 
-
 ### Testing modules
 
 Grunt will also run tests for modules installed that contain, test/acceptance and test/unit directories.
 
-For an example see the [aoi module](https://github.com/concierge/aoi)
+For an example see the [HelloConcierge](https://github.com/concierge/HelloConcierge) module.
