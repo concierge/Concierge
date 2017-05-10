@@ -52,7 +52,7 @@ module.exports = function (grunt) {
                 recursive: true,
                 dely: true
             },
-            src: ['test/acceptance/*.js', 'test/unit/**/*.js']
+            src: ['test/acceptance/*.js', 'test/unit/**/*.js', 'modules/**/test/acceptance/*.js', 'modules/**/test/unit/**/*.js', '!modules/test/**/*.js']
         },
         watch: {
             test: {
@@ -64,7 +64,7 @@ module.exports = function (grunt) {
                 tasks: ['mochacli:nyan']
             },
             all: {
-                files: ['core/**/*.js', 'core/**/*.coffee', 'test/**/*.js'],
+                files: ['core/**/*.js', 'core/**/*.coffee', 'test/**/*.js', 'modules/**/*.js'],
                 tasks: ['mochacli:spec']
             }
         },
