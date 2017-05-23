@@ -24,7 +24,7 @@ const exec = require('child_process').execSync,
                 return callback(error.stderr.toString(), null);
             }
             catch (error2) {
-                throw error;
+                return callback(error, null);
             }
         }
     },
