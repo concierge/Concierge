@@ -9,6 +9,8 @@
  *        Copyright (c) Matthew Knox and Contributors 2017.
  */
 
+'use strict';
+
 module.exports = (rootPath, direct) => {
     if (global.__rootPath) {
         throw new Error('There can be only one instance per process.');
@@ -20,7 +22,8 @@ module.exports = (rootPath, direct) => {
     global.__rootPath = rootPath;
     global.__runAsLocal = rootPath === cwd;
     global.__runAsRequired = !direct;
-    global.rootPathJoin = (...args) => {
+    global.rootPathJoin = function () {
+        const args = Array.from(arguments);
         const root = !global.__runAsLocal && args[0].startsWith('modules') ? cwd : global.__rootPath;
         return path.join.apply(this, [root].concat(args));
     };

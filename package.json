@@ -1,6 +1,6 @@
 {
   "name": "concierge-bot",
-  "version": "4.4.0",
+  "version": "4.4.1",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -20,7 +20,6 @@
     "grunt": "^1.0.1",
     "grunt-contrib-watch": "^1.0.0",
     "grunt-mocha-test": "^0.13.2",
-    "grunt-run": "^0.6.0",
     "mocha": "^3.0.2"
   },
   "scripts": {

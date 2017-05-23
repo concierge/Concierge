@@ -1,37 +1,24 @@
-var assert = require('chai').assert,
-    Client = require('../helpers/client.js'),
-    client = null;
+const assert = require('chai').assert,
+    mockApi = new MockApi();
 
-describe('Test core modules', function() {
-    this.timeout(10000);
-    before(function(done) {
-        client = new Client();
-        client.start(done);
-    });
-
-    after(function(done) {
-        if (client !== null) {
-            client.shutdown(done);
-        }
-    });
-
-    describe('/ping', function() {
-        it('should respond on ping', function(done) {
-            client.receiveMessage(function(data, done) {
-                assert.include(data.content, 'Concierge', 'Did not recieve the right thing');
-                done();
+describe('Test core modules', () => {
+    describe('/ping', () => {
+        it('should respond on ping', done => {
+            mockApi.waitForResponse((args, complete) => {
+                assert.include(args[0], 'Concierge', 'Did not recieve the right thing');
+                complete();
             }, done);
-            client.sendMessage('/ping');
+            mockApi.mockSendToModules('/ping');
         });
     });
 
-    describe('/creator', function() {
-        it('should respond with a list of creators', function(done) {
-            client.receiveMessage(function(data, done) {
-                assert.include(data.content, 'Matthew', 'Did not recieve the right thing');
-                done();
+    describe('/creator', () => {
+        it('should respond with a list of creators', done => {
+            mockApi.waitForResponse((args, complete) => {
+                assert.include(args[0], 'Matthew', 'Did not recieve the right thing');
+                complete();
             }, done);
-            client.sendMessage('/creator');
+            mockApi.mockSendToModules('/creator');
         });
     });
 });
