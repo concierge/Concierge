@@ -23,6 +23,11 @@ const util = require('util'),
     });
 require('colors');
 
+// when called via other means (e.g. grunt, bold is sometimes broken)
+String.prototype.__defineGetter__('bold', function () {
+    return `\u001b[1m${this}\u001b[22m`;
+});
+
 global.LOG = new winston.Logger();
 const theme = {
     silly: ['magenta', 'reset'],

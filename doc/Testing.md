@@ -13,3 +13,9 @@ Most grunt tasks will first launch a testing instance of the bot, to perform acc
 | `grunt wtest` | Watches tests for changes and runs tests | Yes |
 
 For examples on writing acceptance tests see [tests/acceptance/test_core_modules.js]
+
+### Testing modules
+
+Grunt will also run tests for modules installed that contain, test/acceptance and test/unit directories.
+
+For an example see the [HelloConcierge](https://github.com/concierge/HelloConcierge) module.

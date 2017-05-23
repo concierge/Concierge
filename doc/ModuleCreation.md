@@ -63,6 +63,10 @@ Concierge uses `winston` logging with `npm` log levels (default log level is `in
 
 Conforming to these log levels will help prevent spamming end users with messages that they do not need to see.
 
+### Testing Modules
+As part of the core testing framework for concierge, modules that contain test directories will also be testing against.
+Tests are expected to be located in `test/unit/example.js`, for unit tests of functions within your module and `test/acceptance/example.js`, for tests which require an instance of Concierge to be running. An example of how to use these can be found in [HelloConcierge](https://github.com/concierge/HelloConcierge).
+
 ### Loading Modules
 New modules will be automatically detected and loaded after a restart of the application. Aside from a normal restart of the application this task can also be achieved using the following commands if the appropriate modules are installed:
 - `/kpm reload <moduleName>` from the `kpm` module. This reloads the module without restarting.
