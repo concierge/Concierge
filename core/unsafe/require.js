@@ -12,6 +12,8 @@
  *        Copyright (c) Matthew Knox and Contributors 2017.
  */
 
+'use strict';
+
 const npm = require(global.rootPathJoin('core/common/npm.js')),
     path = require('path'),
     fs = require('fs'),

@@ -14,10 +14,6 @@ module.exports = grunt => {
         }
     };
 
-    global.grunt$$ = (strings, ...values) => strings.map((v, i) => [v, values[i]]).reduce((a, b) => a.concat(b));
-    global.c_require = p => require(path.join(__dirname, p));
-    global.MockApi = require('./test/helpers/MockApi.js');
-
     const platform = concierge({
         modules: './modules',
         firstRunInitialisation: moduleDirEmpty(),
@@ -27,6 +23,9 @@ module.exports = grunt => {
         loopback: false
     });
     platform.removeAllListeners('shutdown');
+
+    global.c_require = p => require(path.join(__dirname, p));
+    global.MockApi = require('./test/helpers/MockApi.js');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),

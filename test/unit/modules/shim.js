@@ -4,6 +4,7 @@ const chai = require('chai');
 const assert = chai.assert;
 const expect = chai.expect;
 const IntegrationApi = c_require('core/modules/shim.js');
+global.grunt$$ = (strings, ...values) => strings.map((v, i) => [v, values[i]]).reduce((a, b) => a.concat(b));
 
 describe('shim', () => {
     const instance = new IntegrationApi('!');
