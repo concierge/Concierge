@@ -1,45 +1,31 @@
 'use strict';
 
-const path = require('path');
-const fs = require('fs');
+module.exports = grunt => {
+    const Concierge = require('./main.js'),
+        fs = require('fs'),
+        path = require('path');
 
-require('babel-register')(JSON.parse(fs.readFileSync('./.babelrc', 'ascii')));
-require('babel-polyfill');
-
-global.c_require = p => require(path.join(__dirname, p));
-const Middleware = global.c_require('core/common/middleware.js');
-global.currentPlatform = new Middleware();
-
-const checkDirExists = dir => {
-    try {
-        const stats = fs.lstatSync(dir);
-        if (!stats.isDirectory()) {
-            throw new Error();
+    const moduleDirEmpty = () => {
+        try {
+            return fs.readdirSync('./modules').length <= 0;
         }
-        return true;
-    }
-    catch (e) {
-        return false;
-    }
-};
+        catch (e) {
+            return true;
+        }
+    };
 
-module.exports = function (grunt) {
+    global.c_require = p => require(path.join(__dirname, p));
+    global.MockApi = require('./test/helpers/MockApi.js');
 
-    // install the grunt integration if it does not exist
-    if (!checkDirExists('./modules/grunt')) {
-        const git = c_require('core/common/git.js');
-        git.clone('https://github.com/concierge/grunt.git', './modules/grunt', err => {
-            if (err) {
-                throw new Error('Could not install required testing code.');
-            }
-        });
-    }
-
-    //  need redwrap for reddit tests
-    if (!checkDirExists('./node_modules/redwrap')) {
-        const npm = c_require('core/common/npm.js');
-        npm.install('redwrap', __dirname);
-    }
+    const platform = Concierge({
+        modules: './modules',
+        firstRunInitialisation: moduleDirEmpty(),
+        locale: 'en',
+        debug: 'silly',
+        timestamp: false,
+        loopback: false
+    });
+    platform.removeAllListeners('shutdown');
 
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
@@ -67,32 +53,14 @@ module.exports = function (grunt) {
                 files: ['core/**/*.js', 'core/**/*.coffee', 'test/**/*.js', 'modules/**/*.js'],
                 tasks: ['mochacli:spec']
             }
-        },
-        run: {
-            options: {
-                wait: false,
-                ready: /.*System has started\. Hello World!.*/ig
-            },
-            concierge: {
-                cmd: 'node',
-                args: [
-                    '--use_strict',
-                    '--harmony',
-                    'main.js',
-                    'grunt',
-                    '--debug',
-                    'silly'
-                ]
-            }
         }
     });
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-run');
 
-    grunt.registerTask('wall', ['run:concierge', 'watch:all']);
-    grunt.registerTask('wcore', ['run:concierge', 'watch:core']);
-    grunt.registerTask('wtest', ['run:concierge', 'watch:test']);
-    grunt.registerTask('test', ['run:concierge', 'mochaTest']);
-    grunt.registerTask('default', ['run:concierge', 'mochaTest']);
+    grunt.registerTask('wall', ['watch:all']);
+    grunt.registerTask('wcore', ['watch:core']);
+    grunt.registerTask('wtest', ['watch:test']);
+    grunt.registerTask('test', ['mochaTest']);
+    grunt.registerTask('default', ['mochaTest']);
 };
