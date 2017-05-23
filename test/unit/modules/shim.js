@@ -3,7 +3,6 @@
 const chai = require('chai');
 const assert = chai.assert;
 const expect = chai.expect;
-global.$$ = (strings, ...values) => strings.map((v, i) => [v, values[i]]).reduce((a, b) => a.concat(b));
 const IntegrationApi = c_require('core/modules/shim.js');
 
 describe('shim', () => {
@@ -49,7 +48,7 @@ describe('shim', () => {
     describe('#sendMessageToMultiple()', () => {
         expect(() => instance.sendMessageToMultiple('foo', {
             grunt: ['grunt']
-        })).to.throw($$`What kind of platform is this that doesn\'t even support sending messages?`);
+        })).to.throw(grunt$$`What kind of platform is this that doesn\'t even support sending messages?`);
     });
 
     describe('#random()', () => {
@@ -69,7 +68,7 @@ describe('shim', () => {
     const generateBaseTest = (methodName, ...args) => {
         return () => {
             expect(() => instance[methodName].apply(instance, args)).to.throw('A thread must be specified.');
-            expect(() => instance[methodName].apply(instance, args.concat('bar'))).to.throw($$`What kind of platform is this that doesn\'t even support sending messages?`);
+            expect(() => instance[methodName].apply(instance, args.concat('bar'))).to.throw(grunt$$`What kind of platform is this that doesn\'t even support sending messages?`);
         };
     };
 

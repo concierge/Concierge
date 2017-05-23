@@ -14,6 +14,7 @@ module.exports = grunt => {
         }
     };
 
+    global.grunt$$ = (strings, ...values) => strings.map((v, i) => [v, values[i]]).reduce((a, b) => a.concat(b));
     global.c_require = p => require(path.join(__dirname, p));
     global.MockApi = require('./test/helpers/MockApi.js');
 
