@@ -1,7 +1,7 @@
 'use strict';
 
 module.exports = grunt => {
-    const Concierge = require('./main.js'),
+    const concierge = require('./main.js'),
         fs = require('fs'),
         path = require('path');
 
@@ -18,7 +18,7 @@ module.exports = grunt => {
     global.c_require = p => require(path.join(__dirname, p));
     global.MockApi = require('./test/helpers/MockApi.js');
 
-    const platform = Concierge({
+    const platform = concierge({
         modules: './modules',
         firstRunInitialisation: moduleDirEmpty(),
         locale: 'en',
