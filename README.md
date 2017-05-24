@@ -1,5 +1,5 @@
 # Concierge
-[![Build Status](https://api.travis-ci.org/concierge/Concierge.svg?branch=master)](https://travis-ci.org/concierge/Concierge) [![Build status](https://ci.appveyor.com/api/projects/status/eis48if0bf8ynq69?svg=true)](https://ci.appveyor.com/project/mrkno/concierge) 
+[![Build Status](https://api.travis-ci.org/concierge/Concierge.svg?branch=master)](https://travis-ci.org/concierge/Concierge) [![Build status](https://ci.appveyor.com/api/projects/status/eis48if0bf8ynq69?svg=true)](https://ci.appveyor.com/project/mrkno/concierge)
 
 [![NPM](https://nodei.co/npm/concierge-bot.png?compact=true)](https://npmjs.org/package/concierge-bot)
 
@@ -109,13 +109,13 @@ Now you can customize your Concierge by installing or creating your own modules.
 		- [Integration Methods](doc/api/Integration.md)
 - [**CLI Arguments**, Debugging and Logging](doc/Options.md)
 - [Docker](doc/Docker.md)
-- [Contributing](doc/Contributing.md)
+- [Contributing](.github/CONTRIBUTING.md)
 
 ### Testing
 See [Running and writing tests](doc/Testing.md)
 
 ## Contributions
-Contributions welcome, see [Contributing](doc/Contributing.md).
+Contributions welcome, see [Contributing](.github/CONTRIBUTING.md).
 
 ## Copyright and License
 Licensed under the MIT license. Unless otherwise specified, code is Copyright (c) Matthew Knox 2017.
