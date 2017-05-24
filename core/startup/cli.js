@@ -33,6 +33,16 @@ const conciergeArguments = [
         short: '-m',
         description: 'Sets the search path for modules used by the bot.',
         expects: ['DIRECTORY']
+    },
+    {
+        long: '--version',
+        short: '-v',
+        description: 'Prints the installed version information.',
+        run: out => {
+            const pi = require(global.rootPathJoin('package.json')),
+                os = require('os');
+            out.log(`${pi.name} ${pi.version} @ ${os.hostname()} (${os.type()} ${os.arch()})`);
+        }
     }
 ];
 
@@ -70,8 +80,8 @@ module.exports = cliArgs => {
         ]
     }, true);
 
-    // Check if help was run
-    if (args.parsed['-h']) {
+    // Check if help or version was run
+    if (args.parsed['-h'] || args.parsed['-v']) {
         process.exit(global.StatusFlag.Shutdown);
     }
 
