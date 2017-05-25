@@ -30,7 +30,7 @@ exports.deleteDirectory = (directory, callback) => {
     const promises = [];
     for (let file of files) {
         promises.push(new Promise((resolve, reject) => {
-            const stat = fs.lstat(file, (err, stats) => {
+            fs.lstat(file, (err, stats) => {
                 if (err) {
                     throw (LOG.error(err), err);
                 }
