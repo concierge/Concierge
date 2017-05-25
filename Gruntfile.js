@@ -31,9 +31,6 @@ const startConciergeTask = done => {
 };
 
 module.exports = grunt => {
-    global.c_require = p => require(require('path').join(__dirname, p));
-    global.MockApi = require('./test/helpers/MockApi.js');
-
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         mochaTest: {
@@ -66,7 +63,12 @@ module.exports = grunt => {
     grunt.loadNpmTasks('grunt-contrib-watch');
 
     grunt.registerTask('init', function() {
-        startConciergeTask(this.async());
+        const done = this.async();
+        startConciergeTask(() => {
+            global.c_require = p => require(require('path').join(__dirname, p));
+            global.MockApi = require('./test/helpers/MockApi.js');
+            done();
+        });
     });
 
     grunt.registerTask('wall', ['init', 'watch:all']);
