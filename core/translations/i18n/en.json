@@ -48,9 +48,5 @@
   "Unloading module \"${0}\".": "Unloading module \"${0}\".",
   "What kind of shit platform is this that doesn't even support sending messages?": "What kind of shit platform is this that doesn't even support sending messages?",
   "Working on it...": "Working on it...",
-  "Attempting to install module from \"${0}\"": "Attempting to install module from \"${0}\"...",
-  "Failed to install module from \"${0}\"": "Failed to install module from \"${0}\"...",
-  "\"${0}\" (${1}) is now installed.":"\"${0}\" (${1}) is now installed.",
-  "Discord is ready":"Discord is ready",
-  "A token must be provided":"A token must be provided"
+  "Title ${0} ${1}": "\n${0}\n ${1}\n------------------------------------"
 }

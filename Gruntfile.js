@@ -1,9 +1,13 @@
 'use strict';
 
-module.exports = grunt => {
+const startConciergeTask = done => {
+    // allow use of already running Concierge instance
+    if (global.currentPlatform) {
+        return done();
+    }
+
     const concierge = require('./main.js'),
-        fs = require('fs'),
-        path = require('path');
+        fs = require('fs');
 
     const moduleDirEmpty = () => {
         try {
@@ -23,8 +27,11 @@ module.exports = grunt => {
         loopback: false
     });
     platform.removeAllListeners('shutdown');
+    platform.once('started', done);
+};
 
-    global.c_require = p => require(path.join(__dirname, p));
+module.exports = grunt => {
+    global.c_require = p => require(require('path').join(__dirname, p));
     global.MockApi = require('./test/helpers/MockApi.js');
 
     grunt.initConfig({
@@ -58,9 +65,13 @@ module.exports = grunt => {
     grunt.loadNpmTasks('grunt-mocha-test');
     grunt.loadNpmTasks('grunt-contrib-watch');
 
-    grunt.registerTask('wall', ['watch:all']);
-    grunt.registerTask('wcore', ['watch:core']);
-    grunt.registerTask('wtest', ['watch:test']);
-    grunt.registerTask('test', ['mochaTest']);
-    grunt.registerTask('default', ['mochaTest']);
+    grunt.registerTask('init', function() {
+        startConciergeTask(this.async());
+    });
+
+    grunt.registerTask('wall', ['init', 'watch:all']);
+    grunt.registerTask('wcore', ['init', 'watch:core']);
+    grunt.registerTask('wtest', ['init', 'watch:test']);
+    grunt.registerTask('test', ['init', 'mochaTest']);
+    grunt.registerTask('default', ['init', 'mochaTest']);
 };
