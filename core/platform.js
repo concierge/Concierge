@@ -36,8 +36,7 @@ class Platform extends MiddlewareHandler {
         this.onMessage = this.onMessage.bind(this);
         this.modulesLoader.once('loadNone', () => {
             const firstRunDir = require('path').join(global.__modulesPath, 'first-run');
-            require('concierge/git').clone(process.env.CONCIERGE_DEFAULTS_REPO ||
-                'https://github.com/concierge/first-run.git', firstRunDir, err => {
+            require('concierge/git').clone(process.env.CONCIERGE_DEFAULTS_REPO || 'https://github.com/concierge/first-run.git', firstRunDir, err => {
                 if (!err) {
                     this.modulesLoader.loadModule(this.modulesLoader.verifyModule(firstRunDir));
                 }
