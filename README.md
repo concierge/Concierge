@@ -41,7 +41,7 @@ Concierge comes ready-to-run, so to start the bot:
 - In the directory being used for Concierge development run the following command:
     - NPM global: `concierge`
     - git: `node main.js`
-- On the first run, provided GIT is installed some default modules will be installed (see [here](doc/DefaultCommands.md) for details)
+- On the first run, provided GIT is installed some default modules will be installed (see [here](https://github.com/concierge/Concierge/wiki/Defaults) for details)
 - After startup you will see the following prompt:
 
 > Concierge-bot>
@@ -90,7 +90,7 @@ Now you can customize your Concierge by installing or creating your own modules.
 	- [kassy.json](doc/api/Kassy.json.md)
 	- [Translations](doc/api/Translation.md)
 - [KPM Modules Table](https://github.com/concierge/Concierge/wiki/KPM-Table)
-- [Default Commands](doc/DefaultCommands.md)
+- [Default Commands](https://github.com/concierge/Concierge/wiki/Defaults)
 - [Usage Types](doc/UsageTypes.md)
 - [Usage Example/Overview](https://github.com/concierge/Concierge/issues/77#issuecomment-181676118)
 - Integrations (Integrations are chat platforms that Concierge integrates into)
