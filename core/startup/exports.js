@@ -39,7 +39,7 @@ module.exports = opts => {
         console.setLogLevel(opts.debug ? 'debug' : 'info');
     }
 
-    if (opts.log && checkType(opts, 'debug', 'boolean')) {
+    if (opts.log && checkType(opts, 'log', 'boolean')) {
         console.setLog(opts.log);
     }
 
