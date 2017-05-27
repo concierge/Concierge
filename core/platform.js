@@ -31,9 +31,20 @@ class Platform extends MiddlewareHandler {
         this._boundErrorHandler = err => {
             global.currentPlatform._errorHandler.call(global.currentPlatform, err);
         };
-        this.onMessage = this.onMessage.bind(this);
         process.on('uncaughtException', this._boundErrorHandler);
         process.on('unhandledRejection', this._boundErrorHandler);
+        this.onMessage = this.onMessage.bind(this);
+        this.modulesLoader.once('loadNone', () => {
+            const firstRunDir = require('path').join(global.__modulesPath, 'first-run');
+            require('concierge/git').clone(process.env.CONCIERGE_DEFAULTS_REPO || 'https://github.com/concierge/first-run.git', firstRunDir, err => {
+                if (!err) {
+                    this.modulesLoader.loadModule(this.modulesLoader.verifyModule(firstRunDir));
+                }
+                else {
+                    this.modulesLoader.emit('loadAll');
+                }
+            });
+        });
     }
 
     _errorHandler (err, api, event) {
@@ -143,13 +154,8 @@ class Platform extends MiddlewareHandler {
     }
 
     _loadSystemConfig () {
-        console.warn($$`LoadingSystemConfig`);
+        LOG.warn($$`LoadingSystemConfig`);
         $$.setLocale(this.config.getSystemConfig('i18n').locale);
-        const firstRun = this.config.getSystemConfig('firstRun');
-        if (!firstRun.hasRun) {
-            firstRun.hasRun = true;
-            require(global.rootPathJoin('core/modules/firstRun.js'))(this.bypassInit, this.config, this.modulesLoader);
-        }
     }
 
     /**
@@ -163,35 +169,34 @@ class Platform extends MiddlewareHandler {
             throw new Error($$`StartError`);
         }
 
-        console.title(`\n${figlet.textSync(this.packageInfo.name.toProperCase())}` +
-            `\n ${this.packageInfo.version}\n------------------------------------`);
-        console.warn($$`StartingSystem`);
+        LOG.title($$`Title ${figlet.textSync(this.packageInfo.name.toProperCase())} ${this.packageInfo.version}`);
+        LOG.warn($$`StartingSystem`);
 
         // Load modules
-        console.warn($$`LoadingModules`);
+        LOG.warn($$`LoadingModules`);
+        this.modulesLoader.once('loadAll', () => {
+            LOG.warn($$`StartingIntegrations`);
+            for (let integration of integrations) {
+                try {
+                    LOG.info($$`Loading integration '${integration}'...\t`);
+                    this.modulesLoader.startIntegration(this.onMessage, integration);
+                }
+                catch (e) {
+                    if (e.message === 'Cannot find integration to start') {
+                        LOG.error(`Unknown integration '${integration}'`);
+                    }
+                    else {
+                        LOG.error($$`Failed to start output integration '${integration}'.`);
+                        LOG.critical(e);
+                    }
+                }
+            }
+            this.statusFlag = global.StatusFlag.Started;
+            LOG.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
+            this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
+            this.emitAsync('started');
+        });
         this.modulesLoader.loadAllModules(modules);
-
-        console.warn($$`StartingIntegrations`);
-        for (let integration of integrations) {
-            try {
-                console.info($$`Loading integration '${integration}'...\t`);
-                this.modulesLoader.startIntegration(this.onMessage, integration);
-            }
-            catch (e) {
-                if (e.message === 'Cannot find integration to start') {
-                    console.error(`Unknown integration '${integration}'`);
-                }
-                else {
-                    console.error($$`Failed to start output integration '${integration}'.`);
-                    console.critical(e);
-                }
-            }
-        }
-
-        this.statusFlag = global.StatusFlag.Started;
-        console.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
-        this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
-        this.emitAsync('started');
     }
 
     /**

@@ -209,6 +209,7 @@ class ModuleLoader extends EventEmitter {
                 console.critical(e);
             }
         }
+        this.emit(resolvedModules.length + resolvedSystem.length > 0 ? 'loadAll' : 'loadNone');
     }
 
     /**

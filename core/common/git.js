@@ -9,24 +9,24 @@
  *              Copyright (c) Matthew Knox and Contributors 2017.
  */
 
-const exec = require('child_process').execSync,
+const exec = require('child_process').exec,
 
     commandWithPath = (path, args, callback) => {
         args.unshift('git');
         args.forEach((seg, index, arr) => arr[index] = `"${seg}"`);
         const cmd = args.join(' ');
-        try {
-            const stdOut = exec(cmd, {cwd:path});
-            return callback(null, stdOut.toString());
-        }
-        catch (error) {
-            try {
-                return callback(error.stderr.toString(), null);
+
+        exec(cmd, {cwd: path}, (error, stdout, stderr) => {
+            stdout = stdout ? stdout.toString() : null;
+            if (error) {
+                if (stderr) {
+                    console.error(stderr.toString());
+                }
+                error.stderr = stderr;
+                return callback(error, stdout);
             }
-            catch (error2) {
-                return callback(error, null);
-            }
-        }
+            return callback(null, stdout);
+        });
     },
 
     command = (args, callback) => {

@@ -47,8 +47,5 @@
   "Unloading module \"${0}\" failed.": "\"${0}\" विफल रहा, मॉड्यूल को अनलोड कर रहे है।",
   "Unloading module \"${0}\".": "\"${0}\" मॉड्यूल को अनलोड कर रहे है।",
   "What kind of shit platform is this that doesn't even support sending messages?": "यह कैसा चूतिया प्लेटफार्म है जो संदेश भेजना भी सपोर्ट नहीं करता?",
-  "Working on it...": "इस पर काम करती हूं ...",
-  "Attempting to install module from \"${0}\"": "\"${0}\" से मॉड्यूल इंस्टॉल करने की कोशिश हो रही है ...",
-  "Failed to install module from \"${0}\"": "\"${0}\" से मॉड्यूल इंस्टॉल करने में विफलता हुई ...",
-  "\"${0}\" (${1}) is now installed.":"\"${0}\" (${1}) अब इंस्टॉल हो चुका है।"
-  }
+  "Working on it...": "इस पर काम करती हूं ..."
+}
