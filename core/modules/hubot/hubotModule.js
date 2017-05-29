@@ -9,14 +9,14 @@
  *		Copyright (c) Matthew Knox and Contributors 2015.
  */
 
-const fs = require('fs'),
+const files = require('concierge/files'),
     path = require('path'),
     descriptor = 'hubot.json',
     pkg = 'package.json',
     Robot = require('./robot.js');
 
-exports.verifyModule = (location) => {
-    const stat = fs.statSync(location);
+exports.verifyModule = async(location) => {
+    const stat = await files.stat(location);
     if (!stat.isDirectory()) {
         return null;
     }
@@ -26,27 +26,25 @@ exports.verifyModule = (location) => {
         pack = path.join(folderPath, `./${pkg}`);
     let hj;
 
-    try {
-        fs.statSync(desc);
-        hj = require(desc);
+    if (files.existsSync(desc)) {
+        hj = await files.readJson(desc);
     }
-    catch (e) {
-        try {
-            fs.statSync(pack);
-            const p = require(pack);
+    else {
+        let p;
+        if ((p = files.existsSync(pack)) && p.main) {
+            p = await files.readJson(pack);
             hj = Robot.generateHubotJson(folderPath, p.main);
             hj.name = p.name;
             hj.version = p.version;
         }
-        catch (e) {
-            const dirFiles = fs.readdirSync(folderPath).filter(f => f !== '.url');
+        else {
+            const dirFiles = (await files.readdir(folderPath)).filter(f => f !== '.url');
             if (dirFiles.length !== 1) {
                 return null;
             }
             hj = Robot.generateHubotJson(folderPath, dirFiles[0]);
         }
-
-        fs.writeFileSync(desc, JSON.stringify(hj, null, 4), 'utf8');
+        files.writeFile(desc, JSON.stringify(hj, null, 4), 'utf8');
     }
 
     if (!(hj.name && hj.startup && hj.version)) {

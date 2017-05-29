@@ -15,6 +15,7 @@ const exec = require('child_process').execSync;
  * Executes the provided NPM command(s).
  * @param {Array<string>} args arguments to pass to NPM
  * @param {string} cwd the working directory to operate in. Defaults to the root directory if not provided.
+ * @return the stdout output from NPM.
  */
 module.exports = (args, cwd) => {
     if (!cwd) {

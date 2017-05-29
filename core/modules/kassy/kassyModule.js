@@ -9,9 +9,9 @@
  *		Copyright (c) Matthew Knox and Contributors 2016.
  */
 
-const fs              = require('fs'),
-    path            = require('path'),
-    descriptor      = 'kassy.json';
+const files = require('concierge/files'),
+    path = require('path'),
+    descriptor = 'kassy.json';
 
 const moduleTypeFunctions = {
     'module': ['run', 'match'],
@@ -19,8 +19,8 @@ const moduleTypeFunctions = {
     'integration': ['start', 'stop', 'getApi']
 };
 
-exports.verifyModule = (location) => {
-    let stat = fs.statSync(location);
+exports.verifyModule = async(location) => {
+    let stat = await files.stat(location);
     if (!stat.isDirectory()) {
         return null;
     }
@@ -28,7 +28,7 @@ exports.verifyModule = (location) => {
     const folderPath = path.resolve(location),
         p = path.join(folderPath, `./${descriptor}`);
     try {
-        stat = fs.statSync(p);
+        stat = await files.stat(p);
         if (!stat) {
             return null;
         }
@@ -37,7 +37,7 @@ exports.verifyModule = (location) => {
         return null;
     }
 
-    const kj = require(p);
+    const kj = await files.readJson(p);
     if (!(kj.name && kj.startup && kj.version !== void(0) && kj.version != null)) {
         return null;
     }

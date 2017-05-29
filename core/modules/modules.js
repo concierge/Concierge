@@ -27,18 +27,18 @@ class ModuleLoader extends EventEmitter {
 
     _loadModuleInternal(module) {
         try {
-            console.info($$`Loading module '${module.name}'... ${' '}`);
+            LOG.info($$`Loading module '${module.name}'... ${' '}`);
             require.forcePackageInstall(module.folderPath);
             const m = this._loaders[module.__loaderUID].loadModule(module);
             m.__descriptor = module;
             m.platform = this.platform;
-            console.info($$`Loading Succeeded`);
+            LOG.info($$`Loading Succeeded`);
             return m;
         }
         catch (e) {
-            console.error($$`Loading Failed`);
-            console.critical(e);
-            console.debug($$`Module "${module.name}" could not be loaded.`);
+            LOG.error($$`Loading Failed`);
+            LOG.critical(e);
+            LOG.debug($$`Module "${module.name}" could not be loaded.`);
             return null;
         }
     }
@@ -128,7 +128,7 @@ class ModuleLoader extends EventEmitter {
      * @fires ModuleLoader#load
      * @return {Object} status of the load request.
      */
-    loadModule(module) {
+    async loadModule(module) {
         /**
          * Preload event. Fired before a module is loaded.
          * @event ModuleLoader#preload
@@ -173,43 +173,42 @@ class ModuleLoader extends EventEmitter {
      * Loads all modules in the modules directory and starts the configuration service.
      * @param {Array<string>} modules optional list of modules to load.
      */
-    loadAllModules(modules) {
-        const data = modules || files.filesInDirectory(global.__modulesPath),
-            resolvedModules = [],
-            resolvedSystem = [];
-        for (let i = 0; i < data.length; i++) {
+    async loadAllModules (modules) {
+        const resolvedModules = [],
+            resolvedSystem = [],
+            data = (modules || files.filesInDirectory(global.__modulesPath).map(d => path.join(global.__modulesPath, d)));
+
+        const mods = (await Promise.all(data.map(async(d) => {
             try {
-                if (!modules) {
-                    data[i] = path.join(global.__modulesPath, data[i]);
+                const output = await this.verifyModule(path.resolve(d));
+                if (!output) {
+                    LOG.debug($$`Skipping "${d}". It isn't a module.`);
                 }
-                const candidate = path.resolve(data[i]),
-                    output = this.verifyModule(candidate);
-                if (output) {
-                    (output.type.includes('system') ? resolvedSystem : resolvedModules).push(output);
-                }
-                else {
-                    console.debug($$`Skipping "${data[i]}". It isn't a module.`);
-                }
+                return output;
             }
             catch (e) {
-                console.debug($$`A failure occured while listing "${data[i]}". It doesn't appear to be a module.`);
-                console.critical(e);
-                continue;
+                LOG.debug($$`A failure occured while listing "${d}". It doesn't appear to be a module.`);
+                LOG.critical(e);
+                return null;
             }
-        }
-        for (let output of resolvedSystem) {
-            this.loadModule(output); // force system to be first
-        }
+        }))).filter(m => !!m);
+
+        const systemMods = mods.filter(m => m.type.contains('system')),
+            normalMods = mods.filter(m => !m.type.contains('system'));
+
+        // force system to load first
+        await Promise.all(systemMods.map(m => this.loadModule(m)));
         this.emit('loadSystem');
-        for (let output of resolvedModules) {
+
+        await Promise.all(normalMods.map(async(m) => {
             try {
-                this.loadModule(output);
+                await this.loadModule(m);
             }
             catch (e) {
-                console.critical(e);
+                LOG.critical(e);
             }
-        }
-        this.emit(resolvedModules.length + resolvedSystem.length > 0 ? 'loadAll' : 'loadNone');
+        }));
+        this.emit(systemMods.length + normalMods.length > 0 ? 'loadAll' : 'loadNone');
     }
 
     /**
@@ -248,8 +247,8 @@ class ModuleLoader extends EventEmitter {
             integration.__running = true;
         }
         catch (e) {
-            console.debug(`Integration "${integration.__descriptor.name}" failed to start.`);
-            console.critical(e);
+            LOG.debug(`Integration "${integration.__descriptor.name}" failed to start.`);
+            LOG.critical(e);
             success = false;
         }
         const startObj = {
@@ -272,27 +271,25 @@ class ModuleLoader extends EventEmitter {
      * @param {string} directory path to the directory.
      * @returns {object} descriptor required to load directory as a module, or null if not a module.
      */
-    verifyModule(directory) {
-        for (let i = 0; i < this._loaders.length; i++) {
-            const mod = this._loaders[i].verifyModule(directory);
-            if (mod) {
-                if (!mod.priority || mod.priority === 'normal') {
-                    mod.priority = 0;
-                }
-                else if (mod.priority === 'first') {
-                    mod.priority = Number.MIN_SAFE_INTEGER;
-                }
-                else if (mod.priority === 'last') {
-                    mod.priority = Number.MAX_SAFE_INTEGER;
-                }
-                else if (typeof mod.priority !== 'number') {
-                    continue;
-                }
-                mod.__loaderUID = i;
+    async verifyModule(directory) {
+        const res = await Promise.all(this._loaders.map(async(l) => {
+            const mod = await l.verifyModule(directory);
+            if (!mod) {
                 return mod;
             }
-        }
-        return null;
+            // convert version to semver
+            const spl = mod.version.toString().split('.');
+            mod.version = spl.concat(Array(3 - spl.length).fill('0')).join('.');
+
+            switch (mod.priority) {
+                case 'first': mod.priority = Number.MIN_SAFE_INTEGER; break;
+                case 'last': mod.priority = Number.MAX_SAFE_INTEGER; break;
+                default: mod.priority = 0; break;
+            }
+            mod.__loaderUID = this._loaders.indexOf(l);
+            return mod;
+        }));
+        return res.find(d => !!d) || null;
     }
 
     /**
@@ -311,7 +308,7 @@ class ModuleLoader extends EventEmitter {
          */
         this.emit('preunload', mod);
         try {
-            console.info($$`Unloading module "${mod.__descriptor.name}".`);
+            LOG.info($$`Unloading module "${mod.__descriptor.name}".`);
             if (mod.__running) {
                 this.stopIntegration(mod);
             }
@@ -329,8 +326,8 @@ class ModuleLoader extends EventEmitter {
             require.unrequire(mod.__descriptor.folderPath || mod.__descriptor.startup, this._loaderPaths[mod.__descriptor.__loaderUID]);
         }
         catch (e) {
-            console.error($$`Unloading module "${mod.__descriptor.name}" failed.`);
-            console.critical(e);
+            LOG.error($$`Unloading module "${mod.__descriptor.name}" failed.`);
+            LOG.critical(e);
             success = false;
         }
         const unloadObj = {
@@ -399,8 +396,8 @@ class ModuleLoader extends EventEmitter {
             integration.__running = false;
         }
         catch (e) {
-            console.debug(`Integration "${integration.__descriptor.name}" failed to stop.`);
-            console.critical(e);
+            LOG.debug(`Integration "${integration.__descriptor.name}" failed to stop.`);
+            LOG.critical(e);
             success = false;
         }
         const stopObj = {
