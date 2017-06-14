@@ -140,4 +140,41 @@ module.exports = (rootPath, direct) => {
             console.error(`(node: 56338) Warning: ${warning}`);
         };
     }
+
+    // util.promisify fallback (needed for node < v8.0.0)
+    const util = require('util');
+    if (!util.promisify) {
+        const customPromise = Symbol('util.promisify.custom');
+        util.promisify = orig => {
+            if (typeof(orig) !== 'function') {
+                const err = TypeError('The "original" argument must be of type function');
+                err.code = 'ERR_INVALID_ARG_TYPE';
+                err.name = `TypeError [${err.code}]`;
+                throw err;
+            }
+
+            let fn = orig[customPromise];
+            if (fn) {
+                if (typeof(fn) !== 'function') {
+                    throw new TypeError('The [util.promisify.custom] property must be a function');
+                }
+            }
+            else {
+                fn = (...args) => new Promise((resolve, reject) => {
+                    try {
+                        orig.apply(this, args.concat((err, ...values) => err ? reject(err) : resolve(values[0])));
+                    }
+                    catch (err) {
+                        reject(err);
+                    }
+                });
+                Object.setPrototypeOf(fn, Object.getPrototypeOf(orig));
+                Object.defineProperties(fn, Object.getOwnPropertyDescriptors(orig));
+                orig[customPromise] = fn;
+            }
+            fn[customPromise] = fn;
+            return fn;
+        }
+        util.promisify.custom = customPromise;
+    }
 };

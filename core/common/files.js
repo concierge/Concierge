@@ -11,18 +11,13 @@
  */
 
 const fs = require('fs'),
-    path = require('path');
+    path = require('path'),
+    util = require('util');
 
 // make promisified version of all callback apis
 for (let m in fs) {
     if (fs[m + 'Sync']) {
-        exports[m] = (...args) => {
-            return new Promise((resolve, reject) => {
-                fs[m].apply(fs, args.concat((err, ...res) => {
-                    err ? reject(err) : resolve(res.length > 1 ? res : res[0]);
-                }));
-            });
-        };
+        exports[m] = util.promisify(fs[m]);
     }
 }
 
