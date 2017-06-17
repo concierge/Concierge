@@ -20,20 +20,10 @@ const moduleTypeFunctions = {
 };
 
 exports.verifyModule = async(location) => {
-    let stat = await files.stat(location);
-    if (!stat.isDirectory()) {
-        return null;
-    }
-
     const folderPath = path.resolve(location),
         p = path.join(folderPath, `./${descriptor}`);
-    try {
-        stat = await files.stat(p);
-        if (!stat) {
-            return null;
-        }
-    }
-    catch (e) {
+
+    if ((await files.fileExists(p)) !== 'file') {
         return null;
     }
 
@@ -47,7 +37,6 @@ exports.verifyModule = async(location) => {
     if (!kj.type) {
         kj.type = 'module';
     }
-
     return kj;
 };
 

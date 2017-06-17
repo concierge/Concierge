@@ -20,10 +20,16 @@ const checkType = (obj, key, expectation, ret = false) => {
     return type === expectation;
 };
 
-module.exports = opts => {
+module.exports = async(opts) => {
     opts = opts || {};
-
-    global.$$ = require(rootPathJoin('core/translations/translations.js'));
+    try {
+        global.$$ = require(rootPathJoin('core/translations/translations.js'));
+        await global.$$.init;
+    }
+    catch (e) {
+        LOG.error(e);
+        throw e;
+    }
     if (opts.locale && checkType(opts, 'locale', 'string')) {
         $$.setLocale(opts.locale);
     }

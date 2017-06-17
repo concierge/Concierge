@@ -53,8 +53,10 @@ class ModuleLoader extends EventEmitter {
      * @returns {boolean} if a module of the same name has been loaded.
      */
     _checkExisting (mod) {
-        return mod.type.map(t => this._loaded[type]
-            .some(val => val.__descriptor.name === mod.name)).some(r => r);
+        const filter = val => val.__descriptor.name === mod.name;
+        return Array.isArray(mod.type) ?
+            mod.type.map(t => this._loaded[t] && this._loaded[t].some(filter)).some(r => r) :
+            this._loaded[mod.type] && this._loaded[mod.type].some(filter);
     }
 
     /**
@@ -123,7 +125,7 @@ class ModuleLoader extends EventEmitter {
          * @type {object} module descriptor.
          */
         this.emit('preload', descriptor);
-        LOG.info($$`Loading module '${module.name}'`);
+        LOG.info($$`Loading module '${descriptor.name}'`);
         const loadEvent = {
             success: true,
             module: null,
@@ -131,6 +133,7 @@ class ModuleLoader extends EventEmitter {
         };
         try {
             await require.forcePackageInstall(descriptor.folderPath);
+            await $$.createContext(descriptor.folderPath);
             loadEvent.module = await this._loaders[descriptor.__loaderUID].loadModule(descriptor);
             loadEvent.module.__descriptor = descriptor;
             loadEvent.module.platform = this.platform;
@@ -255,6 +258,9 @@ class ModuleLoader extends EventEmitter {
      */
     async verifyModule (directory) {
         const res = await Promise.all(this._loaders.map(async(l) => {
+            if ((await files.fileExists(directory)) !== 'directory') {
+                return null;
+            }
             const mod = await l.verifyModule(directory);
             if (!mod) {
                 return mod;
@@ -313,7 +319,7 @@ class ModuleLoader extends EventEmitter {
                     delete this._loaded[type];
                 }
             }
-            $$.removeContextIfExists(descriptor.name);
+            $$.removeContext(descriptor.name);
             require.unrequire(descriptor.folderPath || descriptor.startup, this._loaderPaths[descriptor.__loaderUID]);
         }
         catch (e) {

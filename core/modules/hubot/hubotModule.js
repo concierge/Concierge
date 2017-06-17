@@ -16,16 +16,11 @@ const files = require('concierge/files'),
     Robot = require('./robot.js');
 
 exports.verifyModule = async(location) => {
-    if ((await files.fileExists(location)) !== 'directory')
-        return null;
-    }
-
     const folderPath = path.resolve(location),
         desc = path.join(folderPath, `./${descriptor}`),
         pack = path.join(folderPath, `./${pkg}`);
     let hj;
-
-    if (await files.fileExists(desc)) {
+    if ((await files.fileExists(desc)) === 'file') {
         hj = await files.readJson(desc);
     }
     else {
@@ -43,15 +38,13 @@ exports.verifyModule = async(location) => {
             }
             hj = Robot.generateHubotJson(folderPath, dirFiles[0]);
         }
-        files.writeFile(desc, JSON.stringify(hj, null, 4), 'utf8');
+        await files.writeFile(desc, JSON.stringify(hj, null, 4), 'utf8');
     }
 
     if (!(hj.name && hj.startup && hj.version)) {
         return null;
     }
-    if (!hj.folderPath) {
-        hj.folderPath = folderPath;
-    }
+    hj.folderPath = folderPath;
     if (!hj.type) {
         hj.type = ['module'];
     }

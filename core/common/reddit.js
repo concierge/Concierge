@@ -9,16 +9,21 @@
  *              Copyright (c) Matthew Knox and Contributors 2017.
  */
 
-const reddit = require('redwrap');
+const reddit = require('redwrap'),
+    util = require('util');
 
-module.exports = exports = (subreddit, numberOfQueries, callback) => {
-    reddit.r(subreddit).limit(numberOfQueries, (err, req) => {
-        if (!err && req && req.data) {
-            callback(false, req.data.children);
-        }
-        else {
-            callback(true, `Well ${subreddit} fell on its face`);
-        }
-    });
+module.exports = exports = async(subreddit, numberOfQueries, callback) => {
+    const limit = util.promisify(reddit.r(subreddit).limit);
+    let req = null, suc = true;
+    try {
+        req = (await limit(numberOfQueries)).data.children;
+    }
+    catch (e) {
+        suc = false;
+    }
+    if (callback) {
+        callback(suc, suc ? req : `Well ${subreddit} fell on its face`);
+    }
+    return req;
 };
 exports.reddit = exports; // backwards compatibility
