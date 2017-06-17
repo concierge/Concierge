@@ -22,19 +22,16 @@ for (let m in fs) {
 }
 
 /**
- * Lists all the file system entries in a directory (sync).
+ * Lists all the file system entries in a directory.
  * @param {string} directory directory to list the file system entries of.
  * @return {Array<string>} the file system entries in the directory. If the directory
  * does not exist or there is a problem listing its contents, this will be an empty
  * array.
  */
-exports.filesInDirectory = directory => {
+exports.filesInDirectory = async(directory) => {
     try {
-        const files = fs.readdirSync(directory);
-        if (files === null) {
-            throw new Error('No files found.');
-        }
-        return files;
+        const files = await exports.readdir(directory);
+        return files === null ? [] : files;
     }
     catch (e) {
         return [];
@@ -48,30 +45,26 @@ exports.filesInDirectory = directory => {
  * @param {string} directory the (potentially non-empty) directory to delete.
  * @param {function()} callback method called on success or failure, (error).
  */
-exports.deleteDirectory = (directory, callback) => {
-    const files = exports.filesInDirectory(directory).map(f => path.join(directory, f));
-    const promises = [];
-    for (let file of files) {
-        promises.push(new Promise((resolve, reject) => {
-            fs.lstat(file, (err, stats) => {
-                if (err) {
-                    throw (LOG.error(err), err);
-                }
-                const resolver = e => e ? LOG.error(e) && reject(false) : resolve(true);
-                if (stats.isDirectory()) {
-                    exports.deleteDirectory(file, resolver);
-                }
-                else {
-                    fs.chmodSync(file, 666);
-                    fs.unlink(file, resolver);
-                }
-            });
-        }));
-    }
-    Promise.all(promises).then(() => {
-        fs.chmodSync(directory, 666);
-        fs.rmdir(directory, e => callback(e ? (LOG.error(e), e) : null));
-    }, () => callback('Error'));
+exports.deleteDirectory = async(directory) => {
+    await Promise.all((await exports.filesInDirectory(directory)).forEach(async(file) => {
+        file = path.join(directory, file);
+        try {
+            if (await exports.fileExists(file)) {
+                await exports.deleteDirectory(file);
+            }
+            else {
+                await exports.chmod(file, 666);
+                await exports.unlink(file);
+            }
+            return true;
+        }
+        catch (e) {
+            throw (LOG.error(e), e);
+        }
+    }));
+    await Promise.all(promises);
+    await exports.chmod(directory, 666);
+    return await exports.rmdir(directory);
 };
 
 /**
@@ -80,9 +73,9 @@ exports.deleteDirectory = (directory, callback) => {
  * @returns {string|boolean} false if it doesn't exist, 'directory', 'file' or
  * 'other' otherwise.
  */
-exports.existsSync = p => {
+exports.fileExists = async(p) => {
     try {
-        const stat = fs.lstatSync(p);
+        const stat = await exports.lstat(p);
         if (stat.isDirectory()) {
             return 'directory';
         }

@@ -16,8 +16,7 @@ const files = require('concierge/files'),
     Robot = require('./robot.js');
 
 exports.verifyModule = async(location) => {
-    const stat = await files.stat(location);
-    if (!stat.isDirectory()) {
+    if ((await files.fileExists(location)) !== 'directory')
         return null;
     }
 
@@ -26,12 +25,12 @@ exports.verifyModule = async(location) => {
         pack = path.join(folderPath, `./${pkg}`);
     let hj;
 
-    if (files.existsSync(desc)) {
+    if (await files.fileExists(desc)) {
         hj = await files.readJson(desc);
     }
     else {
         let p;
-        if ((p = files.existsSync(pack)) && p.main) {
+        if ((p = await files.fileExists(pack)) && p.main) {
             p = await files.readJson(pack);
             hj = Robot.generateHubotJson(folderPath, p.main);
             hj.name = p.name;

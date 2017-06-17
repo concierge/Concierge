@@ -42,9 +42,7 @@ exports.verifyModule = async(location) => {
         return null;
     }
 
-    if (!kj.folderPath) {
-        kj.folderPath = folderPath;
-    }
+    kj.folderPath = folderPath;
 
     if (!kj.type) {
         kj.type = 'module';
@@ -53,7 +51,7 @@ exports.verifyModule = async(location) => {
     return kj;
 };
 
-exports.loadModule = (module) => {
+exports.loadModule = module => {
     const modulePath = module.folderPath;
     let startPath   = module.startup,
         m;

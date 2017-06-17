@@ -145,17 +145,12 @@ class Platform extends MiddlewareHandler {
      * @emits Platform#started
      */
     getModule (arg) {
-        const modules = this.modulesLoader.getLoadedModules('module');
-        let func = arg;
-        if (typeof(func) !== 'function') {
-            func = mod => mod.__descriptor.name.trim().toLowerCase() === arg.trim().toLowerCase();
-        }
-        return modules.find(func);
+        return this.modulesLoader.getModule(arg);
     }
 
-    _loadSystemConfig () {
+    async _loadSystemConfig () {
         LOG.warn($$`LoadingSystemConfig`);
-        $$.setLocale(this.config.getSystemConfig('i18n').locale);
+        $$.setLocale((await this.config.getSystemConfig('i18n')).locale);
     }
 
     /**
@@ -179,7 +174,7 @@ class Platform extends MiddlewareHandler {
             for (let integration of integrations) {
                 try {
                     LOG.info($$`Loading integration '${integration}'...\t`);
-                    this.modulesLoader.startIntegration(this.onMessage, integration);
+                    this.modulesLoader.startIntegration(integration);
                 }
                 catch (e) {
                     if (e.message === 'Cannot find integration to start') {
@@ -206,7 +201,7 @@ class Platform extends MiddlewareHandler {
      * @emits Platform#shutdown
      * @see `global.StatusFlag`
      */
-    shutdown (flag) {
+    async shutdown (flag) {
         if (this.statusFlag !== global.StatusFlag.Started) {
             throw new Error($$`ShutdownError`);
         }
@@ -214,7 +209,7 @@ class Platform extends MiddlewareHandler {
         this.emit('preshutdown');
 
         // Unload user modules
-        this.config.saveConfig();
+        await this.config.saveConfig();
         this.modulesLoader.unloadAllModules();
         this.statusFlag = flag || global.StatusFlag.Shutdown;
 

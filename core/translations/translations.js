@@ -22,16 +22,17 @@ let currentLocale = global.__i18nLocale || defaultLocale;
 class TranslatorService extends EventEmitter {
     constructor (translationsDir) {
         super();
+        this.hook = null;
         this.translations = {};
         translationsDir = path.resolve(translationsDir);
-        const translationFiles = files.filesInDirectory(translationsDir);
-        for (let i = 0; i < translationFiles.length; i++) {
-            const translationFile = path.join(translationsDir, translationFiles[i]);
-            // avoid using require so we don't have to deal with caching during module unloads...
-            const data = fs.readFileSync(translationFile, 'utf8').replace(/^\uFEFF/, '');
-            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = JSON.parse(data);
-        }
-        this.hook = null;
+        (async() => {
+            const translationFiles = await files.filesInDirectory(translationsDir);
+            await Promise.all(translationFiles.map(async(translationFile) => {
+                translationFile = path.join(translationsDir, translationFiles[i]);
+                const data = await files.readJson(translationFile);
+                return this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = data;
+            }));
+        });
     }
 
     _fallbackTranslate(strings, values) {

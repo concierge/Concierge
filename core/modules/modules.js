@@ -6,7 +6,7 @@
  *
  * License:
  *		MIT License. All code unless otherwise specified is
- *		Copyright (c) Matthew Knox and Contributors 2016.
+ *		Copyright (c) Matthew Knox and Contributors 2017.
  */
 
 const EventEmitter = require('events'),
@@ -14,72 +14,56 @@ const EventEmitter = require('events'),
     path = require('path');
 
 class ModuleLoader extends EventEmitter {
-    constructor(platform) {
+    constructor (platform) {
         super();
         this._loaderPaths = ['./kassy/kassyModule.js', './hubot/hubotModule.js'];
-        this._loaders = [];
-        for (let loader of this._loaderPaths) { // paths needed later
-            this._loaders.push(require(loader));
-        }
+        this._loaders = this._loaderPaths.map(require);
         this._loaded = {};
         this.platform = platform;
     }
 
-    _loadModuleInternal(module) {
-        try {
-            LOG.info($$`Loading module '${module.name}'... ${' '}`);
-            require.forcePackageInstall(module.folderPath);
-            const m = this._loaders[module.__loaderUID].loadModule(module);
-            m.__descriptor = module;
-            m.platform = this.platform;
-            LOG.info($$`Loading Succeeded`);
-            return m;
-        }
-        catch (e) {
-            LOG.error($$`Loading Failed`);
-            LOG.critical(e);
-            LOG.debug($$`Module "${module.name}" could not be loaded.`);
-            return null;
+    _insertSorted (mod) {
+        const priority = mod.__descriptor.priority;
+        for (let type of mod.__descriptor.type) {
+            if (!this._loaded[type]) {
+                this._loaded[type] = [mod];
+                continue;
+            }
+            const loadedModules = this._loaded[type];
+            let upper = 0,
+                lower = loadedModules.length - 1;
+
+            while (lower > upper) {
+                const middle = Math.floor((upper + lower) / 2);
+                if (priority < loadedModules[middle].__descriptor.priority) {
+                    lower = Math.max(middle, 0);
+                }
+                else if (priority > loadedModules[middle].__descriptor.priority) {
+                    upper = Math.min(middle, loadedModules.length - 1);
+                }
+                break;
+            }
+            loadedModules.splice(lower, 0, mod);
         }
     }
 
-    _insertSorted(module) {
-        for (let type of module.__descriptor.type) {
-            if (!this._loaded[type]) {
-                this._loaded[type] = [];
-            }
-            const loadedModules = this._loaded[type];
-            if (loadedModules.length === 0) {
-                loadedModules.push(module);
-                return;
-            }
+    /**
+     * Check for existing loaded modules of the same name.
+     * @param {Object} mod the module descriptor to check for.
+     * @returns {boolean} if a module of the same name has been loaded.
+     */
+    _checkExisting (mod) {
+        return mod.type.map(t => this._loaded[type]
+            .some(val => val.__descriptor.name === mod.name)).some(r => r);
+    }
 
-            let upper = 0,
-                middle = Math.floor(loadedModules.length / 2),
-                lower = loadedModules.length - 1;
-
-            while (lower !== middle && upper !== middle) {
-                if (module.__descriptor.priority === loadedModules[middle].__descriptor.priority) {
-                    break;
-                }
-                if (module.__descriptor.priority < loadedModules[middle].__descriptor.priority) {
-                    lower = middle;
-                    middle = Math.floor(upper + (lower - upper) / 2);
-                    if (middle === 0 || lower === middle) {
-                        break;
-                    }
-                }
-                else {
-                    upper = middle;
-                    middle = Math.floor(upper + (lower - upper) / 2);
-                    if (middle === loadedModules.length - 1 || upper === middle) {
-                        middle++;
-                        break;
-                    }
-                }
-            }
-            loadedModules.splice(middle, 0, module);
-        }
+    /**
+     * Sleep for 0ms, which has the affect of letting the existing event loop complete
+     * any functions it has queued. This should be used before any long-running methods.
+     * @returns {Promise} an awaitable promise.
+     */
+    _sleep (ms = 0) {
+        return new Promise(r => setTimeout(r, ms));
     }
 
     /**
@@ -89,7 +73,7 @@ class ModuleLoader extends EventEmitter {
      * @returns {Array<object>} either an array of modules or an associative
      * object containing modules and their types
      */
-    getLoadedModules(type) {
+    getLoadedModules (type) {
         if (type) {
             return this._loaded[type];
         }
@@ -103,22 +87,23 @@ class ModuleLoader extends EventEmitter {
     }
 
     /**
-     * Check for existing loaded modules of the same name.
-     * @param {Object<>} module the module descriptor to check for.
-     * @returns {boolean} if a module of the same name and version have been loaded.
+     * Gets a loaded module by name or filter function.
+     * @param {string|function()|Object} arg either the name, a filter function to find the module
+     * or the module itself (which will just then be returned - useful for argument parsing).
+     * @param {string} type the type of module to search for. Defaults to any (null).
+     * @return {Object} the module (if found), array-like otherwise.
+     * @emits Platform#started
      */
-    _checkExisting(module) {
-        for (let type of Object.keys(this._loaded)) {
-            if (!this._loaded.hasOwnProperty(type)) {
-                continue;
-            }
-            const filtered = this._loaded[type].filter(val => val.__descriptor.name === module.name &&
-                val.__descriptor.version === module.version);
-            if (filtered.length > 0) {
-                return true;
-            }
+    getModule (arg, type = null) {
+        const typeName = typeof(arg);
+        let func = arg;
+        if (typeName === 'object') {
+            return arg;
         }
-        return false;
+        else if (typeName === 'string') {
+            func = mod => mod.__descriptor.name.trim().toLowerCase() === arg.trim().toLowerCase();
+        }
+        return this.getLoadedModules(type).find(func);
     }
 
     /**
@@ -128,33 +113,37 @@ class ModuleLoader extends EventEmitter {
      * @fires ModuleLoader#load
      * @return {Object} status of the load request.
      */
-    async loadModule(module) {
+    async loadModule (descriptor) {
+        if (this._checkExisting(descriptor)) {
+            return null; // already loaded
+        }
         /**
          * Preload event. Fired before a module is loaded.
          * @event ModuleLoader#preload
          * @type {object} module descriptor.
          */
-        this.emit('preload', module);
-
-        if (this._checkExisting(module)) {
-            return null; // already loaded
-        }
-
-        const ld = this._loadModuleInternal(module);
-        if (!ld) {
-            const loadObj = {
-                success: false,
-                module: module
-            };
-            this.emit('load', loadObj);
-            return loadObj;
-        }
-        this._insertSorted(ld);
-        ld.config = ld.platform.config.loadConfig(ld.__descriptor);
-        const loadObj = {
+        this.emit('preload', descriptor);
+        LOG.info($$`Loading module '${module.name}'`);
+        const loadEvent = {
             success: true,
-            module: ld
+            module: null,
+            descriptor: descriptor
         };
+        try {
+            await require.forcePackageInstall(descriptor.folderPath);
+            loadEvent.module = await this._loaders[descriptor.__loaderUID].loadModule(descriptor);
+            loadEvent.module.__descriptor = descriptor;
+            loadEvent.module.platform = this.platform;
+            loadEvent.module.config = await this.platform.config.loadConfig(descriptor);
+            this._insertSorted(loadEvent.module);
+            LOG.info($$`Loading Succeeded`);
+        }
+        catch (e) {
+            loadEvent.success = false;
+            LOG.error($$`Loading Failed`);
+            LOG.critical(e);
+            LOG.debug($$`Module "${descriptor.name}" could not be loaded.`);
+        }
         /**
          * Load event. Fired after a module is loaded, but before the module is notified via load().
          * @event ModuleLoader#load
@@ -162,11 +151,12 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather loading was successful.
          * @property {object} module - Module instance or descriptor.
          */
-        this.emit('load', loadObj);
-        if (ld.load) {
-            ld.load(ld.platform);
+        this.emit('load', loadEvent);
+        if (loadEvent.success && loadEvent.module.load) {
+            await this._sleep();
+            loadEvent.module.load(this.platform);
         }
-        return loadObj;
+        return loadEvent;
     }
 
     /**
@@ -176,7 +166,7 @@ class ModuleLoader extends EventEmitter {
     async loadAllModules (modules) {
         const resolvedModules = [],
             resolvedSystem = [],
-            data = (modules || files.filesInDirectory(global.__modulesPath).map(d => path.join(global.__modulesPath, d)));
+            data = (modules || (await files.filesInDirectory(global.__modulesPath)).map(d => path.join(global.__modulesPath, d)));
 
         const mods = (await Promise.all(data.map(async(d) => {
             try {
@@ -213,48 +203,40 @@ class ModuleLoader extends EventEmitter {
 
     /**
      * Starts the specified integration. Integration must be loaded first.
-     * @param {function()} callback the message callback to be called by integrations.
-     * @param {object|string} integration integration instance or name.
+     * @param {Object|string|function()} integration instance to start. In addion to the integration itself,
+     * this method accepts any of the parameters of the ModuleLoader#getModule method.
      * @fires ModuleLoader#prestart
      * @fires ModuleLoader#start
      * @returns {Object} the status of the load request.
      */
-    startIntegration(callback, integration) {
-        if (typeof (integration) === 'string') {
-            const filtered = (this._loaded.integration || []).filter(val => val.__descriptor.name === integration);
-            if (filtered.length !== 1) {
-                throw new Error('Cannot find integration to start');
-            }
-            integration = filtered[0];
-        }
-
-        if (integration.__running) {
+    async startIntegration (integration) {
+        integration = this.getModule(integration);
+        if (!integration.__descriptor.type.includes('integration') || integration.__running) {
             throw new Error('The specified integration is already running.');
         }
-
+        const startEvent = {
+            success: true,
+            integration: integration
+        };
         /**
          * Prestart event. Fired before an integration is started.
          * @event ModuleLoader#prestart
          * @type {object} - Integration instance.
          */
         this.emit('prestart', integration);
-        let success = true;
         try {
+            await this._sleep(); // ensure we are not blocking any ongoing operations
             integration.start((api, event) => {
                 event.event_source = integration.__descriptor.name;
-                callback(api, event);
+                this.platform.onMessage(api, event);
             });
             integration.__running = true;
         }
         catch (e) {
             LOG.debug(`Integration "${integration.__descriptor.name}" failed to start.`);
             LOG.critical(e);
-            success = false;
+            startEvent.success = false;
         }
-        const startObj = {
-            success: success,
-            integration: integration
-        };
         /**
          * Start event. Fired after an integration has been started.
          * @event ModuleLoader#start
@@ -262,8 +244,8 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather starting was successful.
          * @property {object} integration - Integration instance.
          */
-        this.emit('start', startObj);
-        return startObj;
+        this.emit('start', startEvent);
+        return startEvent;
     }
 
     /**
@@ -271,7 +253,7 @@ class ModuleLoader extends EventEmitter {
      * @param {string} directory path to the directory.
      * @returns {object} descriptor required to load directory as a module, or null if not a module.
      */
-    async verifyModule(directory) {
+    async verifyModule (directory) {
         const res = await Promise.all(this._loaders.map(async(l) => {
             const mod = await l.verifyModule(directory);
             if (!mod) {
@@ -280,7 +262,6 @@ class ModuleLoader extends EventEmitter {
             // convert version to semver
             const spl = mod.version.toString().split('.');
             mod.version = spl.concat(Array(3 - spl.length).fill('0')).join('.');
-
             switch (mod.priority) {
                 case 'first': mod.priority = Number.MIN_SAFE_INTEGER; break;
                 case 'last': mod.priority = Number.MAX_SAFE_INTEGER; break;
@@ -294,13 +275,19 @@ class ModuleLoader extends EventEmitter {
 
     /**
      * Unloads a module. The module must be loaded first.
-     * @param {object} mod module instance to unload.
+     * @param {Object|string|function()} mod module instance to unload. In addion to the module itself,
+     * this method accepts any of the parameters of the ModuleLoader#getModule method.
      * @fires ModuleLoader#preunload
      * @fires ModuleLoader#load
      * @returns {Object} an object representing the status of the unload request.
      */
-    unloadModule(mod) {
-        let success = true;
+    async unloadModule (mod) {
+        mod = this.getModule(mod);
+        const descriptor = mod.__descriptor;
+        const unloadEvent = {
+            success: true,
+            module: mod
+        };
         /**
          * PreUnload event. Fired before a module is unloaded.
          * @event ModuleLoader#preunload
@@ -308,32 +295,32 @@ class ModuleLoader extends EventEmitter {
          */
         this.emit('preunload', mod);
         try {
-            LOG.info($$`Unloading module "${mod.__descriptor.name}".`);
+            LOG.info($$`Unloading module "${descriptor.name}".`);
             if (mod.__running) {
-                this.stopIntegration(mod);
+                await this.stopIntegration(mod);
             }
             if (mod.unload) {
+                await this._sleep(); // ensure we are not blocking any ongoing operations
                 mod.unload(mod.platform);
             }
-            mod.platform.config.saveConfig(mod.__descriptor);
+            await mod.platform.config.saveConfig(descriptor);
             mod.config = null;
             mod.platform = null;
-            for (let type of mod.__descriptor.type) {
+            for (let type of descriptor.type) {
                 const index = this._loaded[type].indexOf(mod);
                 this._loaded[type].splice(index, 1);
+                if (this._loaded[type].length === 0) {
+                    delete this._loaded[type];
+                }
             }
-            $$.removeContextIfExists(mod.__descriptor.name);
-            require.unrequire(mod.__descriptor.folderPath || mod.__descriptor.startup, this._loaderPaths[mod.__descriptor.__loaderUID]);
+            $$.removeContextIfExists(descriptor.name);
+            require.unrequire(descriptor.folderPath || descriptor.startup, this._loaderPaths[descriptor.__loaderUID]);
         }
         catch (e) {
-            LOG.error($$`Unloading module "${mod.__descriptor.name}" failed.`);
+            LOG.error($$`Unloading module "${descriptor.name}" failed.`);
             LOG.critical(e);
-            success = false;
+            unloadEvent.success = false;
         }
-        const unloadObj = {
-            success: success,
-            module: mod
-        };
         /**
          * Unload event. Fired after a module is unloaded.
          * @event ModuleLoader#unload
@@ -341,46 +328,36 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather unloading was successful.
          * @property {object} module - Module instance.
          */
-        this.emit('unload', unloadObj);
-        return unloadObj;
+        this.emit('unload', unloadEvent);
+        return unloadEvent;
     }
 
     /**
-     * Unloads all currently loaded modules.
+     * Unloads all currently loaded modules. Modules of type 'system' will be unloaded last.
+     * This will render the program essentially unusable, so should only be used during a shutdown.
      */
-    unloadAllModules() {
-        const unloadType = type => {
+    async unloadAllModules () {
+        const _unloadAllModulesOfType = async(type) => {
             const loadedModules = this._loaded[type] ? this._loaded[type].slice() : [];
-            for (let mod of loadedModules) {
-                this.unloadModule(mod);
-            }
+            return Promise.all(loadedModules.map(mod => this.unloadModule(mod)));
         };
-        for (let type in this._loaded) {
-            if (!this._loaded.hasOwnProperty(type) || type === 'system') {
-                continue;
-            }
-            unloadType(type);
-        }
-        unloadType('system'); // force system to be last
+        const unloadTypes = Object.keys(type).filter(t => t !== 'system').map(t => this._unloadAllModulesOfType(t));
+        const results = await Promise.all(unloadTypes);
+        results.push(await this._unloadAllModulesOfType('system')); // force system to be last
+        return results;
     }
 
     /**
      * Stops a currently running integration.
-     * @param {object|string} integration integration instance or name.
+     * @param {Object|string|function()} integration instance to stop. In addion to the integration itself,
+     * this method accepts any of the parameters of the ModuleLoader#getModule method.
      * @fires ModuleLoader#prestop
      * @fires ModuleLoader#stop
      * @returns {Object} the status of the stop request.
      */
-    stopIntegration(integration) {
-        if (typeof(integration) === 'string') {
-            const filtered = (this._loaded.integration || []).filter(val => val.__descriptor.name === integration);
-            if (filtered.length !== 1) {
-                throw new Error('Cannot find integration to stop.');
-            }
-            integration = filtered[0];
-        }
-
-        if (!integration.__running) {
+    async stopIntegration (integration) {
+        integration = this.getModule(integration);
+        if (!integration.__descriptor.type.includes('integration') || !integration.__running) {
             throw new Error('The specified integration is not running.');
         }
 
@@ -390,20 +367,20 @@ class ModuleLoader extends EventEmitter {
          * @type {object} - Integration instance.
          */
         this.emit('prestop', integration);
-        let success = true;
+        const stopEvent = {
+            success: true,
+            integration: integration
+        };
         try {
+            await this._sleep(); // ensure we are not blocking any ongoing operations
             integration.stop();
             integration.__running = false;
         }
         catch (e) {
             LOG.debug(`Integration "${integration.__descriptor.name}" failed to stop.`);
             LOG.critical(e);
-            success = false;
+            stopEvent.success = false;
         }
-        const stopObj = {
-            success: success,
-            integration: integration
-        };
         /**
          * Stop event. Fired after an integration has been stopped.
          * @event ModuleLoader#stop
@@ -412,7 +389,7 @@ class ModuleLoader extends EventEmitter {
          * @property {object} integration - Integration instance.
          */
         this.emit('stop', stopObj);
-        return stopObj;
+        return stopEvent;
     }
 }
 
