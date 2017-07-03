@@ -348,9 +348,9 @@ class ModuleLoader extends EventEmitter {
             const loadedModules = this._loaded[type] ? this._loaded[type].slice() : [];
             return Promise.all(loadedModules.map(mod => this.unloadModule(mod)));
         };
-        const unloadTypes = Object.keys(type).filter(t => t !== 'system').map(t => this._unloadAllModulesOfType(t));
+        const unloadTypes = Object.keys(this._loaded).filter(t => t !== 'system').map(t => _unloadAllModulesOfType(t));
         const results = await Promise.all(unloadTypes);
-        results.push(await this._unloadAllModulesOfType('system')); // force system to be last
+        results.push(await _unloadAllModulesOfType('system')); // force system to be last
         return results;
     }
 
