@@ -155,4 +155,4 @@ class Configuration extends EventEmitter {
     }
 }
 
-module.exports = new Configuration();
+module.exports = Configuration;

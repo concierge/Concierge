@@ -9,10 +9,9 @@
  *              Copyright (c) Matthew Knox and Contributors 2017.
  */
 
-let platform;
-
 class LoopbackApi {
-    constructor(baseApi, loopMaxDepth, pipeEvents) {
+    constructor(platform, baseApi, loopMaxDepth, pipeEvents) {
+        this._platform = platform;
         this._baseApi = baseApi;
         this._copyApiMethods();
         this._loopMaxDepth = loopMaxDepth;
@@ -21,11 +20,12 @@ class LoopbackApi {
 
     /**
      * Gets the loopback API/event for a received message.
+     * @param {Platform} platform the platform that will be the basis of this loopback.
      * @param {IntegrationApi} api the api to use when sending messages.
      * @param {Object} event the event object.
      * @returns {Object} an object representing the api and event that should be used
      */
-    static getLoopbackApi(api, event) {
+    static getLoopbackApi(platform, api, event) {
         if (api instanceof LoopbackApi) {
             return {
                 api: api,
@@ -44,7 +44,7 @@ class LoopbackApi {
         }
         const loopDepth = currConfig.enabled ? currConfig.maxDepth || platform.loopDepth || 0 : 0;
         return {
-            api: pipeEvents.length > 1 || loopDepth > 0 ? new LoopbackApi(api, loopDepth, pipeEvents.slice(1)) : api,
+            api: pipeEvents.length > 1 || loopDepth > 0 ? new LoopbackApi(platform, api, loopDepth, pipeEvents.slice(1)) : api,
             event: pipeEvents[0] || event
         };
     }
@@ -82,14 +82,14 @@ class LoopbackApi {
             let api;
             const event = shim.createEvent(thread, this._pipeEvents[0].sender_id, this._pipeEvents[0].sender_name, message);
             if (this._pipeEvents.length > 0) {
-                api = new LoopbackApi(this._baseApi, this._loopMaxDepth, this._pipeEvents.slice(1));
+                api = new LoopbackApi(this._platform, this._baseApi, this._loopMaxDepth, this._pipeEvents.slice(1));
                 event.event_source = this._pipeEvents[0].event_source;
                 event.body = `${this._pipeEvents[0].body} ${event.body}`;
                 event.arguments = this._pipeEvents[0].arguments.concat(event.arguments);
                 event.arguments_body = event.body.substr(event.arguments[0].length + 1);
             }
             else {
-                api = new LoopbackApi(this._baseApi, this._loopMaxDepth - 1, []);
+                api = new LoopbackApi(this._platform, this._baseApi, this._loopMaxDepth - 1, []);
                 event.event_source = 'loopback';
             }
             platform.onMessage(api, event);
@@ -109,14 +109,10 @@ class LoopbackApi {
             return this._baseApi.sendUrl(url, thread);
         }
     }
+
+    buildLoopback(api, event) {
+        return LoopbackApi.getLoopbackApi(api, event);
+    }
 }
 
-/**
- * Initialise this loopback builder.
- * @param {Platform} plat the platform to pass messages to.
- * @returns {function()} a method that will replace each api/event with its loopback equivilant if needed
- */
-module.exports = plat => { // avoid using globals
-    platform = plat;
-    return (api, event) => LoopbackApi.getLoopbackApi(api, event);
-};
+module.exports = LoopbackApi;

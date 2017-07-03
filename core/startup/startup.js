@@ -93,6 +93,7 @@ if (process.env.__concierge_fork) {
         return platform(cli);
     }
     catch (e) {
+        delete e.rawStackTrace;
         console.error(e);
         process.exit(global.currentPlatform ? global.currentPlatform.statusFlag : global.StatusFlag.Unknown);
     }

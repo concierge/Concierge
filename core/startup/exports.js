@@ -50,7 +50,7 @@ module.exports = async(opts) => {
     }
 
     // start platform
-    if (opts.modules || !opts.firstRunInitialisation) {
+    if (opts.modules) {
         if (checkType(opts, 'modules', 'string', true)) {
             global.__modulesPath = path.resolve(opts.modules);
             delete opts.modules;
@@ -62,8 +62,8 @@ module.exports = async(opts) => {
     if (opts.integrations) {
         checkType(opts, 'integrations', 'array');
     }
-    opts.firstRunInitialisation = !!opts.firstRunInitialisation;
-    const p = new Platform(!opts.firstRunInitialisation);
+    global.shim = require(global.rootPathJoin('core/modules/shim.js'));
+    const p = new Platform();
     if (p === null || p === void(0)) {
         throw new Error('An unexpected error occurred during startup.');
     }
@@ -73,9 +73,7 @@ module.exports = async(opts) => {
         process.removeAllListeners();
         process.exit(code);
     };
-    if (opts.firstRunInitialisation) {
-        p.once('shutdown', term);
-    }
+    p.once('shutdown', term);
     const abort = message => {
         if (!global.currentPlatform) {
             return;

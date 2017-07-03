@@ -6,21 +6,9 @@ const startConciergeTask = done => {
         return done();
     }
 
-    const concierge = require('./main.js'),
-        fs = require('fs');
-
-    const moduleDirEmpty = () => {
-        try {
-            return fs.readdirSync('./modules').length <= 0;
-        }
-        catch (e) {
-            return true;
-        }
-    };
-
+    const concierge = require('./main.js');
     const platform = concierge({
         modules: './modules',
-        firstRunInitialisation: moduleDirEmpty(),
         locale: 'en',
         debug: 'silly',
         timestamp: false,

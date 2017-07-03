@@ -11,40 +11,37 @@
 */
 
 const figlet = require('figlet'),
-    MiddlewareHandler = require('concierge/middleware');
+    path = require('path'),
+    ModulesLoader = require(global.rootPathJoin('core/modules/modules.js')),
+    ConfigurationService = require(global.rootPathJoin('core/modules/config.js')),
+    LoopbackBuilder = require(global.rootPathJoin('core/modules/loopback.js')),
+    PackageInfo = require(global.rootPathJoin('package.json')),
+    MiddlewareHandler = require('concierge/middleware'),
+    git = require('concierge/git');
 
 class Platform extends MiddlewareHandler {
-    constructor (bypassInit) {
+    constructor () {
         super();
-        this.bypassInit = bypassInit;
+        this.packageInfo = PackageInfo;
+        this.config = new ConfigurationService();
+        this.modulesLoader = new ModulesLoader(this);
         this.defaultPrefix = '/';
-        this.packageInfo = require(global.rootPathJoin('package.json'));
-        this.modulesLoader = new (require(global.rootPathJoin('core/modules/modules.js')))(this);
-        this.statusFlag = global.StatusFlag.NotStarted;
         this.onShutdown = null;
         this.waitingTime = 250;
+        this.statusFlag = global.StatusFlag.NotStarted;
         this.packageInfo.name = this.packageInfo.name.toProperCase();
-        this.config = require(global.rootPathJoin('core/modules/config.js'));
-        this.loopbackBuilder = require(global.rootPathJoin('core/modules/loopback.js'))(this);
-        this.modulesLoader.on('loadSystem', this._loadSystemConfig.bind(this));
-        global.shim = require(global.rootPathJoin('core/modules/shim.js'));
-        this._boundErrorHandler = err => {
-            global.currentPlatform._errorHandler.call(global.currentPlatform, err);
-        };
+        this.onMessage = this.onMessage.bind(this);
+        this._boundErrorHandler = this._errorHandler.bind(this);
         process.on('uncaughtException', this._boundErrorHandler);
         process.on('unhandledRejection', this._boundErrorHandler);
-        this.onMessage = this.onMessage.bind(this);
-        this.modulesLoader.once('loadNone', () => {
-            const firstRunDir = require('path').join(global.__modulesPath, 'first-run');
-            require('concierge/git').clone(process.env.CONCIERGE_DEFAULTS_REPO || 'https://github.com/concierge/first-run.git', firstRunDir, err => {
-                if (!err) {
-                    this.modulesLoader.loadModule(this.modulesLoader.verifyModule(firstRunDir));
-                }
-                else {
-                    this.modulesLoader.emit('loadAll');
-                }
-            });
-        });
+        this.modulesLoader.once('loadNone', this._firstRun.bind(this));
+        this.modulesLoader.on('loadSystem', this._loadSystemConfig.bind(this));
+    }
+
+    async _firstRun () {
+        const firstRunDir = path.join(global.__modulesPath, 'first-run');
+        await git.clone(process.env.CONCIERGE_DEFAULTS_REPO || 'https://github.com/concierge/first-run.git', firstRunDir);
+        this.modulesLoader.loadModule(await this.modulesLoader.verifyModule(firstRunDir));
     }
 
     _errorHandler (err, api, event) {
@@ -121,7 +118,7 @@ class Platform extends MiddlewareHandler {
      * @param {Object} event the event that occured.
      */
     onMessage (api, event) {
-        const loopBack = this.loopbackBuilder(api, event);
+        const loopBack = LoopbackBuilder.getLoopbackApi(this, api, event);
         this.runMiddleware('before', this._handleMessage, loopBack.api, loopBack.event);
     }
 
@@ -169,12 +166,12 @@ class Platform extends MiddlewareHandler {
 
         // Load modules
         LOG.warn($$`LoadingModules`);
-        this.modulesLoader.once('loadAll', () => {
+        this.modulesLoader.once('loadAll', async() => {
             LOG.warn($$`StartingIntegrations`);
-            for (let integration of integrations) {
+            await Promise.all(integrations.map(async(integration) => {
                 try {
                     LOG.info($$`Loading integration '${integration}'...\t`);
-                    this.modulesLoader.startIntegration(integration);
+                    await this.modulesLoader.startIntegration(integration);
                 }
                 catch (e) {
                     if (e.message === 'Cannot find integration to start') {
@@ -185,7 +182,8 @@ class Platform extends MiddlewareHandler {
                         LOG.critical(e);
                     }
                 }
-            }
+                return true;
+            }));
             this.statusFlag = global.StatusFlag.Started;
             LOG.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
             this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
@@ -210,7 +208,7 @@ class Platform extends MiddlewareHandler {
 
         // Unload user modules
         await this.config.saveConfig();
-        this.modulesLoader.unloadAllModules();
+        await this.modulesLoader.unloadAllModules();
         this.statusFlag = flag || global.StatusFlag.Shutdown;
 
         process.removeListener('uncaughtException', this._boundErrorHandler);

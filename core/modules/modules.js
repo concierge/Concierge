@@ -93,7 +93,8 @@ class ModuleLoader extends EventEmitter {
      * @param {string|function()|Object} arg either the name, a filter function to find the module
      * or the module itself (which will just then be returned - useful for argument parsing).
      * @param {string} type the type of module to search for. Defaults to any (null).
-     * @return {Object} the module (if found), array-like otherwise.
+     * @return {Object} the module (if found), array-like otherwise except where the module(s) do
+     * not exist when void(0) will be returned.
      * @emits Platform#started
      */
     getModule (arg, type = null) {
@@ -157,7 +158,7 @@ class ModuleLoader extends EventEmitter {
         this.emit('load', loadEvent);
         if (loadEvent.success && loadEvent.module.load) {
             await this._sleep();
-            loadEvent.module.load(this.platform);
+            await loadEvent.module.load(this.platform);
         }
         return loadEvent;
     }
@@ -229,7 +230,7 @@ class ModuleLoader extends EventEmitter {
         this.emit('prestart', integration);
         try {
             await this._sleep(); // ensure we are not blocking any ongoing operations
-            integration.start((api, event) => {
+            await integration.start((api, event) => {
                 event.event_source = integration.__descriptor.name;
                 this.platform.onMessage(api, event);
             });
@@ -307,7 +308,7 @@ class ModuleLoader extends EventEmitter {
             }
             if (mod.unload) {
                 await this._sleep(); // ensure we are not blocking any ongoing operations
-                mod.unload(mod.platform);
+                await mod.unload(mod.platform);
             }
             await mod.platform.config.saveConfig(descriptor);
             mod.config = null;
@@ -379,7 +380,7 @@ class ModuleLoader extends EventEmitter {
         };
         try {
             await this._sleep(); // ensure we are not blocking any ongoing operations
-            integration.stop();
+            await integration.stop();
             integration.__running = false;
         }
         catch (e) {
