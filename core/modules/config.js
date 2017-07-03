@@ -9,7 +9,8 @@
 *              Copyright (c) Matthew Knox and Contributors 2017.
 */
 
-const EventEmitter = require('events');
+const EventEmitter = require('events'),
+    files = require('concierge/files');
 
 const globalScope = {
     name: '%',
@@ -67,7 +68,18 @@ class Configuration extends EventEmitter {
             this.configCache[descriptor.name].force = false;
         }
 
-        const data = this.interceptor ? (await this.interceptor.loadConfig(descriptor)) : {};
+        let data;
+        if (this.interceptor || descriptor !== globalScope) {
+            data = this.interceptor ? (await this.interceptor.loadConfig(descriptor)) : {};
+        }
+        else {
+            try {
+                data = await files.readJson(global.rootPathJoin('config.json'));
+            }
+            catch (e) {
+                data = {};
+            }
+        }
 
         if (this.configCache.hasOwnProperty(descriptor.name)) {
             for (let key of Object.keys(this.configCache[descriptor.name].data)) {
