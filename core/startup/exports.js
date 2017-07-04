@@ -74,7 +74,7 @@ module.exports = async(opts) => {
         process.exit(code);
     };
     p.once('shutdown', term);
-    const abort = message => {
+    const abort = async(message) => {
         if (!global.currentPlatform) {
             return;
         }
@@ -82,7 +82,7 @@ module.exports = async(opts) => {
             LOG.warn(message);
         }
         global.currentPlatform.once('shutdown', term);
-        global.currentPlatform.shutdown();
+        await global.currentPlatform.shutdown();
     };
     process.on('SIGINT', abort);
     process.on('SIGHUP', abort.bind(this, 'SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...'));

@@ -174,7 +174,7 @@ module.exports = (rootPath, direct) => {
             }
             fn[customPromise] = fn;
             return fn;
-        }
+        };
         util.promisify.custom = customPromise;
     }
 };

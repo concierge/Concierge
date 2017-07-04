@@ -168,10 +168,7 @@ class ModuleLoader extends EventEmitter {
      * @param {Array<string>} modules optional list of modules to load.
      */
     async loadAllModules (modules) {
-        const resolvedModules = [],
-            resolvedSystem = [],
-            data = (modules || (await files.filesInDirectory(global.__modulesPath)).map(d => path.join(global.__modulesPath, d)));
-
+        const data = (modules || (await files.filesInDirectory(global.__modulesPath)).map(d => path.join(global.__modulesPath, d)));
         const mods = (await Promise.all(data.map(async(d) => {
             try {
                 const output = await this.verifyModule(path.resolve(d));
@@ -270,9 +267,9 @@ class ModuleLoader extends EventEmitter {
             const spl = mod.version.toString().split('.');
             mod.version = spl.concat(Array(3 - spl.length).fill('0')).join('.');
             switch (mod.priority) {
-                case 'first': mod.priority = Number.MIN_SAFE_INTEGER; break;
-                case 'last': mod.priority = Number.MAX_SAFE_INTEGER; break;
-                default: mod.priority = 0; break;
+            case 'first': mod.priority = Number.MIN_SAFE_INTEGER; break;
+            case 'last': mod.priority = Number.MAX_SAFE_INTEGER; break;
+            default: mod.priority = 0; break;
             }
             mod.__loaderUID = this._loaders.indexOf(l);
             return mod;
@@ -346,7 +343,7 @@ class ModuleLoader extends EventEmitter {
     async unloadAllModules () {
         const _unloadAllModulesOfType = async(type) => {
             const loadedModules = this._loaded[type] ? this._loaded[type].slice() : [];
-            return Promise.all(loadedModules.map(mod => this.unloadModule(mod)));
+            return await Promise.all(loadedModules.map(mod => this.unloadModule(mod)));
         };
         const unloadTypes = Object.keys(this._loaded).filter(t => t !== 'system').map(t => _unloadAllModulesOfType(t));
         const results = await Promise.all(unloadTypes);
