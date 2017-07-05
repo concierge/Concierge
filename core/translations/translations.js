@@ -11,7 +11,6 @@
 
 const EventEmitter = require('events'),
     path = require('path'),
-    fs = require('fs'),
     files = require('concierge/files'),
     defaultLocale = 'en',
     globalContext = '*',
@@ -31,6 +30,7 @@ class TranslatorService extends EventEmitter {
         const translationFiles = await files.filesInDirectory(translationsDir);
         return await Promise.all(translationFiles.map(async(translationFile) => {
             translationFile = path.join(translationsDir, translationFile);
+            LOG.silly(`Loading translations file at "${translationFile}".`);
             const data = await files.readJson(translationFile);
             return this.translations[path.parse(translationFile).name] = data;
         }));
@@ -183,6 +183,7 @@ module.exports.createContext = async(directory) => {
  */
 module.exports.removeContext = context => {
     if (contextMap.hasOwnProperty(context)) {
+        LOG.silly(`Removing translation context "${context}".`);
         delete contextMap[context];
     }
 };
