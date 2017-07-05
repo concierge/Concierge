@@ -31,7 +31,7 @@ for (let m in fs) {
 exports.filesInDirectory = async(directory) => {
     try {
         const files = await exports.readdir(directory);
-        return files === null ? [] : files;
+        return !files ? [] : files;
     }
     catch (e) {
         return [];
