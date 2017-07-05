@@ -1,6 +1,6 @@
 {
   "name": "concierge-bot",
-  "version": "4.5.0",
+  "version": "5.0.0",
   "description": "Extensible general purpose chat bot.",
   "main": "main.js",
   "dependencies": {
@@ -28,7 +28,7 @@
     "debug": "node main.js --debug --timestamp"
   },
   "engines": {
-    "node": "6.2.1"
+    "node": "8.0.0"
   },
   "bin": {
     "concierge": "./main.js"

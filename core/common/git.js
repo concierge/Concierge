@@ -50,8 +50,12 @@ exports.getSHAOfRemoteMaster = async(callback) => {
     return await command(['rev-parse', '--verify', 'origin/master'], callback);
 };
 
-exports.getCurrentBranchName = async(callback) => {
-    return await command(['symbolic-ref', '--short', 'HEAD'], callback);
+exports.getCurrentBranchName = async(dir, callback) => {
+    return await commandWithPath(dir ? dir : global.__rootPath, ['symbolic-ref', '--short', 'HEAD'], dir ? callback : dir);
+};
+
+exports.changeBranch = async(dir, branch, callback) => {
+    return await commandWithPath(dir, ['checkout', branch], callback)
 };
 
 exports.clone = async(url, dir, callback) => {
