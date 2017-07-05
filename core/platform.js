@@ -12,6 +12,7 @@
 
 const figlet = require('figlet'),
     path = require('path'),
+    util = require('util'),
     ModulesLoader = require(global.rootPathJoin('core/modules/modules.js')),
     ConfigurationService = require(global.rootPathJoin('core/modules/config.js')),
     LoopbackBuilder = require(global.rootPathJoin('core/modules/loopback.js')),
@@ -156,7 +157,7 @@ class Platform extends MiddlewareHandler {
      * @param {Array<string>} modules optional list of modules to load.
      * @emits Platform#started
      */
-    start (integrations, modules) {
+    async start (integrations, modules) {
         if (this.statusFlag !== global.StatusFlag.NotStarted) {
             throw new Error($$`StartError`);
         }
@@ -164,32 +165,18 @@ class Platform extends MiddlewareHandler {
         LOG.title($$`Title ${figlet.textSync(this.packageInfo.name.toProperCase())} ${this.packageInfo.version}`);
         LOG.warn($$`StartingSystem`);
 
-        // Load modules
         LOG.warn($$`LoadingModules`);
-        this.modulesLoader.once('loadAll', async() => {
-            LOG.warn($$`StartingIntegrations`);
-            await Promise.all(integrations.map(async(integration) => {
-                try {
-                    LOG.info($$`Loading integration '${integration}'...\t`);
-                    await this.modulesLoader.startIntegration(integration);
-                }
-                catch (e) {
-                    if (e.message === 'Cannot find integration to start') {
-                        LOG.error(`Unknown integration '${integration}'`);
-                    }
-                    else {
-                        LOG.error($$`Failed to start output integration '${integration}'.`);
-                        LOG.critical(e);
-                    }
-                }
-                return true;
-            }));
-            this.statusFlag = global.StatusFlag.Started;
-            LOG.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
-            this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
-            this.emitAsync('started');
-        });
+        const loadAll = util.promisify(c => this.modulesLoader.once('loadAll', c))();
         this.modulesLoader.loadAllModules(modules);
+        await loadAll; // first-run means we cannot await loadAllModules
+
+        LOG.warn($$`StartingIntegrations`);
+        await Promise.all(integrations.map(integration => this.modulesLoader.startIntegration(integration)));
+
+        this.statusFlag = global.StatusFlag.Started;
+        LOG.warn($$`SystemStarted` + ' ' + $$`HelloWorld`.rainbow);
+        this.heartBeat = setInterval(() => console.debug('Core Heartbeat'), 2147483647);
+        this.emitAsync('started');
     }
 
     /**

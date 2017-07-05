@@ -204,17 +204,19 @@ class ModuleLoader extends EventEmitter {
 
     /**
      * Starts the specified integration. Integration must be loaded first.
-     * @param {Object|string|function()} integration instance to start. In addion to the integration itself,
-     * this method accepts any of the parameters of the ModuleLoader#getModule method.
+     * @param {Object|string|function()} integrationSearchParam instance to start. In addion to the
+     * integration itself, this method accepts any of the parameters of the ModuleLoader#getModule method.
      * @fires ModuleLoader#prestart
      * @fires ModuleLoader#start
      * @returns {Object} the status of the load request.
      */
-    async startIntegration (integration) {
-        integration = this.getModule(integration);
-        if (!integration.__descriptor.type.includes('integration') || integration.__running) {
-            throw new Error('The specified integration is already running.');
+    async startIntegration (integrationSearchParam) {
+        const integration = this.getModule(integrationSearchParam);
+        if (!integration || !integration.__descriptor.type.includes('integration') || integration.__running) {
+            throw new Error(`Integration "${integrationSearchParam.toString()}" ${
+                integration && integration.__running ? 'already started' : 'not found'}.`);
         }
+        LOG.info($$`Loading integration '${integration}'...\t`);
         const startEvent = {
             success: true,
             integration: integration
@@ -234,7 +236,7 @@ class ModuleLoader extends EventEmitter {
             integration.__running = true;
         }
         catch (e) {
-            LOG.debug(`Integration "${integration.__descriptor.name}" failed to start.`);
+            LOG.debug($$`Failed to start output integration '${integration.__descriptor.name}'.`);
             LOG.critical(e);
             startEvent.success = false;
         }

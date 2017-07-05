@@ -19,6 +19,7 @@ const startConciergeTask = done => {
 };
 
 module.exports = grunt => {
+    grunt.option('stack', true);
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         mochaTest: {

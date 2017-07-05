@@ -61,6 +61,9 @@ module.exports = async(opts) => {
     }
     if (opts.integrations) {
         checkType(opts, 'integrations', 'array');
+        if ((new Set(opts.integrations)).size !== opts.integrations.length) {
+            throw new Error('Cannot start an integration twice.');
+        }
     }
     global.shim = require(global.rootPathJoin('core/modules/shim.js'));
     const p = new Platform();
