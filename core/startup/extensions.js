@@ -166,7 +166,7 @@ module.exports = (rootPath, direct) => {
                             orig.apply(this, Array.from(arguments).concat(function () {
                                 const values = Array.from(arguments),
                                     err = values.splice(0, 1);
-                                return err ? reject(err) : resolve(values[0])
+                                return err ? reject(err) : resolve(values[0]);
                             }));
                         }
                         catch (err) {

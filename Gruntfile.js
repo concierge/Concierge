@@ -7,15 +7,17 @@ const startConciergeTask = done => {
     }
 
     const concierge = require('./main.js');
-    const platform = concierge({
+    const promise = concierge({
         modules: './modules',
         locale: 'en',
         debug: 'silly',
         timestamp: false,
         loopback: false
     });
-    platform.removeAllListeners('shutdown');
-    platform.once('started', done);
+    promise.then(platform => {
+        platform.removeAllListeners('shutdown');
+        platform.once('started', done);
+    });
 };
 
 module.exports = grunt => {
