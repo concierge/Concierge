@@ -160,14 +160,20 @@ module.exports = (rootPath, direct) => {
                 }
             }
             else {
-                fn = (...args) => new Promise((resolve, reject) => {
-                    try {
-                        orig.apply(this, args.concat((err, ...values) => err ? reject(err) : resolve(values[0])));
-                    }
-                    catch (err) {
-                        reject(err);
-                    }
-                });
+                fn = function () {
+                    return new Promise((resolve, reject) => {
+                        try {
+                            orig.apply(this, Array.from(arguments).concat(function () {
+                                const values = Array.from(arguments),
+                                    err = values.splice(0, 1);
+                                return err ? reject(err) : resolve(values[0])
+                            }));
+                        }
+                        catch (err) {
+                            reject(err);
+                        }
+                    });
+                };
                 Object.setPrototypeOf(fn, Object.getPrototypeOf(orig));
                 Object.defineProperties(fn, Object.getOwnPropertyDescriptors(orig));
                 orig[customPromise] = fn;
