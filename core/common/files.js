@@ -46,7 +46,7 @@ exports.filesInDirectory = async(directory) => {
  * @param {function()} callback method called on success or failure, (error).
  */
 exports.deleteDirectory = async(directory) => {
-    await Promise.all((await exports.filesInDirectory(directory)).forEach(async(file) => {
+    await Promise.all((await exports.filesInDirectory(directory)).map(async(file) => {
         file = path.join(directory, file);
         try {
             if (await exports.fileExists(file)) {
@@ -62,7 +62,6 @@ exports.deleteDirectory = async(directory) => {
             throw (LOG.error(e), e);
         }
     }));
-    await Promise.all(promises);
     await exports.chmod(directory, 666);
     return await exports.rmdir(directory);
 };
