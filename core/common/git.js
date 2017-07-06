@@ -50,8 +50,17 @@ exports.getSHAOfRemoteMaster = async(callback) => {
     return await command(['rev-parse', '--verify', 'origin/master'], callback);
 };
 
-exports.getCurrentBranchName = async(dir, callback) => {
-    return await commandWithPath(dir ? dir : global.__rootPath, ['symbolic-ref', '--short', 'HEAD'], dir ? callback : dir);
+exports.getCurrentBranchName = async(dir, callback = () => {}) => {
+    if (typeof(dir) === 'function' || typeof(dir) === 'undefined') {
+        callback = dir;
+        dir = global.__rootPath;
+    }
+    const envVars = process.env.TRAVIS_PULL_REQUEST_BRANCH || process.env.TRAVIS_BRANCH;
+    if (envVars) {
+        callback(envVars);
+        return envVars;
+    }
+    return await commandWithPath(dir, ['symbolic-ref', '--short', 'HEAD'], callback);
 };
 
 exports.changeBranch = async(dir, branch, callback) => {
