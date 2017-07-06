@@ -49,7 +49,7 @@ exports.deleteDirectory = async(directory) => {
     await Promise.all((await exports.filesInDirectory(directory)).map(async(file) => {
         file = path.join(directory, file);
         try {
-            if (await exports.fileExists(file)) {
+            if (await exports.fileExists(file) === 'directory') {
                 await exports.deleteDirectory(file);
             }
             else {
