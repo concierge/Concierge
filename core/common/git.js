@@ -55,11 +55,21 @@ exports.getCurrentBranchName = async(dir, callback) => {
 };
 
 exports.changeBranch = async(dir, branch, callback) => {
+    LOG.silly(`Changing branch of "${dir}" to "${branch}".`);
     return await commandWithPath(dir, ['checkout', branch], callback)
 };
 
 exports.clone = async(url, dir, callback) => {
-    return await command(['clone', url, dir], callback);
+    const clone = await command(['clone', url, dir], callback);
+    if (!process.env.CLONE_TRY_UPSTREAM) {
+        return clone;
+    }
+    try {
+        const desiredBranch = `upstream/${(await exports.getCurrentBranchName()).split('/').pop()}`;
+        await exports.changeBranch(dir, desiredBranch);
+    }
+    catch (e) {}
+    return clone;
 };
 
 exports.submoduleUpdate = async(callback) => {

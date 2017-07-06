@@ -5,7 +5,7 @@ const startConciergeTask = done => {
     if (global.currentPlatform) {
         return done();
     }
-
+    process.env.CLONE_TRY_UPSTREAM=1;
     const concierge = require('./main.js');
     const promise = concierge({
         modules: './modules',
