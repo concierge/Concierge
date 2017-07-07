@@ -71,6 +71,8 @@ exports.changeBranch = async(dir, branch, callback) => {
 exports.clone = async(url, dir, callback) => {
     const clone = await command(['clone', url, dir], callback);
     if (!process.env.CLONE_TRY_UPSTREAM) {
+        LOG.error('Shouldnt have got here...', process.env.CLONE_TRY_UPSTREAM, !!process.env.CLONE_TRY_UPSTREAM);
+        LOG.critical(new Error());
         return clone;
     }
     try {

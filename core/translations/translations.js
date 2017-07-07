@@ -19,7 +19,7 @@ const EventEmitter = require('events'),
 let currentLocale = global.__i18nLocale || defaultLocale;
 
 class TranslatorService extends EventEmitter {
-    constructor (translationsDir) {
+    constructor () {
         super();
         this.hook = null;
         this.translations = {};
