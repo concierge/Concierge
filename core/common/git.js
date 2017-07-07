@@ -51,7 +51,10 @@ exports.getSHAOfRemoteMaster = async(callback) => {
 };
 
 exports.getCurrentBranchName = async(dir, callback = () => {}) => {
-    if (typeof(dir) === 'function' || typeof(dir) === 'undefined') {
+    if (typeof(dir) === 'undefined') {
+        dir = global.__rootPath;
+    }
+    else if (typeof(dir) === 'function') {
         callback = dir;
         dir = global.__rootPath;
     }
@@ -68,8 +71,13 @@ exports.clone = async(url, dir, callback) => {
     if (process.env.CLONE_TRY_UPSTREAM) {
         const currentBranchName = await exports.getCurrentBranchName();
         const desiredBranch = `upstream/${currentBranchName.split('/').pop()}`;
-        args.push('-b', desiredBranch);
-        LOG.silly(`Changing checkout branch of "${dir}" to "${desiredBranch}".`);
+        try {
+            LOG.silly(`Changing checkout branch of "${dir}" to "${desiredBranch}".`);
+            return await command(args.concat(['-b', desiredBranch]), callback);
+        }
+        catch (e) {
+            LOG.silly('Branch change failed, resorting to HEAD.');
+        }
     }
     return await command(args, callback);
 };
