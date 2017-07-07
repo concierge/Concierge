@@ -63,25 +63,15 @@ exports.getCurrentBranchName = async(dir, callback = () => {}) => {
     return await commandWithPath(dir, ['symbolic-ref', '--short', 'HEAD'], callback);
 };
 
-exports.changeBranch = async(dir, branch, callback) => {
-    LOG.silly(`Changing branch of "${dir}" to "${branch}".`);
-    return await commandWithPath(dir, ['checkout', branch], callback);
-};
-
 exports.clone = async(url, dir, callback) => {
-    const clone = await command(['clone', url, dir], callback);
-    if (!process.env.CLONE_TRY_UPSTREAM) {
-        LOG.error('Shouldnt have got here...', process.env.CLONE_TRY_UPSTREAM, !!process.env.CLONE_TRY_UPSTREAM);
-        LOG.critical(new Error());
-        return clone;
-    }
-    try {
+    const args = ['clone', url, dir];
+    if (process.env.CLONE_TRY_UPSTREAM) {
         const currentBranchName = await exports.getCurrentBranchName();
         const desiredBranch = `upstream/${currentBranchName.split('/').pop()}`;
-        await exports.changeBranch(dir, desiredBranch);
+        args.push('-b', desiredBranch);
+        LOG.silly(`Changing checkout branch of "${dir}" to "${desiredBranch}".`);
     }
-    catch (e) {}
-    return clone;
+    return await command(args, callback);
 };
 
 exports.submoduleUpdate = async(callback) => {
