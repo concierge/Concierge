@@ -65,7 +65,7 @@ exports.getCurrentBranchName = async(dir, callback = () => {}) => {
 
 exports.changeBranch = async(dir, branch, callback) => {
     LOG.silly(`Changing branch of "${dir}" to "${branch}".`);
-    return await commandWithPath(dir, ['checkout', branch], callback)
+    return await commandWithPath(dir, ['checkout', branch], callback);
 };
 
 exports.clone = async(url, dir, callback) => {
@@ -74,7 +74,8 @@ exports.clone = async(url, dir, callback) => {
         return clone;
     }
     try {
-        const desiredBranch = `upstream/${(await exports.getCurrentBranchName()).split('/').pop()}`;
+        const currentBranchName = await exports.getCurrentBranchName();
+        const desiredBranch = `upstream/${currentBranchName.split('/').pop()}`;
         await exports.changeBranch(dir, desiredBranch);
     }
     catch (e) {}
