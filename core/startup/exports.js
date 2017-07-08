@@ -71,8 +71,8 @@ module.exports = async(opts) => {
         throw new Error('An unexpected error occurred during startup.');
     }
     global.currentPlatform = p;
-    p.once('shutdown', () => global.currentPlatform = null);
     const term = code => {
+        global.currentPlatform = null;
         process.removeAllListeners();
         process.exit(code);
     };
