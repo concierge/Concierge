@@ -58,7 +58,7 @@ exports.getCurrentBranchName = async(dir, callback = () => {}) => {
         callback = dir;
         dir = global.__rootPath;
     }
-    const envVars = process.env.TRAVIS_PULL_REQUEST_BRANCH || process.env.TRAVIS_BRANCH || APPVEYOR_REPO_BRANCH;
+    const envVars = process.env.TRAVIS_PULL_REQUEST_BRANCH || process.env.TRAVIS_BRANCH || process.env.APPVEYOR_REPO_BRANCH;
     if (envVars) {
         callback(envVars);
         return envVars;
