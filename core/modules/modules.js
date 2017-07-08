@@ -216,7 +216,7 @@ class ModuleLoader extends EventEmitter {
             throw new Error(`Integration "${integrationSearchParam.toString()}" ${
                 integration && integration.__running ? 'already started' : 'not found'}.`);
         }
-        LOG.info($$`Loading integration '${integration}'...\t`);
+        LOG.info($$`Loading integration '${integration.__descriptor.name}'...\t`);
         const startEvent = {
             success: true,
             integration: integration
@@ -394,7 +394,7 @@ class ModuleLoader extends EventEmitter {
          * @property {boolean} success - Indicates wheather stopping was successful.
          * @property {object} integration - Integration instance.
          */
-        this.emit('stop', stopObj);
+        this.emit('stop', stopEvent);
         return stopEvent;
     }
 }
