@@ -2,7 +2,7 @@
 
 const chai = require('chai');
 const assert = chai.assert;
-const ConfigService = new c_require('core/modules/config.js')();
+const ConfigService = new (c_require('core/modules/config.js'))();
 
 // another fairly impossible to test service, due to its dependance on lazy loading the real thing
 
