@@ -55,6 +55,12 @@ class MockApi extends EventEmitter {
         this.on(event, cb);
     }
 
+    waitForResponseAsync (event = 'message') {
+        return new Promise(resolve => {
+            this.once(event, resolve);
+        });
+    }
+
     getUsers (thread) {
         return this._runMockReturn('getUsers', () => {}, [thread]);
     }
