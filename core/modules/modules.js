@@ -184,8 +184,8 @@ class ModuleLoader extends EventEmitter {
             }
         }))).filter(m => !!m);
 
-        const systemMods = mods.filter(m => m.type.contains('system')),
-            normalMods = mods.filter(m => !m.type.contains('system'));
+        const systemMods = mods.filter(m => m.type.includes('system')),
+            normalMods = mods.filter(m => !m.type.includes('system'));
 
         // force system to load first
         await Promise.all(systemMods.map(m => this.loadModule(m)));
@@ -272,6 +272,9 @@ class ModuleLoader extends EventEmitter {
             case 'first': mod.priority = Number.MIN_SAFE_INTEGER; break;
             case 'last': mod.priority = Number.MAX_SAFE_INTEGER; break;
             default: mod.priority = 0; break;
+            }
+            if (!Array.isArray(mod.type)) {
+                mod.type = !!mod.type ? [mod.type] : ['module'];
             }
             mod.__loaderUID = this._loaders.indexOf(l);
             return mod;
