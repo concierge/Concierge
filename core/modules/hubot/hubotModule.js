@@ -11,22 +11,30 @@
 
 const files = require('concierge/files'),
     path = require('path'),
+    reject = 'kassy.json',
     descriptor = 'hubot.json',
     pkg = 'package.json',
     Robot = require('./robot.js');
 
 exports.verifyModule = async(location) => {
     const folderPath = path.resolve(location),
+        ndes = path.join(folderPath, `./${reject}`),
         desc = path.join(folderPath, `./${descriptor}`),
         pack = path.join(folderPath, `./${pkg}`);
+
+    if (await files.fileExists(ndes) === 'file') {
+        return null;
+    }
     let hj;
     if ((await files.fileExists(desc)) === 'file') {
         hj = await files.readJson(desc);
     }
     else {
-        let p;
-        if ((p = await files.fileExists(pack)) && p.main) {
+        let p = {};
+        if (await files.fileExists(pack) === 'file') {
             p = await files.readJson(pack);
+        }
+        if (p.main) {
             hj = Robot.generateHubotJson(folderPath, p.main);
             hj.name = p.name;
             hj.version = p.version;
