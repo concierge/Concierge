@@ -367,7 +367,7 @@ class ModuleLoader extends EventEmitter {
     async stopIntegration (integration) {
         integration = this.getModule(integration);
         if (!integration.__descriptor.type.includes('integration') || !integration.__running) {
-            throw new Error('The specified integration is not running.');
+            throw new Error('No such integration exists or the specified integration is not running.');
         }
 
         /**
