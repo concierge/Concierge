@@ -20,10 +20,16 @@ const checkType = (obj, key, expectation, ret = false) => {
     return type === expectation;
 };
 
-module.exports = opts => {
+module.exports = async(opts) => {
     opts = opts || {};
-
-    global.$$ = require(rootPathJoin('core/translations/translations.js'));
+    try {
+        global.$$ = require(rootPathJoin('core/translations/translations.js'));
+        await global.$$.init;
+    }
+    catch (e) {
+        LOG.error(e);
+        throw e;
+    }
     if (opts.locale && checkType(opts, 'locale', 'string')) {
         $$.setLocale(opts.locale);
     }
@@ -44,7 +50,7 @@ module.exports = opts => {
     }
 
     // start platform
-    if (opts.modules || !opts.firstRunInitialisation) {
+    if (opts.modules) {
         if (checkType(opts, 'modules', 'string', true)) {
             global.__modulesPath = path.resolve(opts.modules);
             delete opts.modules;
@@ -55,22 +61,23 @@ module.exports = opts => {
     }
     if (opts.integrations) {
         checkType(opts, 'integrations', 'array');
+        if ((new Set(opts.integrations)).size !== opts.integrations.length) {
+            throw new Error('Cannot start an integration twice.');
+        }
     }
-    opts.firstRunInitialisation = !!opts.firstRunInitialisation;
-    const p = new Platform(!opts.firstRunInitialisation);
+    global.shim = require(global.rootPathJoin('core/modules/shim.js'));
+    const p = new Platform();
     if (p === null || p === void(0)) {
         throw new Error('An unexpected error occurred during startup.');
     }
     global.currentPlatform = p;
-    p.once('shutdown', () => global.currentPlatform = null);
     const term = code => {
+        global.currentPlatform = null;
         process.removeAllListeners();
         process.exit(code);
     };
-    if (opts.firstRunInitialisation) {
-        p.once('shutdown', term);
-    }
-    const abort = message => {
+    p.once('shutdown', term);
+    const abort = async(message) => {
         if (!global.currentPlatform) {
             return;
         }
@@ -78,7 +85,7 @@ module.exports = opts => {
             LOG.warn(message);
         }
         global.currentPlatform.once('shutdown', term);
-        global.currentPlatform.shutdown();
+        await global.currentPlatform.shutdown();
     };
     process.on('SIGINT', abort);
     process.on('SIGHUP', abort.bind(this, 'SIGHUP received. This has an unconditional 10 second terminate time which may not be enough to properly shutdown...'));

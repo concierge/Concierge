@@ -5,32 +5,23 @@ const startConciergeTask = done => {
     if (global.currentPlatform) {
         return done();
     }
-
-    const concierge = require('./main.js'),
-        fs = require('fs');
-
-    const moduleDirEmpty = () => {
-        try {
-            return fs.readdirSync('./modules').length <= 0;
-        }
-        catch (e) {
-            return true;
-        }
-    };
-
-    const platform = concierge({
+    process.env.CLONE_TRY_UPSTREAM = '1';
+    const concierge = require('./main.js');
+    const promise = concierge({
         modules: './modules',
-        firstRunInitialisation: moduleDirEmpty(),
         locale: 'en',
         debug: 'silly',
         timestamp: false,
         loopback: false
     });
-    platform.removeAllListeners('shutdown');
-    platform.once('started', done);
+    promise.then(platform => {
+        platform.removeAllListeners('shutdown');
+        platform.once('started', done);
+    });
 };
 
 module.exports = grunt => {
+    grunt.option('stack', true);
     grunt.initConfig({
         pkg: grunt.file.readJSON('package.json'),
         mochaTest: {

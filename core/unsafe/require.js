@@ -147,7 +147,7 @@ const installAndRequire = (req, name, dirName) => {
             endStr = t ? t`Installation complete.` : 'Installation complete.';
 
         console.info(startStr);
-        npm.install([npmName], cwd);
+        npm.installSync([npmName], cwd);
         console.info(endStr);
     }
     else if (nativeReloadHacksCache.hasOwnProperty(name)) {
@@ -211,7 +211,7 @@ module.exports = (req, dirName, fileName) => {
         func[key] = req[key];
     }
 
-    func.forcePackageInstall = dir => {
+    func.forcePackageInstall = async(dir) => {
         const locally = shouldInstallLocally(dir);
         let stat = null;
         try {
@@ -220,7 +220,7 @@ module.exports = (req, dirName, fileName) => {
         catch (e) {}
         try {
             if (global.__runAsLocal && !stat && locally && Object.keys(locally.dependencies).length > 0) {
-                npm.install(Object.keys(locally.dependencies).map(d => `${d}@${locally.dependencies[d]}`), dir);
+                await npm.install(Object.keys(locally.dependencies).map(d => `${d}@${locally.dependencies[d]}`), dir);
             }
         }
         catch (e) {} // ignoring is an ugly solution, but this code *must not fail*

@@ -58,7 +58,7 @@ wrapMethod(console, 'debug');
 wrapMethod(console, 'silly');
 
 global.LOG.title = console.title = args => console.warn(args.white.bold.reset);
-global.LOG.critical = console.critical = args => console.error(args.stack.toString() || args.toString());
+global.LOG.critical = console.critical = args => console.debug(args.stack.toString() || args.toString());
 global.LOG.setLog = console.setLog = enabled => global.LOG[enabled ? 'add' : 'remove'](fileLogger, null, true);
 global.LOG.validateLogLevel = console.validateLogLevel = logLevel => {
     logLevel = logLevel.trim().toLowerCase();

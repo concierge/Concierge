@@ -29,7 +29,7 @@
   "Invalid integration installed (syntax error?).": "Invalid integration installed (syntax error?).",
   "Invalid translation context provided.": "Invalid translation context provided.",
   "Loading integration '${0}'...\t": "Loading integration '${0}'...\t",
-  "Loading module '${0}'... ${1}": "Loading module '${0}'... ${1}",
+  "Loading module '${0}'": "Loading module '${0}'",
   "Loading Succeeded": "Loading Succeeded",
   "Loading the output integration file '${0}' failed.\n\n": "Loading the output integration file '${0}' failed.\n\n",
   "LoadingModules": "Loading modules...",

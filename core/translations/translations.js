@@ -11,7 +11,6 @@
 
 const EventEmitter = require('events'),
     path = require('path'),
-    fs = require('fs'),
     files = require('concierge/files'),
     defaultLocale = 'en',
     globalContext = '*',
@@ -20,18 +19,21 @@ const EventEmitter = require('events'),
 let currentLocale = global.__i18nLocale || defaultLocale;
 
 class TranslatorService extends EventEmitter {
-    constructor (translationsDir) {
+    constructor () {
         super();
-        this.translations = {};
-        translationsDir = path.resolve(translationsDir);
-        const translationFiles = files.filesInDirectory(translationsDir);
-        for (let i = 0; i < translationFiles.length; i++) {
-            const translationFile = path.join(translationsDir, translationFiles[i]);
-            // avoid using require so we don't have to deal with caching during module unloads...
-            const data = fs.readFileSync(translationFile, 'utf8').replace(/^\uFEFF/, '');
-            this.translations[translationFiles[i].substr(0, translationFiles[i].lastIndexOf('.'))] = JSON.parse(data);
-        }
         this.hook = null;
+        this.translations = {};
+    }
+
+    async init (translationsDir) {
+        translationsDir = path.resolve(translationsDir);
+        const translationFiles = await files.filesInDirectory(translationsDir);
+        return await Promise.all(translationFiles.map(async(translationFile) => {
+            translationFile = path.join(translationsDir, translationFile);
+            LOG.silly(`Loading translations file at "${translationFile}".`);
+            const data = await files.readJson(translationFile);
+            return this.translations[path.parse(translationFile).name] = data;
+        }));
     }
 
     _fallbackTranslate(strings, values) {
@@ -91,8 +93,6 @@ class TranslatorService extends EventEmitter {
     }
 }
 
-contextMap[globalContext] = new TranslatorService(global.rootPathJoin('core/translations/i18n/'));
-
 /**
  * Translates a given format string.
  * @param {Array<string>} strings input format string split at format values. These are
@@ -117,8 +117,8 @@ module.exports = (strings, ...values) => {
  */
 module.exports.translate = (strings, values, context) => {
     if (!contextMap.hasOwnProperty(context)) {
-        const translationsDirectory = path.join(global.__modulesPath, context, 'i18n/');
-        contextMap[context] = new TranslatorService(translationsDirectory);
+        LOG.error(`!CONTEXT: '${context}'`);
+        context = globalContext;
     }
     return contextMap[context].translate(strings, values);
 };
@@ -158,8 +158,21 @@ module.exports.setLocale = (localeString) => {
  * Gets the current locale of the system.
  * @returns {string} returns locale string. E.g. 'en' for English.
  */
-module.exports.getLocale = () => {
-    return currentLocale;
+module.exports.getLocale = () => currentLocale;
+
+/**
+ * Creates a new translation context for a module directory.
+ * @param {string} directory the directory that contains the module for which the translation context
+ * should be created.
+ * @returns {undefined} does not currently return a value.
+ */
+module.exports.createContext = async(directory) => {
+    const context = path.basename(directory);
+    if (contextMap.hasOwnProperty(context)) {
+        return;
+    }
+    contextMap[context] = new TranslatorService();
+    return await contextMap[context].init(path.join(directory, 'i18n/'));
 };
 
 /**
@@ -168,8 +181,12 @@ module.exports.getLocale = () => {
  * @param {string} context the translation context. Either the module name or global context identifier.
  * @returns {undefined} does not currently return a value.
  */
-module.exports.removeContextIfExists = (context) => {
+module.exports.removeContext = context => {
     if (contextMap.hasOwnProperty(context)) {
+        LOG.silly(`Removing translation context "${context}".`);
         delete contextMap[context];
     }
 };
+
+contextMap[globalContext] = new TranslatorService();
+module.exports.init = contextMap[globalContext].init(global.rootPathJoin('core/translations/i18n/'));

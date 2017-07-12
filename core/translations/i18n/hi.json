@@ -29,7 +29,7 @@
   "Invalid integration installed (syntax error?).": "अवैध इंटीग्रेशन इन्स्टॉल्ड (सिंटेक्स त्रुटि?)",
   "Invalid translation context provided.": "अवैध अनुवाद संदर्भ प्रदान किया है।",
   "Loading integration '${0}'...\t": "'${0}' इंटीग्रेशन लोड हो रही है ...\t",
-  "Loading module '${0}'... ${1}": "'${0}' मॉड्यूल लोड हो रहा है ... ${1}",
+  "Loading module '${0}'": "'${0}' मॉड्यूल लोड हो रहा है",
   "Loading Succeeded": "लोडिंग सफल रही।",
   "Loading the output integration file '${0}' failed.\n\n": "'${0}' आउटपुट इंटीग्रेशन लोड करते हुए असफ़लता हुई।\n\n",
   "LoadingModules": "मॉड्यूल लोड हो रहे है ...",

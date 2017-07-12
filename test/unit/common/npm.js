@@ -8,7 +8,7 @@ const npm = c_require('core/common/npm.js');
 
 describe('npm', () => {
     describe('exports', () => {
-        it('should not throw an exception', () => {
+        it('should not throw an exception', async(done) => {
             try {
                 npm(['v']);
                 npm(['v'], __dirname);
@@ -16,6 +16,7 @@ describe('npm', () => {
             catch (e) {
                 assert.isTrue(false);
             }
+            done();
         }).timeout(10000);
     });
 });

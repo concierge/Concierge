@@ -4,7 +4,7 @@ os:
     - osx
 node_js:
     - "4"
-    - "7"
+    - "8"
 before_script:
     - npm install grunt-cli -g
 env:
@@ -33,7 +33,7 @@ deploy:
       on:
         repo: concierge/Concierge
         branch: master
-        node: "7"
+        node: "8"
         condition: "$TRAVIS_OS_NAME = linux"
     - provider: s3
       access_key_id: $AWS_ACCESS_KEY
@@ -47,7 +47,7 @@ deploy:
       on:
         repo: concierge/Concierge
         branch: master
-        node: "7"
+        node: "8"
         condition: "$TRAVIS_OS_NAME = linux"
     - provider: codedeploy
       access_key_id: $AWS_ACCESS_KEY
@@ -61,5 +61,5 @@ deploy:
       on:
         repo: concierge/Concierge
         branch: master
-        node: "7"
+        node: "8"
         condition: "$TRAVIS_OS_NAME = linux"

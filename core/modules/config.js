@@ -9,12 +9,13 @@
 *              Copyright (c) Matthew Knox and Contributors 2017.
 */
 
+const EventEmitter = require('events'),
+    files = require('concierge/files');
+
 const globalScope = {
     name: '%',
     type: ['system']
 };
-
-const EventEmitter = require('events');
 
 class Configuration extends EventEmitter {
     constructor() {
@@ -52,7 +53,7 @@ class Configuration extends EventEmitter {
      * contain a force property to force the next call to load to merge configs.
      * @return {Object} An object representing the configuration.
      */
-    loadConfig(descriptor) {
+    async loadConfig(descriptor) {
         this.emit('preLoad', descriptor);
         if (!descriptor) {
             descriptor = globalScope;
@@ -67,7 +68,18 @@ class Configuration extends EventEmitter {
             this.configCache[descriptor.name].force = false;
         }
 
-        const data = this.interceptor ? this.interceptor.loadConfig(descriptor) : {};
+        let data;
+        if (this.interceptor || descriptor !== globalScope) {
+            data = this.interceptor ? (await this.interceptor.loadConfig(descriptor)) : {};
+        }
+        else {
+            try {
+                data = await files.readJson(global.rootPathJoin('config.json'));
+            }
+            catch (e) {
+                data = {};
+            }
+        }
 
         if (this.configCache.hasOwnProperty(descriptor.name)) {
             for (let key of Object.keys(this.configCache[descriptor.name].data)) {
@@ -115,8 +127,8 @@ class Configuration extends EventEmitter {
      * @param  {string} section Section of the configuration file to retrieve.
      * @return {Object}         The section, or empty object if undefined.
      */
-    getSystemConfig(section) {
-        const config = this.loadConfig();
+    async getSystemConfig(section) {
+        const config = await this.loadConfig();
         if (config[section] === void(0)) {
             config[section] = {};
         }
@@ -134,7 +146,7 @@ class Configuration extends EventEmitter {
      * (or nothing for global configuration).
      * @return {undefined}    Returns nothing.
      */
-    saveConfig(descriptor) {
+    async saveConfig(descriptor) {
         if (!descriptor) {
             descriptor = globalScope;
         }
@@ -145,7 +157,7 @@ class Configuration extends EventEmitter {
 
         try {
             if (this.interceptor) {
-                this.interceptor.saveConfig(descriptor, this.configCache[descriptor.name].data);
+                await this.interceptor.saveConfig(descriptor, this.configCache[descriptor.name].data);
             }
             delete this.configCache[descriptor.name];
         }
@@ -155,4 +167,4 @@ class Configuration extends EventEmitter {
     }
 }
 
-module.exports = new Configuration();
+module.exports = Configuration;

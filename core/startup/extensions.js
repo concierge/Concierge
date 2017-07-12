@@ -16,6 +16,50 @@ module.exports = (rootPath, direct) => {
         throw new Error('There can be only one instance per process.');
     }
 
+    // util.promisify fallback (needed for node < v8.0.0)
+    const util = require('util');
+    if (!util.promisify) {
+        const customPromise = Symbol('util.promisify.custom');
+        util.promisify = orig => {
+            if (typeof(orig) !== 'function') {
+                const err = TypeError('The "original" argument must be of type function');
+                err.code = 'ERR_INVALID_ARG_TYPE';
+                err.name = `TypeError [${err.code}]`;
+                throw err;
+            }
+
+            let fn = orig[customPromise];
+            if (fn) {
+                if (typeof(fn) !== 'function') {
+                    throw new TypeError('The [util.promisify.custom] property must be a function');
+                }
+            }
+            else {
+                fn = function () {
+                    const temp = Array.from(arguments);
+                    return new Promise((resolve, reject) => {
+                        try {
+                            orig.apply(this, temp.concat(function () {
+                                const values = Array.from(arguments),
+                                    err = values.splice(0, 1)[0];
+                                return err ? reject(err) : resolve(values[0]);
+                            }));
+                        }
+                        catch (err) {
+                            reject(err);
+                        }
+                    });
+                };
+                Object.setPrototypeOf(fn, Object.getPrototypeOf(orig));
+                Object.defineProperties(fn, Object.getOwnPropertyDescriptors(orig));
+                orig[customPromise] = fn;
+            }
+            fn[customPromise] = fn;
+            return fn;
+        };
+        util.promisify.custom = customPromise;
+    }
+
     const path = require('path'),
         cwd = process.cwd();
     // Arbitary location module loading requirements
@@ -46,9 +90,8 @@ module.exports = (rootPath, direct) => {
     };
 
     // babel and coffee-script setup
-    global.requireHook = require(global.rootPathJoin('core/unsafe/require.js'));
     const babylon = require('babylon'),
-        requireInjectionStr = 'require=global.requireHook(require,__dirname,__filename);';
+        requireInjectionStr = 'require = global.requireHook ? global.requireHook(require, __dirname, __filename) : require;';
     require('babel-register')({
         plugins: [{
             visitor: {
@@ -75,6 +118,7 @@ module.exports = (rootPath, direct) => {
         const res = origcs.apply(this, arguments);
         return requireInjectionStr + res;
     };
+    global.requireHook = require(global.rootPathJoin('core/unsafe/require.js'));
 
     // Prototypes
     String.prototype.toProperCase = function () {
