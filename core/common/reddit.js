@@ -12,8 +12,8 @@
 const reddit = require('redwrap'),
     util = require('util');
 
-module.exports = exports = async(subreddit, numberOfQueries, callback) => {
-    const limit = util.promisify(reddit.r(subreddit).limit);
+module.exports = async(subreddit, numberOfQueries, callback) => {
+    const limit = util.promisify((n, c) => reddit.r(subreddit).limit(n, c));
     let req = null, suc = true;
     try {
         req = (await limit(numberOfQueries)).data.children;
