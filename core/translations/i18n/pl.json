@@ -1,5 +1,5 @@
 {
-  "${0} failed ${1} caused it": "${0} wywalił się. ${1} jest teraz pokryty chorobą.",
+  "${0} failed ${1} caused it": "${0} wywalił się. ${1} jest teraz pokryty wymiocinami.",
   "${0} Shutdown": "${0} został(a) wyłączony(/a).",
   "[DONE]": "[GOTOWE]",
   "[FAIL]": "[BŁĄD]",
