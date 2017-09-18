@@ -230,13 +230,13 @@ module.exports = (req, dirName, fileName) => {
         moduleName = getActualName(moduleName);
         let mod = func.resolve(moduleName);
         if (mod && (typeof (mod = func.cache[mod]) !== 'undefined')) {
-            let ran_children = {};
+            let ran_children = [];
             const run = (m) => {
                 if (m.children !== null) {
                     m.children.forEach((child) => {
-                        if (!ran_children[child]) {
+                        if (!child.hasRun) {
                             child.hasRun = true;
-                            ran_children[child] = true;
+                            ran_children.push(child);
                             run(child);
                         }
                     });
@@ -245,7 +245,7 @@ module.exports = (req, dirName, fileName) => {
             };
             run(mod);
 
-            for (let child in ran_children) {
+            for (let child of ran_children) {
                 delete child.hasRun;
             }
         }
