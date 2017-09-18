@@ -230,13 +230,24 @@ module.exports = (req, dirName, fileName) => {
         moduleName = getActualName(moduleName);
         let mod = func.resolve(moduleName);
         if (mod && (typeof (mod = func.cache[mod]) !== 'undefined')) {
+            let ran_children = {};
             const run = (m) => {
-                m.children.forEach((child) => {
-                    run(child);
-                });
+                if (m.children !== null) {
+                    m.children.forEach((child) => {
+                        if (!ran_children[child]) {
+                            child.hasRun = true;
+                            ran_children[child] = true;
+                            run(child);
+                        }
+                    });
+                }
                 callback(mod);
             };
             run(mod);
+
+            for (let child in ran_children) {
+                delete child.hasRun;
+            }
         }
     };
 
