@@ -16,3 +16,4 @@ obj/*
 WE-Palette.css
 defaults.json
 npm-debug.log.*
+package-lock.json
