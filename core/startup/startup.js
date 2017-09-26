@@ -18,23 +18,22 @@
 'use strict';
 
 const cp = require('child_process'),
-	fork = cp.fork,
+    fork = cp.fork,
     path = require('path'),
-	origSpawn = cp.ChildProcess.prototype.spawn;
+    origSpawn = cp.ChildProcess.prototype.spawn;
 
 cp.ChildProcess.prototype.spawn = function (...args) {
-	const arg0 = args[0];
-	if (arg0 && arg0.envPairs) {
-		const entries = arg0.envPairs.filter(i => i.startsWith('ELECTRON_RUN_AS_NODE'));
-		for (let entry of entries) {
-			const index = arg0.envPairs.indexOf(entry);
-			console.log(`Removing ${entry} at ${index}`);
-			arg0.envPairs.splice(index, 1);
-		}
-	}
-	origSpawn.apply(this, args);
+    const arg0 = args[0];
+    if (arg0 && arg0.envPairs) {
+        const entries = arg0.envPairs.filter(i => i.startsWith('ELECTRON_RUN_AS_NODE'));
+        for (let entry of entries) {
+            const index = arg0.envPairs.indexOf(entry);
+            arg0.envPairs.splice(index, 1);
+        }
+    }
+    origSpawn.apply(this, args);
 };
-	
+
 global.StatusFlag = {
     Unknown: 1,
     NotStarted: 2,
