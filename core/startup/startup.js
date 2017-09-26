@@ -22,7 +22,8 @@ const cp = require('child_process'),
     path = require('path'),
     origSpawn = cp.ChildProcess.prototype.spawn;
 
-cp.ChildProcess.prototype.spawn = function (...args) {
+cp.ChildProcess.prototype.spawn = function () {
+    const args = Array.from(arguments);
     const arg0 = args[0];
     if (arg0 && arg0.envPairs) {
         const entries = arg0.envPairs.filter(i => i.startsWith('ELECTRON_RUN_AS_NODE'));
